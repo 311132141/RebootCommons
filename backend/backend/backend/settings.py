@@ -47,10 +47,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'account',
+    'survey',
     'rest_framework',
     'rest_framework_simplejwt',
     'debug_toolbar',
     'corsheaders',
+    
 ]
 
 MIDDLEWARE = [

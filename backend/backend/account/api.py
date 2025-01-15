@@ -4,6 +4,14 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 
 from .forms import SignupForm
 
+@api_view(['GET'])
+def me(request):
+    return JsonResponse({
+        'id': request.user.id,
+        'name': request.user.name,
+        'email': request.user.email,
+    })
+
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([])
@@ -20,7 +28,7 @@ def signup(request):
     
     if form.is_valid():
         form.save()
-        print({'message': 'success'})  # Example of success response
+        # print({'message': 'success'})  # Example of success response
 
         return JsonResponse({'message': 'success'}, status=201)
     else:
