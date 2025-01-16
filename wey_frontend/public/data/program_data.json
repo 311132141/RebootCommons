@@ -1,0 +1,51 @@
+{
+  "genderDistribution": {
+    "labels": ["남성", "여성"],
+    "data": [60, 40]
+  },
+  "programPerformance": {
+    "labels": ["비전하우스", "리더십", "기업가정신"],
+    "datasets": [
+      {
+        "label": "참가율 (%)",
+        "data": [30, 40, 50]
+      },
+      {
+        "label": "평균 성장률 (%)",
+        "data": [8.5, 10.5, 9.2]
+      }
+    ]
+  },
+  "programParticipation": {
+    "labels": ["비전하우스", "리더십", "기업가정신"],
+    "data": [30, 40, 30]
+  },
+  "growthComparison": {
+    "labels": ["비전하우스", "리더십", "기업가정신"],
+    "datasets": [
+      {
+        "type": "bar",
+        "label": "참가자 수",
+        "data": [120, 160, 100]
+      },
+      {
+        "type": "line",
+        "label": "평균 성장률 (%)",
+        "data": [8.5, 10.5, 9.2]
+      }
+    ]
+  },
+  "beforeAfter": {
+    "labels": ["행동중심 전략", "리더십", "의사소통"],
+    "datasets": [
+      {
+        "label": "사전",
+        "data": [3.2, 3.5, 3.8]
+      },
+      {
+        "label": "사후",
+        "data": [4.1, 4.5, 4.6]
+      }
+    ]
+  }
+}

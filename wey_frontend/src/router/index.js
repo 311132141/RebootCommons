@@ -12,6 +12,7 @@ import TrendView from '../views/TrendView.vue'
 import EditProfileView from '../views/EditProfileView.vue'
 import EditPasswordView from '../views/EditPasswordView.vue'
 import NotificationsView from '../views/NotificationsView.vue'
+import Overview from '../views/Overview.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,6 +56,11 @@ const router = createRouter({
       path: '/profile/edit',
       name: 'editprofile',
       component: EditProfileView
+    },
+    {
+      path: '/overview',
+      name: 'ov',
+      component: Overview
     },
     {
       path: '/profile/edit/password',
