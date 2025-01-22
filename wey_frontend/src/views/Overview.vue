@@ -1,4 +1,7 @@
 <script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
 import Skeleton from 'primevue/skeleton';
 import { RouterLink, RouterView } from "vue-router";
 import Card from 'primevue/card';
@@ -51,15 +54,32 @@ const barChartOptions = {
   },
 };
 // **1. 성별 분포**
-const genderDistributionData = {
-  labels: ['남성', '여성'],
-  datasets: [
-    {
-      data: [60, 40], // 예시 데이터: 남성 60%, 여성 40%
-      backgroundColor: ['#4F46E5', '#A78BFA'],
-    },
-  ],
+// const genderDistributionData = {
+//   labels: ['남성', '여성'],
+//   datasets: [
+//     {
+//       data: [60, 40], // 예시 데이터: 남성 60%, 여성 40%
+//       backgroundColor: ['#4F46E5', '#A78BFA'],
+//     },
+//   ],
+// };
+// Reactive state to store gender distribution data
+const genderDistributionData = ref(null);
+
+// Fetch gender distribution data from the backend
+const fetchGenderDistributionData = async () => {
+  try {
+    const response = await axios.get('/api/graphs/gender-distribution/');
+    genderDistributionData.value = response.data; // Populate the chart data
+  } catch (error) {
+    console.error('Error fetching gender distribution data:', error);
+  }
 };
+
+// Fetch the data when the component mounts
+onMounted(() => {
+  fetchGenderDistributionData();
+});
 const genderDistributionOptions = {
   responsive: true,
   plugins: {
@@ -67,6 +87,34 @@ const genderDistributionOptions = {
   },
 };
 
+// Reactive state for chart data
+const ageDistributionData = ref(null);
+
+// Chart options (kept reusable for other charts)
+const ageDistributionOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top',
+    },
+  },
+};
+
+// Function to fetch age distribution data
+const fetchAgeDistributionData = async () => {
+  try {
+    const response = await axios.get('/api/graphs/age-distribution/');
+    ageDistributionData.value = response.data; // Populate the chart data
+  } catch (error) {
+    console.error('Error fetching age distribution data:', error);
+  }
+};
+
+// Fetch data on component mount
+onMounted(() => {
+  fetchAgeDistributionData();
+});
 // **2. 프로그램 성과**
 const programPerformanceData = {
   labels: ['비전하우스', '리더십', '기업가정신'],
@@ -211,7 +259,7 @@ const beforeAfterChartOptions = {
           <ChartCard title="성별 분포" description="이 그래프는 각 프로그램에 등록한 총 참가자 수와 평균 성장률을 시각화합니다." chartType="pie"
             :chartData="genderDistributionData" :chartOptions="genderDistributionOptions" />
 
-          <!-- Example 2: Bar Chart -->
+          <!-- Example 2: Bar Chart
           <ChartCard title="User Age Distribution"
             description="This chart shows the distribution of users by age group." chartType="bar" :chartData="{
               labels: ['10대', '20대', '30대', '40대', '50대'],
@@ -222,7 +270,14 @@ const beforeAfterChartOptions = {
                   backgroundColor: ['#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE', '#F5F3FF'],
                 },
               ],
-            }" :title_x="'Age Group'" :title_y="'User Count'" class="col-span-2" />
+            }" :title_x="'Age Group'" :title_y="'User Count'" class="col-span-2" /> -->
+          <!-- Example 2: Bar Chart -->
+          <ChartCard title="User Age Distribution"
+            description="This chart shows the distribution of users by age group." chartType="bar"
+            :chartData="ageDistributionData"
+            :chartOptions="ageDistributionOptions" 
+            class="col-span-2"/>
+
         </div>
         <div class="text-3xl text-bold pb-3">프로그램 성과</div>
         <div class="pb-6 grid grid-cols-1 md:grid-cols-3 gap-6 ">

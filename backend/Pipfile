@@ -13,6 +13,7 @@ pillow = "*"
 django-debug-toolbar = "*"
 djangorestframework-simplejwt = "*"
 django-cors-headers = "*"
+psutil = "*"
 
 [dev-packages]
 
