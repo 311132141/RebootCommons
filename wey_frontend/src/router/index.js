@@ -13,6 +13,7 @@ import EditProfileView from '../views/EditProfileView.vue'
 import EditPasswordView from '../views/EditPasswordView.vue'
 import NotificationsView from '../views/NotificationsView.vue'
 import Overview from '../views/Overview.vue'
+import SurveyView from '../views/SurveyView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -88,13 +89,19 @@ const router = createRouter({
       component: TrendView
     },
     {
+      path: '/survey/:id',
+      name: 'SurveyDetail',
+      component: SurveyView
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
-    }
+    },
+
   ]
 })
 
