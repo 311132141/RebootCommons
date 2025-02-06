@@ -1,22 +1,14 @@
 """
 populate_surveys.py
 
-Populates the database with the exact questions shown in your shared images:
-- Demographic (인구통계학적) questions for 기업용 and 개인용
-- 라이프스타일(공통) questions (15 items, 5-point rating scale)
-- 비전하우스: 긍정심리자본(자기효능감, 낙관주의, 희망, 회복탄력성)
-- 리더십과 혁신(개인용, 기업용)
-  * 개인용: 긍정심리자본(회복탄력성), 셀프 리더십(행동중심, 자연적보상, 건설적사고)
-  * 기업용: 셀프 리더십(행동중심, 자연적보상, 건설적사고), 조직몰입(정서적, 지속적, 규범적)
-- 기업가정신과 혁신: (혁신성, 진취성, 위험감수성)
-
-All text is taken directly from the images, with multiple-choice options stored in Question.options as JSON.
+Populates the database with questions, bridging them to SurveyType (개인용, 기업용) and CourseType,
+and sets a 'category' field on each Question for easy filtering.
 """
 
 import os
 import django
 
-# 1. Setup Django environment (edit 'myproject.settings' to match your project name)
+# 1. Setup Django environment (edit 'backend.settings' to match your project name)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
 
@@ -24,6 +16,7 @@ from survey.models import (
     SurveyType, CourseType,
     Question, SurveyTypeQuestion, CourseTypeQuestion
 )
+
 
 def main():
     # --------------------------------------------------------------------------
@@ -40,7 +33,7 @@ def main():
 
     # --------------------------------------------------------------------------
     # CREATE OR GET COURSE TYPES (비전하우스, 리더십과 혁신, 기업가정신과 혁신)
-    # Each course appears under both personal & corporate, per your flow
+    # Each course appears under both personal & corporate
     # --------------------------------------------------------------------------
     ct_vision_personal, _ = CourseType.objects.get_or_create(
         survey_type=st_personal,
@@ -87,28 +80,30 @@ def main():
     ]
 
     # --------------------------------------------------------------------------
-    # 1) CREATE DEMOGRAPHIC QUESTIONS (인구통계학적 특성)
-    #    A. 기업용 (공통 설문 [인구통계학적 특성] 기업용)
+    # DEMOGRAPHIC QUESTIONS (기업용)
     # --------------------------------------------------------------------------
     q_corp_demo_gender, _ = Question.objects.get_or_create(
         text="귀하의 성별은?",
         question_type="radio",
         defaults={
-            "options": ["남성", "여성"]
+            "options": ["남성", "여성"],
+            "category": "demographic_corp"
         }
     )
     q_corp_demo_age, _ = Question.objects.get_or_create(
         text="귀하의 연령은?",
         question_type="radio",
         defaults={
-            "options": ["20대", "30대", "40대", "50대", "60대"]
+            "options": ["20대", "30대", "40대", "50대", "60대"],
+            "category": "demographic_corp"
         }
     )
     q_corp_demo_marital, _ = Question.objects.get_or_create(
         text="귀하의 결혼 유무는?",
         question_type="radio",
         defaults={
-            "options": ["미혼", "기혼"]
+            "options": ["미혼", "기혼"],
+            "category": "demographic_corp"
         }
     )
     q_corp_demo_education, _ = Question.objects.get_or_create(
@@ -121,7 +116,8 @@ def main():
                 "대학교 졸업",
                 "석사 졸업",
                 "박사 졸업"
-            ]
+            ],
+            "category": "demographic_corp"
         }
     )
     q_corp_demo_tenure, _ = Question.objects.get_or_create(
@@ -133,7 +129,8 @@ def main():
                 "1년 이상~3년 미만",
                 "3년 이상~5년 미만",
                 "5년 이상~7년 이하"
-            ]
+            ],
+            "category": "demographic_corp"
         }
     )
     q_corp_demo_jobfield, _ = Question.objects.get_or_create(
@@ -153,7 +150,8 @@ def main():
                 "의료/보건/복지",
                 "미디어",
                 "전문/특수직"
-            ]
+            ],
+            "category": "demographic_corp"
         }
     )
     q_corp_demo_position, _ = Question.objects.get_or_create(
@@ -167,14 +165,16 @@ def main():
                 "과장",
                 "차장",
                 "부장 이상"
-            ]
+            ],
+            "category": "demographic_corp"
         }
     )
     q_corp_demo_employment_type, _ = Question.objects.get_or_create(
         text="귀하의 근무 형태는?",
         question_type="radio",
         defaults={
-            "options": ["정규직", "비정규직"]
+            "options": ["정규직", "비정규직"],
+            "category": "demographic_corp"
         }
     )
     q_corp_demo_income, _ = Question.objects.get_or_create(
@@ -187,32 +187,36 @@ def main():
                 "300만원 이상~400만원 미만",
                 "400만원 이상~500만원 미만",
                 "600만원이상"
-            ]
+            ],
+            "category": "demographic_corp"
         }
     )
 
     # --------------------------------------------------------------------------
-    #    B. 개인용 (인구통계학적 특성 개인용)
+    # DEMOGRAPHIC QUESTIONS (개인용)
     # --------------------------------------------------------------------------
     q_personal_demo_gender, _ = Question.objects.get_or_create(
         text="귀하의 성별은? (개인용)",
         question_type="radio",
         defaults={
-            "options": ["남성", "여성"]
+            "options": ["남성", "여성"],
+            "category": "demographic_personal"
         }
     )
     q_personal_demo_age, _ = Question.objects.get_or_create(
         text="귀하의 연령은? (개인용)",
         question_type="radio",
         defaults={
-            "options": ["20대", "30대", "40대", "50대", "60대"]
+            "options": ["20대", "30대", "40대", "50대", "60대"],
+            "category": "demographic_personal"
         }
     )
     q_personal_demo_marital, _ = Question.objects.get_or_create(
         text="귀하의 결혼 유무는? (개인용)",
         question_type="radio",
         defaults={
-            "options": ["미혼", "기혼"]
+            "options": ["미혼", "기혼"],
+            "category": "demographic_personal"
         }
     )
     q_personal_demo_education, _ = Question.objects.get_or_create(
@@ -225,7 +229,8 @@ def main():
                 "대학교 졸업",
                 "석사 졸업",
                 "박사 졸업"
-            ]
+            ],
+            "category": "demographic_personal"
         }
     )
     q_personal_demo_jobfield, _ = Question.objects.get_or_create(
@@ -245,7 +250,8 @@ def main():
                 "의료/보건/복지",
                 "미디어",
                 "전문/특수직"
-            ]
+            ],
+            "category": "demographic_personal"
         }
     )
     q_personal_demo_income, _ = Question.objects.get_or_create(
@@ -258,13 +264,13 @@ def main():
                 "300만원 이상~400만원 미만",
                 "400만원 이상~500만원 미만",
                 "600만원이상"
-            ]
+            ],
+            "category": "demographic_personal"
         }
     )
 
     # --------------------------------------------------------------------------
-    # 2) CREATE LIFESTYLE QUESTIONS (라이프스타일 질문 - 공통, 15 items)
-    #    5-point rating scale: 전혀 그렇지 않다 ~ 매우 그렇다
+    # LIFESTYLE QUESTIONS (공통 15 items, 5-point rating)
     # --------------------------------------------------------------------------
     lifestyle_texts = [
         "1. 삶의 여유를 가지고 생활하는 편이다.",
@@ -289,16 +295,16 @@ def main():
             text=f"라이프스타일: {txt}",
             question_type="rating",
             defaults={
-                "options": five_point_scale
+                "options": five_point_scale,
+                "category": "lifestyle"
             }
         )
         lifestyle_questions.append(q)
 
     # --------------------------------------------------------------------------
-    # 3) CREATE 비전하우스 QUESTIONS: 긍정심리자본(자기효능감, 낙관주의, 희망, 회복탄력성)
-    #    Each subscale has 5 items
+    # 비전하우스: 긍정심리자본(자기효능감, 낙관주의, 희망, 회복탄력성)
+    # Each subscale has 5 items. We'll categorize them "ppc_efficacy", "ppc_optimism", etc.
     # --------------------------------------------------------------------------
-    # -- 자기효능감 (5 items)
     efficacy_texts = [
         "나는 어려운 상황을 잘 극복할 수 있는 능력이 있다.",
         "나는 일을 효율적으로 다룰 수 있는 능력이 있다.",
@@ -306,7 +312,6 @@ def main():
         "나는 어떤 일의 원인과 결과를 잘 찾아낼 수 있다.",
         "나는 항상 목표를 세우고 목표에 따라 일의 진행 상태를 확인할 수 있다."
     ]
-    # -- 낙관주의 (5 items)
     optimism_texts = [
         "나는 불확실한 상황에서도 최상의 결과를 기대한다.",
         "나는 내 미래에 대해 항상 낙관적이다.",
@@ -314,7 +319,6 @@ def main():
         "나는 '뜻이 있는 곳에 길이 있다' 고 생각한다.",
         "나는 대체로 모든 일들의 결과가 좋을 것으로 생각한다."
     ]
-    # -- 희망 (5 items)
     hope_texts = [
         "나는 현재 목표를 인지하고 이를 위해 힘차게 나아가고 있다.",
         "나는 어려운 상황이 있더라도 이를 해결할 방법이 많다고 생각한다.",
@@ -322,7 +326,6 @@ def main():
         "나는 목표에 도달할 수 있는 많은 방법을 생각해 낼 수 있다.",
         "나는 현재 목표한 계획에 따라 나아가고 있다고 생각한다."
     ]
-    # -- 회복탄력성 (5 items)
     resilience_texts = [
         "나는 어려운 일을 겪더라도 빨리 회복하는 편이다.",
         "나는 스트레스를 받고 회복 과정이 오래 걸리지 않는다.",
@@ -331,32 +334,27 @@ def main():
         "나는 분명한 목표가 있는 삶을 살아가고 있다."
     ]
 
-    # Helper to create question objects for these subscales
-    def create_scale_questions(prefix, lines):
+    def create_scale_questions(prefix, lines, category):
         objs = []
         for idx, line in enumerate(lines, start=1):
             text = f"{prefix} {idx}. {line}"
             qobj, _ = Question.objects.get_or_create(
                 text=text,
                 question_type="rating",
-                defaults={"options": five_point_scale}
+                defaults={"options": five_point_scale, "category": category}
             )
             objs.append(qobj)
         return objs
 
-    efficacy_qs = create_scale_questions("긍정심리자본(자기효능감)", efficacy_texts)
-    optimism_qs = create_scale_questions("긍정심리자본(낙관주의)", optimism_texts)
-    hope_qs = create_scale_questions("긍정심리자본(희망)", hope_texts)
-    resilience_qs = create_scale_questions("긍정심리자본(회복탄력성)", resilience_texts)
+    efficacy_qs = create_scale_questions("긍정심리자본(자기효능감)", efficacy_texts, "ppc_efficacy")
+    optimism_qs = create_scale_questions("긍정심리자본(낙관주의)", optimism_texts, "ppc_optimism")
+    hope_qs = create_scale_questions("긍정심리자본(희망)", hope_texts, "ppc_hope")
+    resilience_qs = create_scale_questions("긍정심리자본(회복탄력성)", resilience_texts, "ppc_resilience")
 
     # --------------------------------------------------------------------------
-    # 4) 리더십과 혁신
-    #    (개인용) -> 긍정심리자본(회복탄력성) + 셀프 리더십(행동중심전략, 자연적보상, 건설적사고)
-    #    (기업용) -> 셀프 리더십(행동중심전략, 자연적보상, 건설적사고) + 조직몰입(정서적, 지속적, 규범적)
+    # 리더십과 혁신(개인용, 기업용)
     # --------------------------------------------------------------------------
-    # (개인용) 긍정심리자본(회복탄력성) : we can reuse the 5 items from "회복탄력성" above, or create new text if the image differs.
-    # According to your images, the text is the same or very similar. We'll reuse the same 5 if the text matches exactly.
-    # If the image has slightly different text, you can create a second set. For brevity, let's reuse them.
+    # (개인용) reuses ppc_resilience for 회복탄력성. We'll keep the category as "ppc_resilience".
 
     # 셀프 리더십: 행동중심전략(4), 자연적보상(4), 건설적사고(4)
     selflead_behavior_texts = [
@@ -378,9 +376,9 @@ def main():
         "나는 스스로 문제의 해결 방법을 끝까지 찾아낸다."
     ]
 
-    behavior_qs = create_scale_questions("셀프 리더십(행동중심전략)", selflead_behavior_texts)
-    natural_qs = create_scale_questions("셀프 리더십(자연적보상)", selflead_natural_texts)
-    constructive_qs = create_scale_questions("셀프 리더십(건설적사고)", selflead_constructive_texts)
+    selflead_behavior_qs = create_scale_questions("셀프 리더십(행동중심전략)", selflead_behavior_texts, "selflead_behavior")
+    selflead_natural_qs = create_scale_questions("셀프 리더십(자연적보상)", selflead_natural_texts, "selflead_natural")
+    selflead_constructive_qs = create_scale_questions("셀프 리더십(건설적사고)", selflead_constructive_texts, "selflead_constructive")
 
     # (기업용) 조직몰입: 정서적 몰입(5), 지속적 몰입(5), 규범적 몰입(5)
     org_affective_texts = [
@@ -399,18 +397,18 @@ def main():
     ]
     org_normative_texts = [
         "나는 회사에 남아야 하는 의무감을 가지고 있다.",
-        "다른 회사에서 좋은 조건을 제시한다 해도 현재 회사를 그만두는 것은 옳지 않다고 느낀다.",
+        "다른 회사에서 좋은 조건을 제시한다 해도 현재 회사를 그만둔다면 옳지 않다고 느낀다.",
         "만약 이 회사를 그만둔다면 죄책감을 느낄 것이다.",
         "나는 이 회사가 충성심을 가질만한 가치가 있다고 생각한다.",
         "나는 회사 동료들에 대한 의무감으로 현재 회사를 당장 떠나지 못한다."
     ]
 
-    org_affective_qs = create_scale_questions("조직몰입(정서적 몰입)", org_affective_texts)
-    org_continuance_qs = create_scale_questions("조직몰입(지속적 몰입)", org_continuance_texts)
-    org_normative_qs = create_scale_questions("조직몰입(규범적 몰입)", org_normative_texts)
+    org_affective_qs = create_scale_questions("조직몰입(정서적 몰입)", org_affective_texts, "org_affective")
+    org_continuance_qs = create_scale_questions("조직몰입(지속적 몰입)", org_continuance_texts, "org_continuance")
+    org_normative_qs = create_scale_questions("조직몰입(규범적 몰입)", org_normative_texts, "org_normative")
 
     # --------------------------------------------------------------------------
-    # 5) 기업가정신과 혁신: (혁신성, 진취성, 위험감수성) each 5 items
+    # 기업가정신과 혁신: (혁신성, 진취성, 위험감수성) each 5 items
     # --------------------------------------------------------------------------
     innov_texts = [
         "나는 항상 새로운 제품이나 기술 등에 관심이 많다.",
@@ -434,14 +432,12 @@ def main():
         "나는 저위험-저수익 사업보다는 고위험-고수익 사업을 추진하려는 성향이 있다."
     ]
 
-    innov_qs = create_scale_questions("기업가정신(혁신성)", innov_texts)
-    proact_qs = create_scale_questions("기업가정신(진취성)", proact_texts)
-    risk_qs = create_scale_questions("기업가정신(위험감수성)", risk_texts)
+    innov_qs = create_scale_questions("기업가정신(혁신성)", innov_texts, "entrepreneur_innov")
+    proact_qs = create_scale_questions("기업가정신(진취성)", proact_texts, "entrepreneur_proact")
+    risk_qs = create_scale_questions("기업가정신(위험감수성)", risk_texts, "entrepreneur_risk")
 
     # --------------------------------------------------------------------------
-    # LINK QUESTIONS TO SURVEYTYPE (Common Demographics, etc.)
-    #    - For simplicity, we’ll link “개인용” to personal demo Qs,
-    #      “기업용” to corporate demo Qs, and everyone to lifestyle.
+    # HELPER to link Questions to SurveyType
     # --------------------------------------------------------------------------
     def stq_create(survey_type_obj, question_obj, order):
         SurveyTypeQuestion.objects.get_or_create(
@@ -479,19 +475,14 @@ def main():
         stq_create(st_corporate, qd, offset)
         offset += 1
 
-    # Everyone -> lifestyle
-    # Link lifestyle questions to both survey types
-    base_order = 100  # so they appear after demographics
+    # Everyone -> lifestyle questions (category = "lifestyle")
+    base_order = 100  # so they appear after demographics in ordering
     for i, ql in enumerate(lifestyle_questions, start=1):
         stq_create(st_personal, ql, base_order + i)
         stq_create(st_corporate, ql, base_order + i)
 
     # --------------------------------------------------------------------------
-    # LINK QUESTIONS TO COURSETYPE
-    #    - 비전하우스 (개인/기업): 긍정심리자본(자기효능감, 낙관주의, 희망, 회복탄력성) - total 20
-    #    - 리더십과 혁신(개인용): 긍정심리(회복탄력성) + 셀프리더십(행동, 자연, 건설적)
-    #    - 리더십과 혁신(기업용): 셀프리더십(행동, 자연, 건설적) + 조직몰입(정서적,지속적,규범적)
-    #    - 기업가정신과 혁신(개인/기업): 혁신성, 진취성, 위험감수성
+    # HELPER to link Questions to CourseType
     # --------------------------------------------------------------------------
     def ctq_create(course_type_obj, question_obj, order):
         CourseTypeQuestion.objects.get_or_create(
@@ -500,36 +491,41 @@ def main():
             defaults={"order": order, "is_required": True}
         )
 
-    # A) 비전하우스(개인, 기업) -> 4 subscales x 5 items = 20
-    # We'll just chain them in a single order block
+    # --------------------------------------------------------------------------
+    # A) 비전하우스(개인, 기업) -> 4 subscales x 5 items = 20 total
+    # --------------------------------------------------------------------------
     sub_order = 1
     for qobj in (efficacy_qs + optimism_qs + hope_qs + resilience_qs):
         ctq_create(ct_vision_personal, qobj, sub_order)
         ctq_create(ct_vision_corp, qobj, sub_order)
         sub_order += 1
 
-    # B) 리더십과 혁신(개인용)
-    #    - 회복탄력성(5) + 셀프리더십(행동4, 자연4, 건설4) = total 17
-    #    We'll reuse the 'resilience_qs' for 회복탄력성
+    # --------------------------------------------------------------------------
+    # B) 리더십과 혁신(개인용): 회복탄력성(5) + 셀프 리더십(행동4, 자연4, 건설4) = total 17
+    #    We'll reuse ppc_resilience for 회복탄력성, so those questions remain "ppc_resilience" category.
+    # --------------------------------------------------------------------------
     sub_order = 1
     for qobj in resilience_qs:
         ctq_create(ct_leadership_personal, qobj, sub_order)
         sub_order += 1
-    for qobj in (behavior_qs + natural_qs + constructive_qs):
+    for qobj in (selflead_behavior_qs + selflead_natural_qs + selflead_constructive_qs):
         ctq_create(ct_leadership_personal, qobj, sub_order)
         sub_order += 1
 
-    # C) 리더십과 혁신(기업용)
-    #    - 셀프리더십(행동4, 자연4, 건설4) + 조직몰입(정서5, 지속5, 규범5) = total 18
+    # --------------------------------------------------------------------------
+    # C) 리더십과 혁신(기업용): 셀프 리더십(행동4, 자연4, 건설4) + 조직몰입(정서5, 지속5, 규범5) = 18
+    # --------------------------------------------------------------------------
     sub_order = 1
-    for qobj in (behavior_qs + natural_qs + constructive_qs):
+    for qobj in (selflead_behavior_qs + selflead_natural_qs + selflead_constructive_qs):
         ctq_create(ct_leadership_corp, qobj, sub_order)
         sub_order += 1
     for qobj in (org_affective_qs + org_continuance_qs + org_normative_qs):
         ctq_create(ct_leadership_corp, qobj, sub_order)
         sub_order += 1
 
+    # --------------------------------------------------------------------------
     # D) 기업가정신과 혁신(개인/기업): 혁신성(5), 진취성(5), 위험감수성(5) = 15 total
+    # --------------------------------------------------------------------------
     sub_order = 1
     for qobj in (innov_qs + proact_qs + risk_qs):
         ctq_create(ct_entrepreneur_personal, qobj, sub_order)
@@ -537,6 +533,7 @@ def main():
         sub_order += 1
 
     print("=== All survey data populated successfully! ===")
+
 
 if __name__ == "__main__":
     main()

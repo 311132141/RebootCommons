@@ -195,7 +195,7 @@ export default {
           answers: answersArray,
         };
 
-        const url = `/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
+        const url = `http://127.0.0.1:8000/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
         const response = await fetch(url, {
           method: "POST",
           headers: {

@@ -35,6 +35,7 @@ class Question(models.Model):
     text = models.TextField()
     question_type = models.CharField(max_length=10, choices=QUESTION_TYPES, default='rating')
     options = models.JSONField(blank=True, null=True)  # Store options as JSON (if applicable)
+    category = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return self.text
