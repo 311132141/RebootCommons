@@ -15,6 +15,9 @@ import NotificationsView from '../views/NotificationsView.vue'
 import Overview from '../views/Overview.vue'
 import SurveyView from '../views/SurveyView.vue'
 import TrialOfConvertingFigma from '../views/Trial of converting figma.vue'
+import Company_Page from '../views/Company_Page.vue'
+import Dashboard from '../views/Dashboard.vue'
+import Test from '../views/test.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,10 +62,40 @@ const router = createRouter({
       name: 'editprofile',
       component: EditProfileView
     },
+    
     {
-      path: '/overview',
-      name: 'ov',
-      component: Overview
+      path: '/Company',
+      name: 'company',
+      component: Company_Page
+    },
+    {
+      path: '/Company',
+      name: 'company',
+      component: Company_Page
+    },
+    {
+      path: '/Test',
+      name: 'test',
+      component: Test
+    },
+
+    {
+      path: '/Dashboard',
+      
+      component: Dashboard,
+      children: [
+        {
+          path: '',
+          name: 'ov',
+          component: Overview
+        },
+        {
+          path: '/Company',
+          name: 'company',
+          component: Company_Page
+        },
+
+      ]
     },
     {
       path: '/profile/edit/password',
