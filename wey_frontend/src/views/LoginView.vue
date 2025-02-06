@@ -10,7 +10,8 @@
                 </p>
 
                 <p class="font-bold">
-                    Don't have an account? <RouterLink :to="{'name': 'signup'}" class="underline">Click here</RouterLink> to create one!
+                    Don't have an account? <RouterLink :to="{ 'name': 'signup' }" class="underline">Click here
+                    </RouterLink> to create one!
                 </p>
             </div>
         </div>
@@ -20,12 +21,14 @@
                 <form class="space-y-6" v-on:submit.prevent="submitForm">
                     <div>
                         <label>E-mail</label><br>
-                        <input type="email" v-model="form.email" placeholder="Your e-mail address" class="w-full mt-2 py-4 px-6 border border-gray-200 rounded-lg">
+                        <input type="email" v-model="form.email" placeholder="Your e-mail address"
+                            class="w-full mt-2 py-4 px-6 border border-gray-200 rounded-lg">
                     </div>
 
                     <div>
                         <label>Password</label><br>
-                        <input type="password" v-model="form.password" placeholder="Your password" class="w-full mt-2 py-4 px-6 border border-gray-200 rounded-lg">
+                        <input type="password" v-model="form.password" placeholder="Your password"
+                            class="w-full mt-2 py-4 px-6 border border-gray-200 rounded-lg">
                     </div>
 
                     <template v-if="errors.length > 0">
@@ -92,7 +95,7 @@ export default {
                         this.errors.push('The email or password is incorrect! Or the user is not activated!')
                     })
             }
-            
+
             if (this.errors.length === 0) {
                 await axios
                     .get('/api/me/')

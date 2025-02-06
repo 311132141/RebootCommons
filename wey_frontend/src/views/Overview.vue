@@ -11,6 +11,7 @@ import ChartCard from '../components/ui/ChartCard.vue';
 import CardSmall from '../components/ui/CardSmall.vue';
 import DashCard from '../components/ui/DashCard.vue';
 import ChartCard_bar from '../components/ui/ChartCard_bar.vue';
+import ChartCard_pie from '../components/ui/ChartCard_pie.vue';
 // import Chart from 'primevue/chart';
 
 // Example Chart Data and Options
@@ -223,23 +224,7 @@ const beforeAfterChartOptions = {
 <template>
 
   <div class="flex h-screen">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-gray-800 text-white">
-      <div class="p-4 font-bold text-lg">
-        <router-link to="/" class="text-white">Dashboard</router-link>
-      </div>
-      <nav class="mt-4 space-y-2">
-        <router-link to="/" class="block px-4 py-2 hover:bg-gray-700" active-class="bg-gray-700">
-          Home
-        </router-link>
-        <router-link to="/analytics" class="block px-4 py-2 hover:bg-gray-700" active-class="bg-gray-700">
-          Analytics
-        </router-link>
-        <router-link to="/settings" class="block px-4 py-2 hover:bg-gray-700" active-class="bg-gray-700">
-          Settings
-        </router-link>
-      </nav>
-    </aside>
+
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
@@ -264,12 +249,10 @@ const beforeAfterChartOptions = {
         </div> -->
         <div class="grid grid-cols-12 gap-5 pb-5">
           <div class="col-span-12 md:col-span-12 lg:col-span-5 ">
-            <ChartCard title="성별 분포" description="이 그래프는 각 프로그램에 등록한 총 참가자 수와 평균 성장률을 시각화합니다." chartType="pie"
-              :chartData="genderDistributionData" :chartOptions="genderDistributionOptions" />
+            <ChartCard_pie title="성별 분포" description="이 그래프는 각 프로그램에 등록한 총 참가자 수와 평균 성장률을 시각화합니다." chartType="pie" />
           </div>
           <div class="col-span-12 md:col-span-12 lg:col-span-7 ">
-            <ChartCard_bar title="User Age Distribution" description="이 그래프는 각 프로그램에 등록한 총 참가자 수와 평균 성장률을 시각화합니다."
-              chartType="bar" :chartData="ageDistributionData" :chartOptions="ageDistributionOptions" />
+            <ChartCard_bar title="User Age Distribution" description="이 그래프는 각 프로그램에 등록한 총 참가자 수와 평균 성장률을 시각화합니다." />
           </div>
 
         </div>

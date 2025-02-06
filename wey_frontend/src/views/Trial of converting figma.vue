@@ -100,15 +100,44 @@ export default {
     };
   },
   computed: {
+    allQuestions() {
+      if (this.questions.length === 0) return [];
+
+      return [
+        // ✅ Course selection question
+        {
+          id: "course",
+          text: "참여하고 싶은 교육 과정을 선택하세요",
+          question_type: "radio",
+          options: [
+            { id: 101, name: "비전하우스" },
+            { id: 104, name: "리더십과 혁신" },
+            { id: 106, name: "기업가정신과 혁신" },
+          ],
+        },
+        // ✅ Survey Type selection (개인용 vs. 기업용)
+        {
+          id: "surveyType",
+          text: "개인용 또는 기업용 설문을 선택하세요",
+          question_type: "radio",
+          options: [
+            { id: 1, name: "개인용" },
+            { id: 2, name: "기업용" },
+          ],
+        },
+        // ✅ Fetched questions from API
+        ...this.questions,
+      ];
+    },
     // Return the current question object
     currentQuestion() {
-      return this.questions[this.currentQuestionIndex] || {};
+      return this.allQuestions[this.currentQuestionIndex] || {};
     },
     // Calculation for the progress bar
     progressWidth() {
       if (this.questions.length === 0) return 0;
       return (
-        ((this.currentQuestionIndex + 1) / this.questions.length) * 100
+        ((this.currentQuestionIndex + 1) / this.allQuestions.length) * 100
       );
     },
     // Are we on the first question?
@@ -117,7 +146,26 @@ export default {
     },
     // Are we on the last question?
     isLastQuestion() {
-      return this.currentQuestionIndex === this.questions.length - 1;
+      return this.currentQuestionIndex === this.allQuestions.length - 1;
+    },
+  },
+  watch: {
+    // Watch for survey type selection
+    "responses.surveyType"(newVal) {
+      if (newVal) {
+        this.surveyTypeId = parseInt(newVal);
+        console.log("Updated surveyTypeId:", this.surveyTypeId);
+        this.fetchQuestions(); // Fetch new questions based on selection
+      }
+    },
+
+    // Watch for course selection
+    "responses.course"(newVal) {
+      if (newVal) {
+        this.courseTypeId = parseInt(newVal);
+        console.log("Updated courseTypeId:", this.courseTypeId);
+        this.fetchQuestions(); // Fetch new questions based on selection
+      }
     },
   },
   mounted() {
