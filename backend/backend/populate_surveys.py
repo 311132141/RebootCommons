@@ -1,22 +1,18 @@
 """
 populate_surveys.py
 
-Populates the database with the exact questions shown in your shared images:
-- Demographic (인구통계학적) questions for 기업용 and 개인용
-- 라이프스타일(공통) questions (15 items, 5-point rating scale)
-- 비전하우스: 긍정심리자본(자기효능감, 낙관주의, 희망, 회복탄력성)
-- 리더십과 혁신(개인용, 기업용)
-  * 개인용: 긍정심리자본(회복탄력성), 셀프 리더십(행동중심, 자연적보상, 건설적사고)
-  * 기업용: 셀프 리더십(행동중심, 자연적보상, 건설적사고), 조직몰입(정서적, 지속적, 규범적)
-- 기업가정신과 혁신: (혁신성, 진취성, 위험감수성)
-
-All text is taken directly from the images, with multiple-choice options stored in Question.options as JSON.
+- Forces ID=1 for SurveyType(개인용), ID=2 for SurveyType(기업용).
+- Forces IDs 101..106 for CourseType (비전하우스, 리더십과 혁신, 기업가정신과 혁신).
+- Assigns 'category' to every question, e.g. "demographic_corp", "lifestyle", "ppc_efficacy", etc.
+- Creates bridging to SurveyTypeQuestion and CourseTypeQuestion.
+WARNING:
+  This code deletes existing SurveyType / CourseType with these IDs if they exist,
+  then re-inserts them with the forced IDs.
 """
 
 import os
 import django
 
-# 1. Setup Django environment (edit 'myproject.settings' to match your project name)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
 
@@ -25,59 +21,117 @@ from survey.models import (
     Question, SurveyTypeQuestion, CourseTypeQuestion
 )
 
+# ------------------------------------------------------------
+# 1. Functions to forcibly assign IDs to SurveyType & CourseType
+# ------------------------------------------------------------
+
+def force_set_survey_type(pk, name, description):
+    """
+    If a SurveyType with ID=pk exists, delete it.
+    Then create a new SurveyType with that ID.
+    """
+    try:
+        existing = SurveyType.objects.get(id=pk)
+        existing.delete()
+    except SurveyType.DoesNotExist:
+        pass
+
+    st = SurveyType(id=pk, name=name, description=description)
+    st.save(force_insert=True)
+    return st
+
+def force_set_course_type(pk, survey_type, name, description):
+    """
+    If a CourseType with ID=pk exists, delete it.
+    Then create a new CourseType with that ID, linked to given survey_type.
+    """
+    try:
+        existing = CourseType.objects.get(id=pk)
+        existing.delete()
+    except CourseType.DoesNotExist:
+        pass
+
+    ct = CourseType(id=pk, survey_type=survey_type, name=name, description=description)
+    ct.save(force_insert=True)
+    return ct
+
+# ------------------------------------------------------------
+# 2. Helper to create or get questions, specifying category
+# ------------------------------------------------------------
+
+def get_or_create_question(text, qtype, options, category):
+    """
+    Creates (or fetches) a Question with the given text & question_type.
+    Also sets the 'options' JSON and 'category'.
+    """
+    q, _ = Question.objects.get_or_create(
+        text=text,
+        question_type=qtype,
+        defaults={
+            "options": options,
+            "category": category
+        }
+    )
+    return q
+
+# ------------------------------------------------------------
+# 3. Main population script
+# ------------------------------------------------------------
+
 def main():
-    # --------------------------------------------------------------------------
-    # CREATE OR GET SURVEY TYPES (개인용, 기업용)
-    # --------------------------------------------------------------------------
-    st_personal, _ = SurveyType.objects.get_or_create(
+    print("=== Forcibly assigning SurveyType & CourseType IDs ===")
+
+    # Force SurveyTypes
+    st_personal = force_set_survey_type(
+        pk=1,
         name='개인용',
-        defaults={'description': '개인용 (Personal) 설문 타입'}
+        description='개인용 (Personal) 설문 타입'
     )
-    st_corporate, _ = SurveyType.objects.get_or_create(
+    st_corporate = force_set_survey_type(
+        pk=2,
         name='기업용',
-        defaults={'description': '기업용 (Corporate) 설문 타입'}
+        description='기업용 (Corporate) 설문 타입'
     )
 
-    # --------------------------------------------------------------------------
-    # CREATE OR GET COURSE TYPES (비전하우스, 리더십과 혁신, 기업가정신과 혁신)
-    # Each course appears under both personal & corporate, per your flow
-    # --------------------------------------------------------------------------
-    ct_vision_personal, _ = CourseType.objects.get_or_create(
+    # Force CourseTypes
+    ct_vision_personal = force_set_course_type(
+        pk=101,
         survey_type=st_personal,
         name='비전하우스',
-        defaults={'description': '비전하우스 (개인용)'}
+        description='비전하우스 (개인용)'
     )
-    ct_vision_corp, _ = CourseType.objects.get_or_create(
+    ct_vision_corp = force_set_course_type(
+        pk=102,
         survey_type=st_corporate,
         name='비전하우스',
-        defaults={'description': '비전하우스 (기업용)'}
+        description='비전하우스 (기업용)'
     )
-
-    ct_leadership_personal, _ = CourseType.objects.get_or_create(
+    ct_leadership_personal = force_set_course_type(
+        pk=103,
         survey_type=st_personal,
         name='리더십과 혁신',
-        defaults={'description': '리더십과 혁신 (개인용)'}
+        description='리더십과 혁신 (개인용)'
     )
-    ct_leadership_corp, _ = CourseType.objects.get_or_create(
+    ct_leadership_corp = force_set_course_type(
+        pk=104,
         survey_type=st_corporate,
         name='리더십과 혁신',
-        defaults={'description': '리더십과 혁신 (기업용)'}
+        description='리더십과 혁신 (기업용)'
     )
-
-    ct_entrepreneur_personal, _ = CourseType.objects.get_or_create(
+    ct_entrepreneur_personal = force_set_course_type(
+        pk=105,
         survey_type=st_personal,
         name='기업가정신과 혁신',
-        defaults={'description': '기업가정신과 혁신 (개인용)'}
+        description='기업가정신과 혁신 (개인용)'
     )
-    ct_entrepreneur_corp, _ = CourseType.objects.get_or_create(
+    ct_entrepreneur_corp = force_set_course_type(
+        pk=106,
         survey_type=st_corporate,
         name='기업가정신과 혁신',
-        defaults={'description': '기업가정신과 혁신 (기업용)'}
+        description='기업가정신과 혁신 (기업용)'
     )
 
-    # --------------------------------------------------------------------------
-    # HELPER: 5-point Rating Scale in Korean
-    # --------------------------------------------------------------------------
+    # 5-point rating scale
     five_point_scale = [
         "전혀 그렇지 않다",
         "그렇지 않다",
@@ -86,186 +140,89 @@ def main():
         "매우 그렇다"
     ]
 
-    # --------------------------------------------------------------------------
-    # 1) CREATE DEMOGRAPHIC QUESTIONS (인구통계학적 특성)
-    #    A. 기업용 (공통 설문 [인구통계학적 특성] 기업용)
-    # --------------------------------------------------------------------------
-    q_corp_demo_gender, _ = Question.objects.get_or_create(
-        text="귀하의 성별은?",
-        question_type="radio",
-        defaults={
-            "options": ["남성", "여성"]
-        }
+    # ------------------------------------------------------------
+    # A) 기업용 (demographic_corp)
+    # ------------------------------------------------------------
+    q_corp_demo_gender = get_or_create_question(
+        "귀하의 성별은?", "radio", ["남성","여성"], "demographic_corp"
     )
-    q_corp_demo_age, _ = Question.objects.get_or_create(
-        text="귀하의 연령은?",
-        question_type="radio",
-        defaults={
-            "options": ["20대", "30대", "40대", "50대", "60대"]
-        }
+    q_corp_demo_age = get_or_create_question(
+        "귀하의 연령은?", "radio", ["20대","30대","40대","50대","60대"], "demographic_corp"
     )
-    q_corp_demo_marital, _ = Question.objects.get_or_create(
-        text="귀하의 결혼 유무는?",
-        question_type="radio",
-        defaults={
-            "options": ["미혼", "기혼"]
-        }
+    q_corp_demo_marital = get_or_create_question(
+        "귀하의 결혼 유무는?", "radio", ["미혼","기혼"], "demographic_corp"
     )
-    q_corp_demo_education, _ = Question.objects.get_or_create(
-        text="귀하의 최종 학력은?",
-        question_type="radio",
-        defaults={
-            "options": [
-                "고등학교 졸업",
-                "전문대 졸업",
-                "대학교 졸업",
-                "석사 졸업",
-                "박사 졸업"
-            ]
-        }
+    q_corp_demo_education = get_or_create_question(
+        "귀하의 최종 학력은?", "radio",
+        ["고등학교 졸업","전문대 졸업","대학교 졸업","석사 졸업","박사 졸업"],
+        "demographic_corp"
     )
-    q_corp_demo_tenure, _ = Question.objects.get_or_create(
-        text="귀하가 재직중인 회사 근속 기간은?",
-        question_type="radio",
-        defaults={
-            "options": [
-                "1년 미만",
-                "1년 이상~3년 미만",
-                "3년 이상~5년 미만",
-                "5년 이상~7년 이하"
-            ]
-        }
+    q_corp_demo_tenure = get_or_create_question(
+        "귀하가 재직중인 회사 근속 기간은?", "radio",
+        ["1년 미만","1년 이상~3년 미만","3년 이상~5년 미만","5년 이상~7년 이하"],
+        "demographic_corp"
     )
-    q_corp_demo_jobfield, _ = Question.objects.get_or_create(
-        text="귀하의 직군은?",
-        question_type="radio",
-        defaults={
-            "options": [
-                "사무/행정/경영 지원",
-                "기획/홍보/마케팅",
-                "IT/인터넷",
-                "디자인",
-                "영업/서비스",
-                "연구/개발/설계",
-                "생산/제조/기술",
-                "교육",
-                "건설",
-                "의료/보건/복지",
-                "미디어",
-                "전문/특수직"
-            ]
-        }
+    q_corp_demo_jobfield = get_or_create_question(
+        "귀하의 직군은?", "radio",
+        [
+            "사무/행정/경영 지원","기획/홍보/마케팅","IT/인터넷","디자인",
+            "영업/서비스","연구/개발/설계","생산/제조/기술","교육","건설",
+            "의료/보건/복지","미디어","전문/특수직"
+        ],
+        "demographic_corp"
     )
-    q_corp_demo_position, _ = Question.objects.get_or_create(
-        text="귀하의 직급은?",
-        question_type="radio",
-        defaults={
-            "options": [
-                "사원",
-                "주임",
-                "대리",
-                "과장",
-                "차장",
-                "부장 이상"
-            ]
-        }
+    q_corp_demo_position = get_or_create_question(
+        "귀하의 직급은?", "radio",
+        ["사원","주임","대리","과장","차장","부장 이상"],
+        "demographic_corp"
     )
-    q_corp_demo_employment_type, _ = Question.objects.get_or_create(
-        text="귀하의 근무 형태는?",
-        question_type="radio",
-        defaults={
-            "options": ["정규직", "비정규직"]
-        }
+    q_corp_demo_employment_type = get_or_create_question(
+        "귀하의 근무 형태는?", "radio",
+        ["정규직","비정규직"],
+        "demographic_corp"
     )
-    q_corp_demo_income, _ = Question.objects.get_or_create(
-        text="귀하의 소득(월소득 세전기준)은?",
-        question_type="radio",
-        defaults={
-            "options": [
-                "200만원 미만",
-                "200만원 이상~300만원 미만",
-                "300만원 이상~400만원 미만",
-                "400만원 이상~500만원 미만",
-                "600만원이상"
-            ]
-        }
+    q_corp_demo_income = get_or_create_question(
+        "귀하의 소득(월소득 세전기준)은?", "radio",
+        ["200만원 미만","200만원 이상~300만원 미만","300만원 이상~400만원 미만","400만원 이상~500만원 미만","600만원이상"],
+        "demographic_corp"
     )
 
-    # --------------------------------------------------------------------------
-    #    B. 개인용 (인구통계학적 특성 개인용)
-    # --------------------------------------------------------------------------
-    q_personal_demo_gender, _ = Question.objects.get_or_create(
-        text="귀하의 성별은? (개인용)",
-        question_type="radio",
-        defaults={
-            "options": ["남성", "여성"]
-        }
+    # ------------------------------------------------------------
+    # B) 개인용 (demographic_personal)
+    # ------------------------------------------------------------
+    q_personal_demo_gender = get_or_create_question(
+        "귀하의 성별은? (개인용)", "radio", ["남성","여성"], "demographic_personal"
     )
-    q_personal_demo_age, _ = Question.objects.get_or_create(
-        text="귀하의 연령은? (개인용)",
-        question_type="radio",
-        defaults={
-            "options": ["20대", "30대", "40대", "50대", "60대"]
-        }
+    q_personal_demo_age = get_or_create_question(
+        "귀하의 연령은? (개인용)", "radio", ["20대","30대","40대","50대","60대"],
+        "demographic_personal"
     )
-    q_personal_demo_marital, _ = Question.objects.get_or_create(
-        text="귀하의 결혼 유무는? (개인용)",
-        question_type="radio",
-        defaults={
-            "options": ["미혼", "기혼"]
-        }
+    q_personal_demo_marital = get_or_create_question(
+        "귀하의 결혼 유무는? (개인용)", "radio", ["미혼","기혼"], "demographic_personal"
     )
-    q_personal_demo_education, _ = Question.objects.get_or_create(
-        text="귀하의 최종 학력은? (개인용)",
-        question_type="radio",
-        defaults={
-            "options": [
-                "고등학교 졸업",
-                "전문대 졸업",
-                "대학교 졸업",
-                "석사 졸업",
-                "박사 졸업"
-            ]
-        }
+    q_personal_demo_education = get_or_create_question(
+        "귀하의 최종 학력은? (개인용)", "radio",
+        ["고등학교 졸업","전문대 졸업","대학교 졸업","석사 졸업","박사 졸업"],
+        "demographic_personal"
     )
-    q_personal_demo_jobfield, _ = Question.objects.get_or_create(
-        text="귀하의 직군은? (개인용)",
-        question_type="radio",
-        defaults={
-            "options": [
-                "사무/행정/경영 지원",
-                "기획/홍보/마케팅",
-                "IT/인터넷",
-                "디자인",
-                "영업/서비스",
-                "연구/개발/설계",
-                "생산/제조/기술",
-                "교육",
-                "건설",
-                "의료/보건/복지",
-                "미디어",
-                "전문/특수직"
-            ]
-        }
+    q_personal_demo_jobfield = get_or_create_question(
+        "귀하의 직군은? (개인용)", "radio",
+        [
+            "사무/행정/경영 지원","기획/홍보/마케팅","IT/인터넷","디자인",
+            "영업/서비스","연구/개발/설계","생산/제조/기술","교육","건설",
+            "의료/보건/복지","미디어","전문/특수직"
+        ],
+        "demographic_personal"
     )
-    q_personal_demo_income, _ = Question.objects.get_or_create(
-        text="귀하의 소득(월소득 세전기준)은? (개인용)",
-        question_type="radio",
-        defaults={
-            "options": [
-                "200만원 미만",
-                "200만원 이상~300만원 미만",
-                "300만원 이상~400만원 미만",
-                "400만원 이상~500만원 미만",
-                "600만원이상"
-            ]
-        }
+    q_personal_demo_income = get_or_create_question(
+        "귀하의 소득(월소득 세전기준)은? (개인용)", "radio",
+        ["200만원 미만","200만원 이상~300만원 미만","300만원 이상~400만원 미만","400만원 이상~500만원 미만","600만원이상"],
+        "demographic_personal"
     )
 
-    # --------------------------------------------------------------------------
-    # 2) CREATE LIFESTYLE QUESTIONS (라이프스타일 질문 - 공통, 15 items)
-    #    5-point rating scale: 전혀 그렇지 않다 ~ 매우 그렇다
-    # --------------------------------------------------------------------------
+    # ------------------------------------------------------------
+    # C) 라이프스타일 (공통 => "lifestyle")
+    # ------------------------------------------------------------
     lifestyle_texts = [
         "1. 삶의 여유를 가지고 생활하는 편이다.",
         "2. 하고 싶은 일을 할 충분한 에너지가 있다.",
@@ -285,20 +242,31 @@ def main():
     ]
     lifestyle_questions = []
     for txt in lifestyle_texts:
-        q, _ = Question.objects.get_or_create(
+        q = get_or_create_question(
             text=f"라이프스타일: {txt}",
-            question_type="rating",
-            defaults={
-                "options": five_point_scale
-            }
+            qtype="rating",
+            options=five_point_scale,
+            category="lifestyle"
         )
         lifestyle_questions.append(q)
 
-    # --------------------------------------------------------------------------
-    # 3) CREATE 비전하우스 QUESTIONS: 긍정심리자본(자기효능감, 낙관주의, 희망, 회복탄력성)
-    #    Each subscale has 5 items
-    # --------------------------------------------------------------------------
-    # -- 자기효능감 (5 items)
+    # ------------------------------------------------------------
+    # D) 비전하우스: 긍정심리자본(자기효능감, 낙관주의, 희망, 회복탄력성)
+    # ------------------------------------------------------------
+    def create_scale_questions(prefix, lines, category):
+        objs = []
+        for idx, line in enumerate(lines, start=1):
+            text = f"{prefix} {idx}. {line}"
+            q = get_or_create_question(
+                text=text,
+                qtype="rating",
+                options=five_point_scale,
+                category=category
+            )
+            objs.append(q)
+        return objs
+
+    # ppc_efficacy
     efficacy_texts = [
         "나는 어려운 상황을 잘 극복할 수 있는 능력이 있다.",
         "나는 일을 효율적으로 다룰 수 있는 능력이 있다.",
@@ -306,7 +274,9 @@ def main():
         "나는 어떤 일의 원인과 결과를 잘 찾아낼 수 있다.",
         "나는 항상 목표를 세우고 목표에 따라 일의 진행 상태를 확인할 수 있다."
     ]
-    # -- 낙관주의 (5 items)
+    efficacy_qs = create_scale_questions("긍정심리자본(자기효능감)", efficacy_texts, "ppc_efficacy")
+
+    # ppc_optimism
     optimism_texts = [
         "나는 불확실한 상황에서도 최상의 결과를 기대한다.",
         "나는 내 미래에 대해 항상 낙관적이다.",
@@ -314,7 +284,9 @@ def main():
         "나는 '뜻이 있는 곳에 길이 있다' 고 생각한다.",
         "나는 대체로 모든 일들의 결과가 좋을 것으로 생각한다."
     ]
-    # -- 희망 (5 items)
+    optimism_qs = create_scale_questions("긍정심리자본(낙관주의)", optimism_texts, "ppc_optimism")
+
+    # ppc_hope
     hope_texts = [
         "나는 현재 목표를 인지하고 이를 위해 힘차게 나아가고 있다.",
         "나는 어려운 상황이 있더라도 이를 해결할 방법이 많다고 생각한다.",
@@ -322,7 +294,9 @@ def main():
         "나는 목표에 도달할 수 있는 많은 방법을 생각해 낼 수 있다.",
         "나는 현재 목표한 계획에 따라 나아가고 있다고 생각한다."
     ]
-    # -- 회복탄력성 (5 items)
+    hope_qs = create_scale_questions("긍정심리자본(희망)", hope_texts, "ppc_hope")
+
+    # ppc_resilience
     resilience_texts = [
         "나는 어려운 일을 겪더라도 빨리 회복하는 편이다.",
         "나는 스트레스를 받고 회복 과정이 오래 걸리지 않는다.",
@@ -330,59 +304,46 @@ def main():
         "나는 결과보다 과정의 성장을 돕는다고 생각한다.",
         "나는 분명한 목표가 있는 삶을 살아가고 있다."
     ]
+    resilience_qs = create_scale_questions("긍정심리자본(회복탄력성)", resilience_texts, "ppc_resilience")
 
-    # Helper to create question objects for these subscales
-    def create_scale_questions(prefix, lines):
-        objs = []
-        for idx, line in enumerate(lines, start=1):
-            text = f"{prefix} {idx}. {line}"
-            qobj, _ = Question.objects.get_or_create(
-                text=text,
-                question_type="rating",
-                defaults={"options": five_point_scale}
-            )
-            objs.append(qobj)
-        return objs
+    # ------------------------------------------------------------
+    # E) 리더십과 혁신
+    #    개인용 => 회복탄력성(ppc_resilience) + 셀프 리더십
+    #    기업용 => 셀프 리더십 + 조직몰입
+    # ------------------------------------------------------------
 
-    efficacy_qs = create_scale_questions("긍정심리자본(자기효능감)", efficacy_texts)
-    optimism_qs = create_scale_questions("긍정심리자본(낙관주의)", optimism_texts)
-    hope_qs = create_scale_questions("긍정심리자본(희망)", hope_texts)
-    resilience_qs = create_scale_questions("긍정심리자본(회복탄력성)", resilience_texts)
-
-    # --------------------------------------------------------------------------
-    # 4) 리더십과 혁신
-    #    (개인용) -> 긍정심리자본(회복탄력성) + 셀프 리더십(행동중심전략, 자연적보상, 건설적사고)
-    #    (기업용) -> 셀프 리더십(행동중심전략, 자연적보상, 건설적사고) + 조직몰입(정서적, 지속적, 규범적)
-    # --------------------------------------------------------------------------
-    # (개인용) 긍정심리자본(회복탄력성) : we can reuse the 5 items from "회복탄력성" above, or create new text if the image differs.
-    # According to your images, the text is the same or very similar. We'll reuse the same 5 if the text matches exactly.
-    # If the image has slightly different text, you can create a second set. For brevity, let's reuse them.
-
-    # 셀프 리더십: 행동중심전략(4), 자연적보상(4), 건설적사고(4)
-    selflead_behavior_texts = [
+    # Self Leadership
+    behavior_texts = [
         "나는 업무의 진행 상황에 관심을 쓴다.",
         "나는 내가 업무를 얼마나 잘하는지에 대해 주의를 기울인다.",
         "나는 마음속에 나의 목표들을 인식하고 있다.",
         "나는 내일의 진행 정도를 기록한다."
     ]
-    selflead_natural_texts = [
+    selflead_behavior_qs = create_scale_questions(
+        "셀프 리더십(행동중심전략)", behavior_texts, "selflead_behavior"
+    )
+
+    natural_texts = [
         "나는 업무상 책임 영역을 더 넓히려고 한다.",
         "나는 업무상 책임을 늘리는 방법에 집중한다.",
         "나는 다른 사람으로부터 얻어낼 수 있는 새로운 책임에 대해 자주 생각한다.",
         "나는 나에게 할당된 책임보다 더 열심히 일하려고 한다."
     ]
-    selflead_constructive_texts = [
+    selflead_natural_qs = create_scale_questions(
+        "셀프 리더십(자연적보상)", natural_texts, "selflead_natural"
+    )
+
+    constructive_texts = [
         "나는 자기 스스로 문제를 해결하려고 행동한다.",
         "나는 자신의 힘으로 문제를 해결하는 것을 좋아한다.",
         "나는 나에게 문제가 생기면 스스로 해결한다.",
         "나는 스스로 문제의 해결 방법을 끝까지 찾아낸다."
     ]
+    selflead_constructive_qs = create_scale_questions(
+        "셀프 리더십(건설적사고)", constructive_texts, "selflead_constructive"
+    )
 
-    behavior_qs = create_scale_questions("셀프 리더십(행동중심전략)", selflead_behavior_texts)
-    natural_qs = create_scale_questions("셀프 리더십(자연적보상)", selflead_natural_texts)
-    constructive_qs = create_scale_questions("셀프 리더십(건설적사고)", selflead_constructive_texts)
-
-    # (기업용) 조직몰입: 정서적 몰입(5), 지속적 몰입(5), 규범적 몰입(5)
+    # 조직몰입 (기업용)
     org_affective_texts = [
         "나는 회사에 강한 소속감을 느끼고 있다.",
         "나는 회사의 일원임을 느끼고 있다.",
@@ -390,6 +351,8 @@ def main():
         "나는 회사에 감정적 애착을 느끼고 있다.",
         "나는 앞으로 남은 직장생활을 현재의 직장에서 보내게 된다면 행복할 것이다."
     ]
+    org_affective_qs = create_scale_questions("조직몰입(정서적 몰입)", org_affective_texts, "org_affective")
+
     org_continuance_texts = [
         "내가 희망하더라도 지금 당장 회사를 그만두기는 어렵다.",
         "지금 회사를 그만둔다면 내 생활이 혼란스러워질 것이다.",
@@ -397,21 +360,20 @@ def main():
         "내가 이 회사에 다니는 이유는 내가 원해서이기도 하지만 회사에서 날 필요로 하기 때문이다.",
         "지금 이 회사를 그만둔다면 손해 보는 것이 많을 것이다."
     ]
+    org_continuance_qs = create_scale_questions("조직몰입(지속적 몰입)", org_continuance_texts, "org_continuance")
+
     org_normative_texts = [
         "나는 회사에 남아야 하는 의무감을 가지고 있다.",
-        "다른 회사에서 좋은 조건을 제시한다 해도 현재 회사를 그만두는 것은 옳지 않다고 느낀다.",
+        "다른 회사에서 좋은 조건을 제시한다 해도 현재 회사를 그만둔다면 옳지 않다고 느낀다.",
         "만약 이 회사를 그만둔다면 죄책감을 느낄 것이다.",
         "나는 이 회사가 충성심을 가질만한 가치가 있다고 생각한다.",
         "나는 회사 동료들에 대한 의무감으로 현재 회사를 당장 떠나지 못한다."
     ]
+    org_normative_qs = create_scale_questions("조직몰입(규범적 몰입)", org_normative_texts, "org_normative")
 
-    org_affective_qs = create_scale_questions("조직몰입(정서적 몰입)", org_affective_texts)
-    org_continuance_qs = create_scale_questions("조직몰입(지속적 몰입)", org_continuance_texts)
-    org_normative_qs = create_scale_questions("조직몰입(규범적 몰입)", org_normative_texts)
-
-    # --------------------------------------------------------------------------
-    # 5) 기업가정신과 혁신: (혁신성, 진취성, 위험감수성) each 5 items
-    # --------------------------------------------------------------------------
+    # ------------------------------------------------------------
+    # F) 기업가정신과 혁신: 혁신성, 진취성, 위험감수성
+    # ------------------------------------------------------------
     innov_texts = [
         "나는 항상 새로운 제품이나 기술 등에 관심이 많다.",
         "나는 혁신적인 변화를 통해 우리 조직의 성과를 항상 시키려고 노력한다.",
@@ -419,6 +381,10 @@ def main():
         "나는 조직의 위계질서와 관행보다 독창적인 아이디어와 변화를 더 중요시한다.",
         "나는 새로운 도전에 대한 실패를 질책하지 않는다."
     ]
+    entrepreneur_innov_qs = create_scale_questions(
+        "기업가정신(혁신성)", innov_texts, "entrepreneur_innov"
+    )
+
     proact_texts = [
         "나는 항상 경쟁회사의 전략에 관심을 갖고 있다.",
         "나는 시장에서 주도적 위치를 확보하기 위해 부단히 노력한다.",
@@ -426,6 +392,10 @@ def main():
         "나는 새로운 제품이나 서비스 개발에서 경쟁사를 앞지르려 노력한다.",
         "나는 고객의 니즈를 파악하기 위해 적극적으로 노력한다."
     ]
+    entrepreneur_proact_qs = create_scale_questions(
+        "기업가정신(진취성)", proact_texts, "entrepreneur_proact"
+    )
+
     risk_texts = [
         "나는 새로운 사업 분야에 적극적으로 진출하려고 노력한다.",
         "나는 다소 위험이 있더라도 과감하게 도전하려는 의지가 높은 편이다.",
@@ -433,16 +403,13 @@ def main():
         "나는 불확실한 상황에서도 과감하게 의사결정을 하는 편이다.",
         "나는 저위험-저수익 사업보다는 고위험-고수익 사업을 추진하려는 성향이 있다."
     ]
+    entrepreneur_risk_qs = create_scale_questions(
+        "기업가정신(위험감수성)", risk_texts, "entrepreneur_risk"
+    )
 
-    innov_qs = create_scale_questions("기업가정신(혁신성)", innov_texts)
-    proact_qs = create_scale_questions("기업가정신(진취성)", proact_texts)
-    risk_qs = create_scale_questions("기업가정신(위험감수성)", risk_texts)
-
-    # --------------------------------------------------------------------------
-    # LINK QUESTIONS TO SURVEYTYPE (Common Demographics, etc.)
-    #    - For simplicity, we’ll link “개인용” to personal demo Qs,
-    #      “기업용” to corporate demo Qs, and everyone to lifestyle.
-    # --------------------------------------------------------------------------
+    # ------------------------------------------------------------
+    # Bridging helpers
+    # ------------------------------------------------------------
     def stq_create(survey_type_obj, question_obj, order):
         SurveyTypeQuestion.objects.get_or_create(
             survey_type=survey_type_obj,
@@ -450,7 +417,16 @@ def main():
             defaults={"order": order, "is_required": True}
         )
 
-    # 개인용 -> demographic
+    def ctq_create(course_type_obj, question_obj, order):
+        CourseTypeQuestion.objects.get_or_create(
+            course_type=course_type_obj,
+            question=question_obj,
+            defaults={"order": order, "is_required": True}
+        )
+
+    # ------------------------------------------------------------
+    # Link demographic, lifestyle to SurveyType
+    # ------------------------------------------------------------
     personal_demo_list = [
         q_personal_demo_gender,
         q_personal_demo_age,
@@ -462,7 +438,6 @@ def main():
     for i, qd in enumerate(personal_demo_list, start=1):
         stq_create(st_personal, qd, i)
 
-    # 기업용 -> demographic
     corp_demo_list = [
         q_corp_demo_gender,
         q_corp_demo_age,
@@ -479,64 +454,57 @@ def main():
         stq_create(st_corporate, qd, offset)
         offset += 1
 
-    # Everyone -> lifestyle
-    # Link lifestyle questions to both survey types
-    base_order = 100  # so they appear after demographics
+    # Link lifestyle to both
+    base_order = 100
     for i, ql in enumerate(lifestyle_questions, start=1):
         stq_create(st_personal, ql, base_order + i)
         stq_create(st_corporate, ql, base_order + i)
 
-    # --------------------------------------------------------------------------
-    # LINK QUESTIONS TO COURSETYPE
-    #    - 비전하우스 (개인/기업): 긍정심리자본(자기효능감, 낙관주의, 희망, 회복탄력성) - total 20
-    #    - 리더십과 혁신(개인용): 긍정심리(회복탄력성) + 셀프리더십(행동, 자연, 건설적)
-    #    - 리더십과 혁신(기업용): 셀프리더십(행동, 자연, 건설적) + 조직몰입(정서적,지속적,규범적)
-    #    - 기업가정신과 혁신(개인/기업): 혁신성, 진취성, 위험감수성
-    # --------------------------------------------------------------------------
-    def ctq_create(course_type_obj, question_obj, order):
-        CourseTypeQuestion.objects.get_or_create(
-            course_type=course_type_obj,
-            question=question_obj,
-            defaults={"order": order, "is_required": True}
-        )
-
-    # A) 비전하우스(개인, 기업) -> 4 subscales x 5 items = 20
-    # We'll just chain them in a single order block
+    # ------------------------------------------------------------
+    # Link to CourseType
+    #   - 비전하우스(개인/기업): ppc_efficacy, ppc_optimism, ppc_hope, ppc_resilience
+    #   - etc.
+    # ------------------------------------------------------------
+    # A) 비전하우스 => 4 subscales x 5 items
     sub_order = 1
     for qobj in (efficacy_qs + optimism_qs + hope_qs + resilience_qs):
         ctq_create(ct_vision_personal, qobj, sub_order)
         ctq_create(ct_vision_corp, qobj, sub_order)
         sub_order += 1
 
-    # B) 리더십과 혁신(개인용)
-    #    - 회복탄력성(5) + 셀프리더십(행동4, 자연4, 건설4) = total 17
-    #    We'll reuse the 'resilience_qs' for 회복탄력성
+    # B) 리더십과 혁신(개인) => resilience + selflead
     sub_order = 1
     for qobj in resilience_qs:
         ctq_create(ct_leadership_personal, qobj, sub_order)
         sub_order += 1
-    for qobj in (behavior_qs + natural_qs + constructive_qs):
+    for qobj in (selflead_behavior_qs + selflead_natural_qs + selflead_constructive_qs):
         ctq_create(ct_leadership_personal, qobj, sub_order)
         sub_order += 1
 
-    # C) 리더십과 혁신(기업용)
-    #    - 셀프리더십(행동4, 자연4, 건설4) + 조직몰입(정서5, 지속5, 규범5) = total 18
+    # C) 리더십과 혁신(기업) => selflead + org
     sub_order = 1
-    for qobj in (behavior_qs + natural_qs + constructive_qs):
+    for qobj in (selflead_behavior_qs + selflead_natural_qs + selflead_constructive_qs):
         ctq_create(ct_leadership_corp, qobj, sub_order)
         sub_order += 1
     for qobj in (org_affective_qs + org_continuance_qs + org_normative_qs):
         ctq_create(ct_leadership_corp, qobj, sub_order)
         sub_order += 1
 
-    # D) 기업가정신과 혁신(개인/기업): 혁신성(5), 진취성(5), 위험감수성(5) = 15 total
+    # D) 기업가정신과 혁신 => innov, proact, risk
     sub_order = 1
-    for qobj in (innov_qs + proact_qs + risk_qs):
+    for qobj in (entrepreneur_innov_qs + entrepreneur_proact_qs + entrepreneur_risk_qs):
         ctq_create(ct_entrepreneur_personal, qobj, sub_order)
         ctq_create(ct_entrepreneur_corp, qobj, sub_order)
         sub_order += 1
 
     print("=== All survey data populated successfully! ===")
+    print("Survey Types:")
+    for st in SurveyType.objects.all():
+        print(f"ID={st.id}, name={st.name}")
+
+    print("Course Types:")
+    for ct in CourseType.objects.all():
+        print(f"ID={ct.id}, name={ct.name}, surveyTypeID={ct.survey_type.id}")
 
 if __name__ == "__main__":
     main()

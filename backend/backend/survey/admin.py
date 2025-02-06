@@ -4,17 +4,17 @@ from .models import SurveyType, CourseType, Question, SurveyTypeQuestion, Course
 
 @admin.register(SurveyType)
 class SurveyTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
+    list_display = ('id', 'name', 'description')
 
 
 @admin.register(CourseType)
 class CourseTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'survey_type', 'description')
+    list_display = ('id', 'name', 'survey_type', 'description')
     list_filter = ('survey_type',)
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('text', 'question_type')
+    list_display = ('text', 'question_type', 'category')
     search_fields = ('text',)
     list_filter = ('question_type',)
 

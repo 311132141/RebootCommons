@@ -93,7 +93,7 @@ export default {
 
       // Example: you might get these from a previous step, Vuex store, etc.
       surveyTypeId: 1,
-      courseTypeId: 1,
+      courseTypeId: 103,
 
       // Phase can be 'pre' or 'post'. Hard-coded or user-chosen:
       selectedPhase: "pre",
