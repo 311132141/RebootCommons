@@ -14,6 +14,7 @@ import EditPasswordView from '../views/EditPasswordView.vue'
 import NotificationsView from '../views/NotificationsView.vue'
 import Overview from '../views/Overview.vue'
 import SurveyView from '../views/SurveyView.vue'
+import TrialOfConvertingFigma from '../views/Trial of converting figma.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -101,6 +102,12 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
     },
+    {
+      path: '/figma',
+      name: 'figma',
+      component: TrialOfConvertingFigma
+    },
+
 
   ]
 })

@@ -1,7 +1,7 @@
 <template>
   <div class="mb-6">
     <!-- 질문 제목 -->
-    <label class="block font-bold text-lg mb-4">{{ question.text }}</label>
+    <!-- <label class="block font-bold text-lg mb-4">{{ question.text }}</label> -->
 
     <!-- Text Input -->
     <template v-if="question.type === 'text'">
@@ -11,16 +11,38 @@
 
     <!-- Single Choice -->
     <template v-else-if="question.type === 'single'">
-      <div class="space-y-3">
+      <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 md:hidden">
         <button v-for="option in question.options" :key="option" @click="$emit('update:modelValue', option)" :class="[
-          'w-full text-left px-4 py-3 rounded-lg font-medium transition-colors',
+          'w-full py-4 rounded-2xl transition-colors',
           modelValue === option
             ? 'bg-blue-500 text-white'
             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
         ]">
-          {{ option }}
+          <b2>{{ option }}</b2>
         </button>
       </div>
+      <div class=" hidden md:flex items-center justify-center min-h-[calc(100vh_-_13vh)]">
+        <div data-layer="Frame 660"
+          class=" w-[30rem] lg:w-[36rem] flex-col justify-start items-center gap-14 inline-flex">
+          <div data-layer="Group 26" class="flex-col items-center justify-center gap-4 inline-flex">
+            <b2>귀하의 성별은?</b2>
+            <h4 class="font-bold">인구통계학</h4>
+
+          </div>
+          <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 ">
+            <button v-for="option in question.options" :key="option" @click="$emit('update:modelValue', option)" :class="[
+              'w-full py-[1.25rem] rounded-2xl transition-colors',
+              modelValue === option
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            ]">
+              <b2>{{ option }}</b2>
+            </button>
+          </div>
+        </div>
+      </div>
+
+
     </template>
 
     <!-- Multiple Choice -->

@@ -10,3 +10,57 @@ html.dark {
   background-color: #050818;
   @apply text-white;
 }
+
+@font-face {
+  font-family: 'GmarketSans'; /* Choose a name for the font */
+  src: url('/fonts/GmarketSansTTFBold.ttf') format('truetype'); /* Path to your font file */
+  font-weight: 700; /* Normal weight */
+  font-style: normal; /* Normal style */
+}
+
+@font-face {
+  font-family: 'GmarketSans'; /* Choose a name for the font */
+  src: url('/fonts/GmarketSansTTFMedium.ttf') format('truetype'); /* Path to your font file */
+  font-weight: 400; /* Normal weight */
+  font-style: normal; /* Normal style */
+}
+
+@font-face {
+  font-family: 'GmarketSans'; /* Choose a name for the font */
+  src: url('/fonts/GmarketSansTTFLight.ttf') format('truetype'); /* Path to your font file */
+  font-weight: 300; /* Normal weight */
+  font-style: normal; /* Normal style */
+}
+h1 {
+  @apply font-gmarket text-heading-h1-sm md:text-heading-h1-md lg:text-heading-h1-lg
+}
+
+h2 {
+  @apply font-gmarket text-heading-h2-sm sm:text-heading-h2-sm md:text-heading-h2-md lg:text-heading-h2-lg;
+}
+h3 {
+  @apply font-gmarket text-heading-h3-sm sm:text-heading-h3-sm md:text-heading-h3-md lg:text-heading-h3-lg;
+}
+h4 {
+  @apply font-gmarket text-heading-h4-sm sm:text-heading-h4-sm md:text-heading-h4-md lg:text-heading-h4-lg;
+}
+h5 {
+  @apply font-gmarket text-heading-h5-sm sm:text-heading-h5-sm md:text-heading-h5-md lg:text-heading-h5-lg;
+}
+h6 {
+  @apply font-gmarket font-medium text-heading-h6-sm sm:text-heading-h6-sm md:text-heading-h6-md lg:text-heading-h6-lg;
+}
+
+/* 
+b1 {
+  @apply text-body-sm sm:text-body-md md:text-body-lg;
+} */
+b1 {
+  @apply font-gmarket text-body-lg;
+}
+b2 {
+  @apply font-gmarket text-body-md;
+}
+b3 {
+  @apply font-gmarket text-body-sm;
+}

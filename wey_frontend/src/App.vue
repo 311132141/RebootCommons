@@ -1,5 +1,5 @@
 <template>
-    <nav class="py-10 px-8 border-b border-gray-200">
+    <!-- <nav class="py-10 px-8 border-b border-gray-200">
         <div class="max-w-7xl mx-auto">
             <div class="flex items-center justify-between">
                 <div class="menu-left">
@@ -49,16 +49,16 @@
                         </RouterLink>
                     </template>
 
-                    <template v-else>
+<template v-else>
                         <RouterLink to="/login" class="mr-4 py-4 px-6 bg-gray-600 text-white rounded-lg">Log in
                         </RouterLink>
                         <RouterLink to="/signup" class="py-4 px-6 bg-purple-600 text-white rounded-lg">Sign up
                         </RouterLink>
                     </template>
-                </div>
-            </div>
-        </div>
-    </nav>
+</div>
+</div>
+</div>
+</nav> -->
 
     <!-- <main class="px-8 py-6 bg-gray-100"> -->
     <main>

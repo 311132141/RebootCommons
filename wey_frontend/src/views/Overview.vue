@@ -9,6 +9,8 @@ import Chart from 'primevue/chart';
 import HeatmapChart from '../components/ui/HeatmapChart.vue';
 import ChartCard from '../components/ui/ChartCard.vue';
 import CardSmall from '../components/ui/CardSmall.vue';
+import DashCard from '../components/ui/DashCard.vue';
+import ChartCard_bar from '../components/ui/ChartCard_bar.vue';
 // import Chart from 'primevue/chart';
 
 // Example Chart Data and Options
@@ -248,35 +250,37 @@ const beforeAfterChartOptions = {
       <main class="flex-1 p-6 ">
         <div class="text-3xl text-bold pb-3">Overview</div>
         <!-- <router-view /> -->
-        <div class="pb-6 grid grid-cols-1 md:grid-cols-4 gap-6 ">
+        <div class="grid grid-cols-12 gap-5 pb-5">
+          <DashCard />
+          <DashCard />
+          <DashCard />
+          <DashCard />
+        </div>
+        <!-- <div class="pb-6 grid grid-cols-1 md:grid-cols-4 gap-6 ">
           <CardSmall title="Sales Data" description="150명" />
           <CardSmall title="Sales Data" description="140명" />
           <CardSmall title="Sales Data" description="150명" />
           <CardSmall title="Sales Data" description="150명" />
+        </div> -->
+        <div class="grid grid-cols-12 gap-5 pb-5">
+          <div class="col-span-12 md:col-span-12 lg:col-span-5 ">
+            <ChartCard title="성별 분포" description="이 그래프는 각 프로그램에 등록한 총 참가자 수와 평균 성장률을 시각화합니다." chartType="pie"
+              :chartData="genderDistributionData" :chartOptions="genderDistributionOptions" />
+          </div>
+          <div class="col-span-12 md:col-span-12 lg:col-span-7 ">
+            <ChartCard_bar title="User Age Distribution" description="이 그래프는 각 프로그램에 등록한 총 참가자 수와 평균 성장률을 시각화합니다."
+              chartType="bar" :chartData="ageDistributionData" :chartOptions="ageDistributionOptions" />
+          </div>
+
         </div>
         <div class="pb-6 grid grid-cols-1 md:grid-cols-3 gap-6 ">
           <!-- Example 1: Pie Chart -->
           <ChartCard title="성별 분포" description="이 그래프는 각 프로그램에 등록한 총 참가자 수와 평균 성장률을 시각화합니다." chartType="pie"
             :chartData="genderDistributionData" :chartOptions="genderDistributionOptions" />
-
-          <!-- Example 2: Bar Chart
-          <ChartCard title="User Age Distribution"
-            description="This chart shows the distribution of users by age group." chartType="bar" :chartData="{
-              labels: ['10대', '20대', '30대', '40대', '50대'],
-              datasets: [
-                {
-                  label: 'Users',
-                  data: [50, 120, 200, 150, 80],
-                  backgroundColor: ['#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE', '#F5F3FF'],
-                },
-              ],
-            }" :title_x="'Age Group'" :title_y="'User Count'" class="col-span-2" /> -->
           <!-- Example 2: Bar Chart -->
           <ChartCard title="User Age Distribution"
             description="This chart shows the distribution of users by age group." chartType="bar"
-            :chartData="ageDistributionData"
-            :chartOptions="ageDistributionOptions" 
-            class="col-span-2"/>
+            :chartData="ageDistributionData" :chartOptions="ageDistributionOptions" class="col-span-2" />
 
         </div>
         <div class="text-3xl text-bold pb-3">프로그램 성과</div>

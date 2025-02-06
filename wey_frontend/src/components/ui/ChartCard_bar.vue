@@ -1,13 +1,15 @@
 <template>
 
 
-  <div class=" shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120">
-    <div class="flex justify-between flex-col gap-2">
+  <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg flex flex-col h-full max-h-[40rem]">
+    <div class="flex flex-col gap-2 flex-grow">
       <span class="block text-surface-500 dark:text-surface-300 font-medium ">{{ title }}</span>
       <p class="text-sm text-gray-700 mb-4">{{ description }}</p>
       <!-- Chart Container -->
-      <Chart v-if="chartData && chartOptions" :type="chartType" :data="chartData" :options="chartOptions"
-        class="w-full max-w-[40rem] h-auto md:h-[24rem]" />
+      <div class="flex-grow flex">
+        <Chart v-if="chartData && chartOptions" :type="chartType" :data="chartData" :options="chartOptions"
+          class="w-full h-full" />
+      </div>
       <!-- <div class="chart-container ">
    
         <div v-if="loading">Loading...</div>

@@ -2,13 +2,8 @@
   <div class="min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center">
     <!-- Progress Bar -->
     <div class="w-full max-w-xl">
-      <div class="flex h-6 justify-between items-center self-stretch">
-        <div class="absolute">
-
-        </div>
-      </div>
       <div class="h-2 bg-gray-700 rounded mb-6">
-        <div :style="{ width: progressWidth + '%' }" class="h-full bg-purple-500 rounded"></div>
+        <div :style="{ width: progressWidth + '%' }" class="h-full bg-blue-500 rounded"></div>
       </div>
     </div>
 

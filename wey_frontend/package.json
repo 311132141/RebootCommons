@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@primevue/themes": "^4.2.5",
+    "@vue-hero-icons/outline": "^1.7.2",
+    "@vue-hero-icons/solid": "^1.7.2",
     "apexcharts": "^4.3.0",
     "axios": "^1.7.9",
     "chart.js": "^4.4.7",
