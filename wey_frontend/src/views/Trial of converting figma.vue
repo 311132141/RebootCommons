@@ -22,6 +22,7 @@
         </div>
       </div>
 
+
       <!-- Desktop Header -->
       <div class="justify-between items-center self-stretch hidden md:inline-flex" data-layer="second_header">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
@@ -147,6 +148,8 @@ export default {
         // Store the questions
         this.questions = await response.json();
         console.log("Fetched questions:", this.questions);
+        console.log("Checking if it works:", this.questions[0].text);
+
 
         // Reset the responses map
         this.responses = {};

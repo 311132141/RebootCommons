@@ -10,7 +10,7 @@
     </template>
 
     <!-- Single Choice -->
-    <template v-else-if="question.type === 'radio'">
+    <template v-else-if="question.type === radio">
       <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 md:hidden">
         <button v-for="option in question.options" :key="option" @click="$emit('update:modelValue', option)" :class="[
           'w-full py-4 rounded-2xl transition-colors',
@@ -46,7 +46,7 @@
     </template>
 
     <!-- Multiple Choice -->
-    <template v-else-if="question.type === 'checkbox'">
+    <template v-else-if="question.type === checkbox">
       <div class="space-y-3">
         <button v-for="option in question.options" :key="option" @click="toggleOption(option)" :class="[
           'w-full text-left px-4 py-3 rounded-lg font-medium transition-colors',
@@ -59,7 +59,7 @@
       </div>
     </template>
     <!-- Likert Scale -->
-    <template v-else-if="question.type === 'rating'">
+    <template v-else-if="question.type === rating">
       <div class="flex justify-between items-center">
         <!-- Labels -->
         <span class="text-green-500 font-medium">Agree</span>
