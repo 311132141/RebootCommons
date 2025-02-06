@@ -1,6 +1,6 @@
 """
 populate_surveys.py
-
+22
 - Forces ID=1 for SurveyType(개인용), ID=2 for SurveyType(기업용).
 - Forces IDs 101..106 for CourseType (비전하우스, 리더십과 혁신, 기업가정신과 혁신).
 - Assigns 'category' to every question, e.g. "demographic_corp", "lifestyle", "ppc_efficacy", etc.
