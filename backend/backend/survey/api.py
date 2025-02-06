@@ -1,73 +1,158 @@
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from .serializers import UserSurveySerializer
-from .models import UserSurvey
-from django.shortcuts import render
-from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from .survey_questions import SURVEY_QUESTIONS
+from rest_framework.response import Response
+from rest_framework import status
+
+from .models import SurveyType, CourseType, SurveyTypeQuestion, CourseTypeQuestion
+from .serializers import QuestionSerializer
 from django.db import models
 from django.db.models import Count
+from rest_framework.permissions import AllowAny
 
-CHOICE_MAPPING = {
-    "gender": { "남성": "male", "여성": "female" },
-    "age": { "20대": "20", "30대": "30", "40대": "40", "50대": "50", "60대": "60" },
-    "marital_status": { "미혼": "single", "기혼": "married" },
-    "education": {
-        "고등학교 졸업": "highschool",
-        "전문대 졸업": "diploma",
-        "대학교 졸업": "bachelor",
-        "석사 졸업": "master",
-        "박사 졸업": "phd"
-    },
-    "position": { "사원": "staff", "주임": "junior", "대리": "assistant", "과장": "manager", "차장": "senior_manager", "부장": "director" }
-}
-# Create your views here.
-@api_view(['GET'])
-def survey_list(request):
-    surveys = UserSurvey.objects.all()
-    serializer = UserSurveySerializer(surveys, many=True)
-    return JsonResponse(serializer.data, safe=False)
+class SurveyTypeListView(APIView):
+    permission_classes = [AllowAny]
+    """
+    Returns all available SurveyTypes.
+    Example response:
+    [
+      { "id": 1, "name": "개인용", "description": "Personal usage" },
+      { "id": 2, "name": "기업용", "description": "Corporate usage" }
+    ]
+    """
+    def get(self, request):
+        survey_types = SurveyType.objects.all()
+        data = [
+            {
+                "id": st.id,
+                "name": st.name,
+                "description": st.description
+            }
+            for st in survey_types
+        ]
+        return Response(data, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-def survey_create(request):
-    serializer = UserSurveySerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(user=request.user)
-    return JsonResponse(serializer.data, status=201)
 
+class CourseTypeListView(APIView):
+    permission_classes = [AllowAny]
+    """
+    Returns all CourseTypes for a given SurveyType ID.
+    e.g. GET /survey-types/1/courses/ -> 
+    [
+      { "id": 10, "name": "비전하우스", "description": "... (개인용)" },
+      { "id": 11, "name": "리더십과 혁신", "description": "... (개인용)" },
+    ]
+    """
+    def get(self, request, survey_type_id):
+        try:
+            survey_type = SurveyType.objects.get(pk=survey_type_id)
+        except SurveyType.DoesNotExist:
+            return Response(
+                {"detail": "SurveyType not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        course_types = survey_type.course_types.all()
+        data = [
+            {
+                "id": ct.id,
+                "name": ct.name,
+                "description": ct.description
+            }
+            for ct in course_types
+        ]
+        return Response(data, status=status.HTTP_200_OK)
 class SurveyView(APIView):
-    def get(self, request, survey_type=None):
-        # Validate survey_type
-        if survey_type not in SURVEY_QUESTIONS:
-            return Response({"error": "Invalid survey type"}, status=400)
+    permission_classes = [AllowAny]
+    def get(self, request, survey_type_id, course_type_id):
+        """
+        Returns the questions for a specific SurveyType and CourseType combination.
+        """
 
-        # Fetch questions for the survey type
-        questions = SURVEY_QUESTIONS['common']['questions'] + SURVEY_QUESTIONS[survey_type]['questions']
-        return Response({"questions": questions})
+        try:
+            survey_type = SurveyType.objects.get(pk=survey_type_id)
+            course_type = CourseType.objects.get(pk=course_type_id, survey_type=survey_type)
+        except SurveyType.DoesNotExist:
+            return Response({"detail": "SurveyType not found."}, status=status.HTTP_404_NOT_FOUND)
+        except CourseType.DoesNotExist:
+            return Response({"detail": "CourseType not found for this SurveyType."}, status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request, survey_type=None):
-        # Map display labels to valid choice values
-        answers = request.data.get('answers', {})
-        transformed_answers = {
-            key: CHOICE_MAPPING[key].get(value, value)
-            for key, value in answers.items()
-            if key in CHOICE_MAPPING
-        }
+        # 1. Fetch all bridging rows for the SurveyType, ordered by 'order'
+        survey_type_questions = SurveyTypeQuestion.objects.filter(
+            survey_type=survey_type
+        ).select_related('question').order_by('order')
 
-        # Add the raw `answers` field explicitly for storage
-        transformed_answers['answers'] = answers
+        # 2. Fetch all bridging rows for the CourseType, ordered by 'order'
+        course_type_questions = CourseTypeQuestion.objects.filter(
+            course_type=course_type
+        ).select_related('question').order_by('order')
 
-        # Add survey type for validation
-        transformed_answers['survey_type'] = survey_type
+        # 3. Extract the actual Question objects from bridging
+        #    (Or you can keep them separate if that suits your flow better)
+        st_questions = [stq.question for stq in survey_type_questions]
+        ct_questions = [ctq.question for ctq in course_type_questions]
 
-        # Validate and save the transformed data
-        serializer = UserSurveySerializer(data=transformed_answers)
-        if serializer.is_valid():
-            serializer.save(user=request.user if request.user.is_authenticated else None)
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+        # Example: Combine them into a single list (e.g., first the SurveyTypeQuestions, then the CourseTypeQuestions)
+        # If you want them strictly separated in different sections, keep them separate.
+        combined_questions = st_questions + ct_questions
+
+        # 4. Serialize the question objects
+        serializer = QuestionSerializer(combined_questions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, survey_type_id, course_type_id):
+        """
+        Handles submission of user responses for a specific SurveyType and CourseType combination.
+        """
+        try:
+            survey_type = SurveyType.objects.get(pk=survey_type_id)
+            course_type = CourseType.objects.get(pk=course_type_id, survey_type=survey_type)
+        except SurveyType.DoesNotExist:
+            return Response({"detail": "SurveyType not found."}, status=status.HTTP_404_NOT_FOUND)
+        except CourseType.DoesNotExist:
+            return Response({"detail": "CourseType not found for this SurveyType."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Retrieve the user
+        user = request.user
+
+        # Get the phase (pre/post) from the request body
+        phase = request.data.get("phase")
+        if phase not in ['pre', 'post']:
+            return Response({"detail": "Invalid phase. Must be 'pre' or 'post'."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new UserSurveyResponse
+        survey_response = UserSurveyResponse.objects.create(
+            user=user,
+            survey_type=survey_type,
+            course_type=course_type,
+            phase=phase
+        )
+
+        # Get the answers from the request body
+        answers = request.data.get("answers", [])
+        if not isinstance(answers, list):
+            return Response({"detail": "Answers must be a list of objects."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate and create answers
+        for answer in answers:
+            question_id = answer.get("question_id")
+            answer_text = answer.get("answer_text")
+            answer_value = answer.get("answer_value")
+
+            # Ensure the question exists and is part of the survey
+            try:
+                question = Question.objects.get(pk=question_id)
+            except Question.DoesNotExist:
+                return Response({"detail": f"Question with id {question_id} not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Create the Answer object
+            Answer.objects.create(
+                survey_response=survey_response,
+                question=question,
+                answer_text=answer_text,
+                answer_value=answer_value
+            )
+
+        return Response({"detail": "Survey responses submitted successfully."}, status=status.HTTP_201_CREATED)
 
 class GenderDistributionView(APIView):
     def get(self, request):

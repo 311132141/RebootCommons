@@ -1,41 +1,99 @@
+
 from django.db import models
-from account.models import User
+from account.models import User  
 import uuid
 
 
-class UserSurvey(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)  # Link to the user
-    survey_type = models.CharField(
-        max_length=20,
-        choices=[('기업용', '기업용'), ('개인용', '개인용')],
-        default='개인용'
-    )
-    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')])
-    age = models.IntegerField(choices=[(20, '20s'), (30, '30s'), (40, '40s'), (50, '50s'), (60, '60s')])
-    marital_status = models.CharField(max_length=10, choices=[('single', 'Single'), ('married', 'Married')])
-    education = models.CharField(
-        max_length=20,
-        choices=[
-            ('highschool', 'High School'),
-            ('diploma', 'Diploma'),
-            ('bachelor', 'Bachelor'),
-            ('master', 'Master'),
-            ('phd', 'PhD'),
-        ],
-    )
-    # Properly defined `course_type` field
-    course_type = models.CharField(
-        max_length=20,
-        choices=[
-            ('비전하우스', '비전하우스'),
-            ('리더십', '리더십'),
-            ('기업가정신', '기업가정신'),
-        ],
-        default='비전하우스'
-    )
-    is_pre_lecture = models.BooleanField(default=True)  # True for pre-lecture, False for post-lecture
-    answers = models.JSONField(default=dict)  # Store dynamic answers as a JSON object
+# SurveyType: Personal or Corporate
+class SurveyType(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.name if self.user else 'Anonymous User'} - {self.survey_type}"
+        return self.name
+
+
+# CourseType: Tied to SurveyType (e.g., 비전하우스)
+class CourseType(models.Model):
+    survey_type = models.ForeignKey(SurveyType, on_delete=models.CASCADE, related_name='course_types')
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.survey_type.name})"
+
+
+# Question: Stores question details
+class Question(models.Model):
+    QUESTION_TYPES = [
+        ('rating', 'Rating'),
+        ('text', 'Text'),
+        ('radio', 'Radio'),
+        ('checkbox', 'Checkbox'),
+    ]
+
+    text = models.TextField()
+    question_type = models.CharField(max_length=10, choices=QUESTION_TYPES, default='rating')
+    options = models.JSONField(blank=True, null=True)  # Store options as JSON (if applicable)
+
+    def __str__(self):
+        return self.text
+
+
+# Bridging table: Questions tied to SurveyType
+class SurveyTypeQuestion(models.Model):
+    survey_type = models.ForeignKey(SurveyType, on_delete=models.CASCADE, related_name='questions')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField(default=1)
+    is_required = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('survey_type', 'question', 'order')
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.survey_type.name}: {self.question.text}"
+
+
+# Bridging table: Questions tied to CourseType
+class CourseTypeQuestion(models.Model):
+    course_type = models.ForeignKey(CourseType, on_delete=models.CASCADE, related_name='questions')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField(default=1)
+    is_required = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('course_type', 'question', 'order')
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.course_type.name}: {self.question.text}"
+
+
+# Survey Response (User's answers for a given survey)
+class UserSurveyResponse(models.Model):
+    PHASE_CHOICES = [
+        ('pre', 'Pre-Lecture'),
+        ('post', 'Post-Lecture'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='responses')
+    survey_type = models.ForeignKey(SurveyType, on_delete=models.CASCADE)
+    course_type = models.ForeignKey(CourseType, on_delete=models.CASCADE)
+    phase = models.CharField(max_length=10, choices=PHASE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}: {self.survey_type.name} - {self.course_type.name} ({self.phase})"
+
+
+# Answer: Records individual question responses
+class Answer(models.Model):
+    response = models.ForeignKey(UserSurveyResponse, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer_text = models.TextField(blank=True, null=True)
+    answer_value = models.IntegerField(blank=True, null=True)  # For rating questions
+
+    def __str__(self):
+        return f"Answer to {self.question.text} by {self.response.user.username}"
