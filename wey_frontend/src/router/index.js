@@ -17,6 +17,9 @@ import SurveyView from '../views/SurveyView.vue'
 import TrialOfConvertingFigma from '../views/Trial of converting figma.vue'
 import Dashboard from '../views/Dashboard.vue'
 import Company_Page from '../views/Company_Page.vue'
+import Rating from '../components/ui/Rating.vue'
+import FakeSignup from '../views/FakeSignup.vue'
+import FakeLogin from '../views/FakeLogin.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +55,11 @@ const router = createRouter({
       component: ChatView
     },
     {
+      path: '/rating',
+      name: 'rating',
+      component: Rating
+    },
+    {
       path: '/Dashboard',
       
       component: Dashboard,
@@ -73,6 +81,16 @@ const router = createRouter({
       path: '/notifications',
       name: 'notifications',
       component: NotificationsView
+    },
+    {
+      path: '/fakeSignup',
+      name: 'fakeSignup',
+      component: FakeSignup
+    },
+    {
+      path: '/fakeLogin',
+      name: 'fakeLogin',
+      component: FakeLogin
     },
     {
       path: '/profile/edit',
