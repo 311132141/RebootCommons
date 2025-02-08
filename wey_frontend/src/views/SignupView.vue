@@ -26,12 +26,6 @@
                     </div>
 
                     <div>
-                        <label>Company Name (Optional)</label><br>
-                        <input type="text" v-model="form.company_name" placeholder="Your company name (if any)"
-                            class="w-full mt-2 py-4 px-6 border border-gray-200 rounded-lg">
-                    </div>
-
-                    <div>
                         <label>E-mail</label><br>
                         <input type="email" v-model="form.email" placeholder="Your e-mail address"
                             class="w-full mt-2 py-4 px-6 border border-gray-200 rounded-lg">

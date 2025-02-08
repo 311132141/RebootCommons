@@ -6,8 +6,9 @@
         <p class="text-sm text-gray-700 mb-4 truncate">{{ description }}</p>
       </div>
 
+
       <!-- Use the ChartComponent -->
-      <ReusableChart title="User Growth" description="Monthly active users over time" :chartType="'bar'" :chartData="{
+      <ReusableChart title="User Growth" description="Monthly active users over time" :chartType="'pie'" :chartData="{
         labels: labels,
         datasets: [{
           label: label_name,
