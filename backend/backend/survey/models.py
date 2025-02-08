@@ -86,7 +86,7 @@ class UserSurveyResponse(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username}: {self.survey_type.name} - {self.course_type.name} ({self.phase})"
+        return f"{self.user.name}: {self.survey_type.name} - {self.course_type.name} ({self.phase})"
 
 
 # Answer: Records individual question responses
@@ -97,4 +97,4 @@ class Answer(models.Model):
     answer_value = models.IntegerField(blank=True, null=True)  # For rating questions
 
     def __str__(self):
-        return f"Answer to {self.question.text} by {self.response.user.username}"
+        return f"Answer to {self.question.text} by {self.response.user.name}"

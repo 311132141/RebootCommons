@@ -47,14 +47,18 @@
 
         <!-- Company Rows -->
         <div class="space-y-px">
-          <div v-for="company in companies" :key="company.email"
+          <div v-for="company in companies" :key="company.id"
             class="grid grid-cols-6 gap-4 px-4 py-3 bg-[#25262b] hover:bg-[#2c2d31] transition-colors items-center">
+            <!-- Company Name (Only Clickable Part) -->
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
                 <span class="text-sm">{{ getInitials(company.name) }}</span>
               </div>
               <div>
-                <div class="font-medium">{{ company.name }}</div>
+                <div class="font-medium text-blue-400 hover:underline cursor-pointer"
+                  @click.stop="goToCompanyDetails(company.id)">
+                  {{ company.name }}
+                </div>
                 <div class="text-sm text-gray-400">{{ company.email }}</div>
               </div>
             </div>
@@ -69,7 +73,7 @@
               </button>
             </div>
             <div>
-              <button
+              <button @click="goToCompanyDashboard(company.id)"
                 class="px-3 py-1.5 bg-[#1d1e22] rounded-md text-sm hover:bg-[#2c2d31] transition-colors flex items-center space-x-1">
                 <span class="material-icons-outlined text-sm">dashboard</span>
                 <span>대시보드 열기</span>
@@ -83,43 +87,41 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
-      companies: [
-        {
-          name: 'Company A',
-          email: 'CompanyA@gmail.com',
-          phone: '(010)000-0000',
-          programs: '비전, 리더십, 기업',
-          growth: '20%'
-        },
-        {
-          name: 'Company A',
-          email: 'CompanyA@gmail.com',
-          phone: '(010)000-0000',
-          programs: '비전, 리더십, 기업',
-          growth: '20%'
-        },
-        {
-          name: 'Company A',
-          email: 'CompanyA@gmail.com',
-          phone: '(010)000-0000',
-          programs: '비전, 리더십, 기업',
-          growth: '20%'
-        },
-        // Add more companies as needed
-      ]
-    }
+      companies: [],
+    };
+  },
+  mounted() {
+    this.fetchCompanies();
   },
   methods: {
+    async fetchCompanies() {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/companies/');
+        this.companies = response.data.companies;
+      } catch (error) {
+        console.error("Failed to fetch companies:", error);
+      }
+    },
+    goToCompanyDetails(companyId) {
+      console.log(`Navigating to company: ${companyId}`);
+      this.$router.push({ name: 'company-details', params: { id: companyId } });
+    },
+    goToCompanyDashboard(companyId) {
+      console.log(`Navigating to company dashboard: ${companyId}`);
+      this.$router.push({ name: "company-dashboard", params: { id: companyId } });
+    },
     getInitials(name) {
       return name
         .split(' ')
         .map(word => word[0])
         .join('')
-        .toUpperCase()
+        .toUpperCase();
     }
   }
-}
+};
 </script>

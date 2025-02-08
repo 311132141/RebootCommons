@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import SurveyType, CourseType, SurveyTypeQuestion, CourseTypeQuestion
+from .models import SurveyType, CourseType, SurveyTypeQuestion, CourseTypeQuestion, UserSurveyResponse, Answer, Question
 from .serializers import QuestionSerializer
 from django.db import models
 from django.db.models import Count

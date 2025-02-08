@@ -17,6 +17,9 @@ import SurveyView from '../views/SurveyView.vue'
 import TrialOfConvertingFigma from '../views/Trial of converting figma.vue'
 import Dashboard from '../views/Dashboard.vue'
 import Company_Page from '../views/Company_Page.vue'
+import Companies from '@/views/Company_Page.vue';
+import CompanyDetails from '@/views/CompanyDetails.vue';
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,7 +56,7 @@ const router = createRouter({
     },
     {
       path: '/Dashboard',
-      
+
       component: Dashboard,
       children: [
         {
@@ -79,8 +82,8 @@ const router = createRouter({
       name: 'editprofile',
       component: EditProfileView
     },
-  
-   
+
+
     {
       path: '/profile/edit/password',
       name: 'editpassword',
@@ -124,9 +127,20 @@ const router = createRouter({
       name: 'figma',
       component: TrialOfConvertingFigma
     },
-
+    // Company Pages
+    { path: '/', name: 'home', component: HomeView },
+    { path: '/companies', name: 'companies', component: Companies },
+    { path: '/companies/:id', name: 'company-details', component: CompanyDetails, props: true }, // Ensure UUID is handled
+    
+    {
+      path: "/dashboard/:id",
+      name: "company-dashboard",
+      component: Dashboard,
+      props: true,
+    },
 
   ]
+
 })
 
 export default router

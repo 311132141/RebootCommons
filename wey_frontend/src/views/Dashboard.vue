@@ -92,6 +92,47 @@
 </template>
 
 <script>
+import axios from "axios";
 
+export default {
+  data() {
+    return {
+      companyName: "",
+      users: [],
+      loading: true,
+      errorMessage: "",
+    };
+  },
+  mounted() {
+    this.fetchCompanyData();
+  },
+  watch: {
+    "$route.params.id": {
+      immediate: true,
+      handler() {
+        this.fetchCompanyData();
+      },
+    },
+  },
+  methods: {
+    async fetchCompanyData() {
+      this.loading = true;
+      this.errorMessage = "";
+
+      const companyId = this.$route.params.id;
+
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/companies/${companyId}/`);
+        this.companyName = response.data.company.name;
+        this.users = response.data.users;
+      } catch (error) {
+        console.error("Failed to fetch company data:", error);
+        this.errorMessage = "Failed to load company data. Please try again.";
+      } finally {
+        this.loading = false;
+      }
+    },
+  },
+};
 </script>
 ```
