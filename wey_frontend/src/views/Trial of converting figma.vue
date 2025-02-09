@@ -47,9 +47,10 @@
       <!-- Render a group page (list of questions, e.g. likert style) -->
       <template v-else-if="currentPage.type === 'group'">
         <div class="space-y-6">
-          <div class="text-xl font-bold mb-4">{{ currentPage.categoryTitle }}</div>
-          <div v-for="question in currentPage.questions" :key="question.id">
-            <Rating :question="question" v-model="responses[question.id]" />
+
+          <div v-for="(question, index) in currentPage.questions" :key="question.id" ref="ratingRefs"
+            :class="index === activeRatingIndex ? 'opacity-100' : 'opacity-50'">
+            <Rating :question="question" v-model="responses[question.id]" @answered="handleAnswered(index)" />
           </div>
         </div>
       </template>
@@ -100,6 +101,13 @@ export default {
     };
   },
   computed: {
+    activeRatingIndex() {
+      if (this.currentPage.type !== 'group') return null;
+      const idx = this.currentPage.questions.findIndex(q => !this.responses[q.id]);
+      // If all questions have been answered, return the last question's index.
+      return idx === -1 ? this.currentPage.questions.length - 1 : idx;
+    },
+
     // Build pages where each page is either a "single" question page or a "group" of questions.
     pages() {
       // Start with the two static questions:
@@ -203,6 +211,28 @@ export default {
     this.fetchQuestions();
   },
   methods: {
+    handleAnswered(index) {
+      // Use $nextTick to wait for DOM updates
+      this.$nextTick(() => {
+        // Ensure we have an array of rating elements.
+        const ratingElements = Array.isArray(this.$refs.ratingRefs)
+          ? this.$refs.ratingRefs
+          : [this.$refs.ratingRefs];
+
+        // Loop from the next question to find the first unanswered question.
+        for (let i = index + 1; i < this.currentPage.questions.length; i++) {
+          const questionId = this.currentPage.questions[i].id;
+          if (!this.responses[questionId]) {
+            // Scroll the corresponding element into view
+            const element = ratingElements[i];
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            break;
+          }
+        }
+      });
+    },
     getCourseOptions() {
       if (this.responses.surveyType === 1) {
         // 개인용 (101, 103, 105)
