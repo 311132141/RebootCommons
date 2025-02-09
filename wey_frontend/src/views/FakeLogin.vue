@@ -82,44 +82,63 @@ export default {
   },
   methods: {
     async submitForm() {
-      this.errors = []
+      this.errors = [];
 
-      if (this.form.email === '') {
-        this.errors.push('Your e-mail is missing')
+      console.log("🔵 Form submitted with:", this.form); // ✅ Check form values before submitting
+
+      if (this.form.email === "") {
+        this.errors.push("Your e-mail is missing");
       }
 
-      if (this.form.password === '') {
-        this.errors.push('Your password is missing')
-      }
-
-      if (this.errors.length === 0) {
-        await axios
-          .post('/api/login/', this.form)
-          .then(response => {
-            this.userStore.setToken(response.data)
-
-            axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.access;
-          })
-          .catch(error => {
-            console.log('error', error)
-
-            this.errors.push('The email or password is incorrect! Or the user is not activated!')
-          })
+      if (this.form.password === "") {
+        this.errors.push("Your password is missing");
       }
 
       if (this.errors.length === 0) {
-        await axios
-          .get('/api/me/')
-          .then(response => {
-            this.userStore.setUserInfo(response.data)
+        try {
+          console.log("🟡 Sending login request...");
 
-            this.$router.push('/feed')
-          })
-          .catch(error => {
-            console.log('error', error)
-          })
+          const response = await axios.post("/api/login/", this.form);
+
+          console.log("🟢 Login successful, received token:", response.data); // ✅ Check if token is received
+
+          this.userStore.setToken(response.data);
+
+          axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.access;
+
+          console.log("🔵 Authorization header set:", axios.defaults.headers.common["Authorization"]); // ✅ Check if token is set
+
+          localStorage.setItem("access_token", response.data.access);
+          localStorage.setItem("refresh_token", response.data.refresh);
+        } catch (error) {
+          console.error("🔴 Login failed:", error); // ❌ Log error details
+
+          this.errors.push(
+            "The email or password is incorrect! Or the user is not activated!"
+          );
+        }
+      }
+
+      if (this.errors.length === 0) {
+        try {
+          console.log("🟡 Fetching user info...");
+
+          const userResponse = await axios.get("/api/me/");
+
+          console.log("🟢 User info received:", userResponse.data); // ✅ Ensure user info is retrieved
+
+          this.userStore.setUserInfo(userResponse.data);
+          localStorage.setItem("user_info", JSON.stringify(userResponse.data));
+
+          console.log("🔵 Redirecting to /figma...");
+          this.$router.push("/figma");
+
+        } catch (error) {
+          console.error("🔴 Failed to fetch user info:", error); // ❌ Log error details
+        }
       }
     }
   }
+
 }
 </script>

@@ -14,7 +14,7 @@
 from django.urls import path
 from .api import (
     SurveyView, GenderDistributionView, age_distribution,
-    SurveyTypeListView, CourseTypeListView
+    SurveyTypeListView, CourseTypeListView, get_gender_vs_leadership, get_demographic_vs_survey_improvement
 )
 
 urlpatterns = [
@@ -32,5 +32,9 @@ urlpatterns = [
     # Graph endpoints
     path('graphs/gender-distribution/', GenderDistributionView.as_view(), name='gender-distribution'),
     path('graphs/age-distribution/', age_distribution, name='age-distribution'),
+    path("companies/<uuid:company_id>/gender-leadership/", get_gender_vs_leadership, name="gender-leadership"),
+    # path("companies/<uuid:company_id>/age-improvement/", get_age_vs_survey_improvement, name="age-improvement"),
+    path("dashboard/<uuid:company_id>/demographic-improvement/<str:demographic_type>/", get_demographic_vs_survey_improvement),
+    
 ]
 

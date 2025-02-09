@@ -17,6 +17,10 @@ import SurveyView from '../views/SurveyView.vue'
 import TrialOfConvertingFigma from '../views/Trial of converting figma.vue'
 import Dashboard from '../views/Dashboard.vue'
 import Company_Page from '../views/Company_Page.vue'
+import CompanyDetails from '@/views/CompanyDetails.vue';
+import FakeLogin from '../views/FakeLogin.vue'
+import FakeSignup from '../views/FakeSignup.vue'
+import Rating from '../components/ui/Rating.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,24 +60,24 @@ const router = createRouter({
       name: 'rating',
       component: Rating
     },
-    {
-      path: '/Dashboard',
+    // {
+    //   path: '/Dashboard',
 
-      component: Dashboard,
-      children: [
-        {
-          path: '',
-          name: 'ov',
-          component: Overview
-        },
-        {
-          path: '/Company',
-          name: 'company',
-          component: Company_Page
-        },
+    //   component: Dashboard,
+    //   children: [
+    //     {
+    //       path: '',
+    //       name: 'ov',
+    //       component: Overview
+    //     },
+    //     {
+    //       path: '/Company',
+    //       name: 'company',
+    //       component: Company_Page
+    //     },
 
-      ]
-    },
+    //   ]
+    // },
     {
       path: '/notifications',
       name: 'notifications',
@@ -141,7 +145,7 @@ const router = createRouter({
     },
     // Company Pages
     { path: '/', name: 'home', component: HomeView },
-    { path: '/companies', name: 'companies', component: Companies },
+    { path: '/companies', name: 'companies', component: Company_Page },
     { path: '/companies/:id', name: 'company-details', component: CompanyDetails, props: true }, // Ensure UUID is handled
     
     {

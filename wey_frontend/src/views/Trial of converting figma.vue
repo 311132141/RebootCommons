@@ -77,10 +77,17 @@
 <script>
 import Question from "@/components/ui/question.vue"; // Adjust path if needed
 import Rating from "../components/ui/Rating.vue";
+import { useUserStore } from "@/stores/user";
 
 export default {
   name: "SurveyPage",
   components: { Question, Rating },
+  setup() {
+    const userStore = useUserStore();
+    console.log("🟢 User Store Initialized:", userStore); // ✅ Debugging output
+
+    return { userStore };
+  },
   data() {
     return {
       // questions fetched from API (unused in the final pages array)
@@ -187,9 +194,12 @@ export default {
   watch: {
     // When surveyType or course selection changes, refetch the questions.
     "responses.surveyType"(newVal) {
+      console.log("📢 SurveyType changed:", newVal); // Debugging
       if (newVal) {
         this.surveyTypeId = parseInt(newVal);
-        this.fetchQuestions();
+        // console.log("📢 Fetching questions for SurveyType ID:", this.surveyTypeId);
+        // this.fetchQuestions();
+        this.courseTypeId = null; // Reset course selection
       }
     },
     "responses.course"(newVal) {
@@ -204,6 +214,7 @@ export default {
   },
   methods: {
     getCourseOptions() {
+      console.log("📢 SurveyType ID when getting courses:", this.responses.surveyType);
       if (this.responses.surveyType === 1) {
         // 개인용 (101, 103, 105)
         return [
@@ -234,10 +245,23 @@ export default {
     async fetchQuestions() {
       try {
         console.log("Fetching questions for:", this.surveyTypeId, this.courseTypeId);
+
+        // 🔹 Get token from Local Storage (if Pinia store is empty)
+        let accessToken = this.userStore?.user?.access || localStorage.getItem("access_token");
+
+        if (!accessToken) {
+          console.error("❌ No authentication token found.");
+          alert("User is not authenticated. Please log in again.");
+          return;
+        }
+
         const url = `http://127.0.0.1:8000/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
         const response = await fetch(url, {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`, // ✅ Ensure token is included
+          },
         });
         if (!response.ok) {
           console.error("Failed to fetch questions, status:", response.status);
@@ -274,37 +298,69 @@ export default {
       }
     },
     async submitSurvey() {
+      // First, try getting user info from userStore
+      let userInfo = this.userStore?.userInfo;
+
+      // If userStore is empty (e.g., after refresh), load from localStorage
+      if (!userInfo) {
+        console.log("⚠️ User info not found in userStore, checking Local Storage...");
+        const storedUser = localStorage.getItem("user_info");
+        if (storedUser) {
+          userInfo = JSON.parse(storedUser); // ✅ Convert JSON string back to an object
+        }
+      }
+      if (!userInfo || !userInfo.id) {
+        console.error("❌ No User Info found! Please log in again.");
+        alert("User info is missing. Please log in again.");
+        return;
+      }
+
+      console.log("🟢 Using stored user info:", userInfo);
       try {
-        // Convert the responses object into an array as expected by your backend.
-        const answersArray = Object.entries(this.responses).map(([questionId, answerVal]) => {
-          return {
-            question_id: isNaN(questionId) ? questionId : parseInt(questionId),
-            answer_text: typeof answerVal === "string" ? answerVal : null,
-            answer_value: typeof answerVal === "number" ? answerVal : null,
-          };
-        });
+        // Convert the responses object into an array
+        const answersArray = Object.entries(this.responses)
+          .filter(([questionId]) => !isNaN(questionId))  // 🚀 Remove "surveyType" and "course"
+          .map(([questionId, answerVal]) => {
+
+            return {
+              question_id: isNaN(questionId) ? questionId : parseInt(questionId),
+              answer_text: typeof answerVal === "string" ? answerVal : null,
+              answer_value: typeof answerVal === "number" ? answerVal : null,
+            };
+          });
+
         const bodyData = {
           phase: this.selectedPhase, // 'pre' or 'post'
           answers: answersArray,
         };
-        const url = `/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
+
+        console.log("🟢 Submitting survey with data:", bodyData);
+
+        const url = `http://127.0.0.1:8000/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
         const response = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + this.userStore?.user?.access, // Ensure token is sent
+          },
           body: JSON.stringify(bodyData),
         });
+
+        console.log("🟡 Response received:", response);
+
         const result = await response.json();
+        console.log("🟢 Survey submission response:", result);
+
         if (response.ok) {
-          console.log("Survey submitted successfully:", result);
           alert("설문이 제출되었습니다. 감사합니다!");
         } else {
-          console.error("Survey submission failed:", result);
           alert("설문 제출에 실패했습니다.");
         }
       } catch (err) {
         console.error("Error submitting survey:", err);
       }
-    },
+    }
+
   },
 };
 </script>

@@ -5,15 +5,14 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from .forms import SignupForm
 from .models import Company, User
 from collections import Counter
+from .serializer import UserSerializer
+from rest_framework.response import Response
 
 @api_view(['GET'])
 def me(request):
-    return JsonResponse({
-        'id': request.user.id,
-        'name': request.user.name,
-        'email': request.user.email,
-        'company': request.user.company,
-    })
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)  # ✅ DRF handles JSON conversion
+
 
 @api_view(['POST'])
 @authentication_classes([])
