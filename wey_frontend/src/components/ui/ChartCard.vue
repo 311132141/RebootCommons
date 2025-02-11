@@ -1,167 +1,54 @@
 <template>
+  <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 relative">
+    <div class="flex flex-col gap-2">
+      <span class="block text-surface-500 dark:text-surface-300 font-medium">{{ title }}</span>
+      <div class="w-full">
+        <p class="text-sm text-gray-700 mb-4 truncate">{{ description }}</p>
+      </div>
 
 
-  <div class=" shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120">
-    <div class="flex justify-between flex-col gap-2">
-      <span class="block text-surface-500 dark:text-surface-300 font-medium ">{{ title }}</span>
-      <p class="text-sm text-gray-700 mb-4">{{ description }}</p>
-      <!-- Chart Container -->
-      <Chart v-if="chartData && chartOptions" :type="chartType" :data="chartData" :options="chartOptions"
-        class="w-full max-w-[40rem] h-auto md:h-[24rem]" />
-      <!-- <div class="chart-container ">
-   
-        <div v-if="loading">Loading...</div>
-        <div v-else></div>
-
-      </div> -->
+      <!-- Use the ChartComponent -->
+      <ReusableChart :canvasId="uniqueCanvasId" :chartType="chartType" :chartData="computedChartData" />
     </div>
-
   </div>
-
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import Card from 'primevue/card';
-import Chart from 'primevue/chart';
-import axios from 'axios';
+import { computed } from "vue";
+import ReusableChart from './ReusableChart.vue';
 
-// Define props
-defineProps({
-  title: {
-    type: String,
-    required: true,
-    default: 'Card Title',
+const props = defineProps({
+  title: { type: String, default: "성별 분포 (Gender Distribution)" },
+  description: { type: String, default: "이 그래프는 참가자의 성별 분포를 보여줍니다." },
+  chartType: { type: String, default: "pie" },
+  labels: { type: Array, default: () => ["남성 (Male)", "여성 (Female)"] },
+  datasets: {
+    type: Array,
+    default: () => [
+      {
+        label: "Gender Ratio",
+        data: [60, 40], // Example: 60% Male, 40% Female
+        backgroundColor: ["#4F46E5", "#A78BFA"]
+      }
+    ]
   },
-  description: {
-    type: String,
-    required: false,
-    default: 'This is a default description.',
-  },
-  chartType: {
-    type: String,
-    required: true,
-    default: 'pie', // Default to a pie chart
-  },
-  chartData: {
-    type: Object,
-    required: false, // Optional, parent can pass data directly
-    default: () => null,
-  },
-  chartOptions: {
-    type: Object,
-    required: false,
-    default: () => ({}), // Allow parent to pass chart options
-  },
-  title_x: {
-    type: String,
-    required: false,
-    default: 'X Axis',
-  },
-  title_y: {
-    type: String,
-    required: false,
-    default: 'Y Axis',
-  },
-  apiUrl: {
-    type: String,
-    required: false, // Optional, for fetching data from an API
-    default: null,
-  },
+  // Optional: a unique canvas id for this instance (if needed)
+  canvasId: { type: String, default: '' }
 });
 
-// Reactive data and loading state
-const localChartData = ref(null); // Local chart data when fetched via API
-const loading = ref(true); // Loading state
+const uniqueCanvasId = computed(() => {
+  // If you provided a canvasId prop, use it; otherwise generate one (for example, using title)
+  return props.canvasId || props.title.replace(/\s+/g, '-') + '-chart';
+});
 
-// Merged chart options (combine default options with parent-provided options)
-const mergedChartOptions = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      labels: {
-        color: '#ffffff', // White text for legend
-      },
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => `${context.raw}명`, // Tooltip label
-      },
-    },
-  },
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: title_x,
-        color: '#ffffff', // White text for axis title
-        font: {
-          size: 14,
-        },
-      },
-      ticks: {
-        color: '#ffffff', // White text for X-axis labels
-      },
-    },
-    y: {
-      title: {
-        display: true,
-        text: title_y,
-        color: '#ffffff', // White text for axis title
-        font: {
-          size: 14,
-        },
-      },
-      ticks: {
-        color: '#ffffff', // White text for Y-axis labels
-      },
-      beginAtZero: true,
-    },
-  },
-  ...chartOptions, // Merge parent-provided options
+// Ensure computed reactivity for Chart.js data
+const computedChartData = computed(() => ({
+  labels: props.labels,
+  datasets: props.datasets.map(dataset => ({
+    ...dataset,
+    data: [...dataset.data], // Unwrap Proxy if necessary
+    borderColor: dataset.borderColor || "rgba(75, 192, 192, 1)",
+    borderWidth: dataset.borderWidth || 1
+  }))
 }));
-
-// Fetch data from API if `apiUrl` is provided
-onMounted(async () => {
-  if (!apiUrl) {
-    loading.value = false; // No API URL, assume data is passed via props
-    return;
-  }
-
-  try {
-    const response = await axios.get(apiUrl); // Fetch data from API
-    const data = response.data;
-
-    // Transform the data into Chart.js format
-    localChartData.value = {
-      labels: data.labels, // Example: ['January', 'February', 'March']
-      datasets: [
-        {
-          label: '사용자 수',
-          data: data.values, // Example: [50, 120, 200]
-          backgroundColor: [
-            '#A78BFA', // Tailwind purple-500
-            '#C4B5FD', // Tailwind purple-400
-            '#DDD6FE', // Tailwind purple-300
-          ],
-          hoverBackgroundColor: [
-            '#A78BFA', // Tailwind purple-500
-            '#C4B5FD', // Tailwind purple-400
-            '#DDD6FE', // Tailwind purple-300
-          ],
-        },
-      ],
-    };
-  } catch (error) {
-    console.error('Failed to fetch data:', error.message);
-  } finally {
-    loading.value = false; // Stop loading spinner
-  }
-});
-
-// Use either passed-in chartData (prop) or locally fetched data
-const finalChartData = computed(() => chartData || localChartData.value);
 </script>

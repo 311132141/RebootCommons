@@ -15,12 +15,14 @@ import NotificationsView from '../views/NotificationsView.vue'
 import Overview from '../views/Overview.vue'
 import SurveyView from '../views/SurveyView.vue'
 import TrialOfConvertingFigma from '../views/Trial of converting figma.vue'
-import Dashboard from '../views/Dashboard.vue'
+import Dashboard from '../views/CompanyDashboard.vue'
 import Company_Page from '../views/Company_Page.vue'
 import CompanyDetails from '@/views/CompanyDetails.vue';
 import FakeLogin from '../views/FakeLogin.vue'
 import FakeSignup from '../views/FakeSignup.vue'
 import Rating from '../components/ui/Rating.vue'
+import OuterContainer from '../views/OuterContainer.vue'
+import CompanyDashboard from '../views/CompanyDashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -143,18 +145,48 @@ const router = createRouter({
       name: 'figma',
       component: TrialOfConvertingFigma
     },
-    // Company Pages
-    { path: '/', name: 'home', component: HomeView },
-    { path: '/companies', name: 'companies', component: Company_Page },
-    { path: '/companies/:id', name: 'company-details', component: CompanyDetails, props: true }, // Ensure UUID is handled
-    
     {
-      path: "/dashboard/:id",
-      name: "company-dashboard",
-      component: Dashboard,
-      props: true,
-    },
+      path: '/OuterContainer',
+      
+      component: OuterContainer,
+      children: [
+        {
+          path: '/',
+          name: 'home',
+          component: HomeView
+        },
+        {
+          path: '/companies',
+          name: 'companies',
+          component: Company_Page
+        },
+        { path: '/companies/:id', 
+          name: 'company-details', 
+          component: CompanyDetails, 
+          props: true 
+        },
+        {
+          path: "/dashboard/:id",
+          name: "company-dashboard",
+          component: CompanyDashboard,
+          props: true,
+        },
+        
 
+
+      ]
+    },
+    // Company Pages
+    // { path: '/', name: 'home', component: HomeView },
+    // { path: '/companies', name: 'companies', component: Company_Page },
+    // { path: '/companies/:id', name: 'company-details', component: CompanyDetails, props: true }, 
+    
+    // {
+    //   path: "/dashboard/:id",
+    //   name: "company-dashboard",
+    //   component: Dashboard,
+    //   props: true,
+    // },
   ]
 
 })

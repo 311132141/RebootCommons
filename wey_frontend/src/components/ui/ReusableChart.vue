@@ -1,6 +1,7 @@
 <template>
-  <div ref="chartContainer" class="w-full h-[300px] md:h-[400px] relative">
-    <canvas ref="chartCanvas"></canvas>
+  <div ref="chartContainer" class="w-full h-[300px] relative print:h-[300px]">
+    <!-- Bind the passed canvasId prop if needed, or remove it if not -->
+    <canvas :id="canvasId" ref="chartCanvas" class="w-full h-full"></canvas>
   </div>
 </template>
 
@@ -8,64 +9,50 @@
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import Chart from 'chart.js/auto';
 
-// Define props
+// Define props. The canvasId prop is optional—if you don't need to query by ID externally,
+// you can simply use the ref "chartCanvas".
 const props = defineProps({
-  title: { type: String, default: 'Chart Title' },
-  description: { type: String, default: 'This is a chart.' },
-  chartType: { type: String, default: 'bar' },  // Pie chart can be passed dynamically
-  chartData: { type: Object, required: true },
+  canvasId: { type: String, default: '' },
+  chartType: { type: String, default: 'bar' },
+  chartData: { type: Object, required: true }
 });
 
-// Refs
 const chartCanvas = ref(null);
 const chartInstance = ref(null);
 const chartContainer = ref(null);
 let resizeObserver = null;
 
-// Chart options
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       display: true,
-      position: 'top',
-      labels: {
-        color: '#ffffff',
-      },
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => `${context.raw}명`,
-      },
-    },
-  },
+      position: 'top'
+    }
+  }
 };
 
-// Function to initialize chart
 const initChart = () => {
   if (chartInstance.value) {
     chartInstance.value.destroy();
   }
-
+  // Use the ref "chartCanvas" directly rather than looking it up by ID.
   chartInstance.value = new Chart(chartCanvas.value, {
-    type: props.chartType,  // Dynamically set type (bar, pie, etc.)
+    type: props.chartType,
     data: props.chartData,
-    options: chartOptions,
+    options: chartOptions
   });
 };
 
-// Watch for data changes and update the chart
 watch(() => props.chartData, initChart, { deep: true });
 
-// Handle resizing
 const handleResize = () => {
   if (chartInstance.value) {
     chartInstance.value.resize();
   }
 };
 
-// Lifecycle Hooks
 onMounted(() => {
   initChart();
   resizeObserver = new ResizeObserver(handleResize);
@@ -84,9 +71,4 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
-.chart-container {
-  width: 100%;
-  height: 100%;
-}
-</style>
+<style scoped></style>
