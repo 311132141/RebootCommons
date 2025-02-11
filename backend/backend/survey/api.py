@@ -394,33 +394,33 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
         users = User.objects.filter(company=company)
         print(f"Company found: {company.name}, Total users: {users.count()}")
 
-        # Get the question object
+        # Get the question object of the demographic type
         question = Question.objects.filter(text__icontains=korean_question_text).first()
         if not question:
             return Response({"error": f"Question not found for {demographic_type}"}, status=404)
 
         print(f"Demographic question ID: {question.id}, Text: {question.text}")
 
-        # Get user answers
+        # Get user answers for the category questions
         answers = Answer.objects.filter(question=question, response__user__in=users)
-        print(f"Total {demographic_type} responses found: {answers.count()}")
+        print(f"Total {demographic_type} responses found: {answers.count()} answers: {answers}")
 
-        # Map user IDs to their category value (age, salary, etc.)
+        # Map user IDs to their category value (age, salary, etc.) each user is assigned to a category
         user_categories = {ans.response.user.id: ans.answer_text for ans in answers}
 
         # Process all answers (no filtering)
-        survey_answers = Answer.objects.filter(response__user__in=users)
+        survey_answers = Answer.objects.filter(response__user__in=users) # get answers of the users
         print(f"Processing {survey_answers.count()} total answers.")
 
         category_ratings = defaultdict(lambda: {"pre": [], "post": []})
 
         for ans in survey_answers:
-            user_id = ans.response.user.id
-            category = user_categories.get(user_id, "Unknown")
+            user_id = ans.response.user.id # get user id for each answer
+            category = user_categories.get(user_id, "Unknown") # get category group of the user
             phase = ans.response.phase  # 'pre' or 'post'
 
             if ans.answer_value is not None:
-                category_ratings[category][phase].append(ans.answer_value)
+                category_ratings[category][phase].append(ans.answer_value) # add the value to the phase of the category
 
         # Compute average ratings
         formatted_data = []
@@ -446,7 +446,61 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
     """
 
     data = get_demographic_vs_survey_improvement(company_id, demographic_type)
+    print("Data:", data)
     if "error" in data:
         return Response(data, status=status.HTTP_404_NOT_FOUND)
 
     return Response(data, status=status.HTTP_200_OK)
+CATEGORIES = ["entrepreneur", "org", "selflead", "ppc", "lifestyle"]
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_company_vs_industry_growth(request, company_id):
+    """
+    Computes the average percentage increase in survey scores for different categories:
+    - One line represents percentage growth for the company.
+    - Another line represents percentage growth for all users.
+    """
+
+    try:
+        company = Company.objects.get(id=company_id)
+        company_users = User.objects.filter(company=company)
+        all_users = User.objects.all()
+
+        def calculate_growth(users):
+            """
+            Given a queryset of users, compute the average percentage increase
+            for each category by comparing pre-survey and post-survey values.
+            """
+            responses = UserSurveyResponse.objects.filter(user__in=users)
+            answers = Answer.objects.filter(response__in=responses)
+
+            growth_data = {}
+
+            for category in CATEGORIES:
+                questions = Question.objects.filter(category__icontains=category)
+                category_answers = answers.filter(question__in=questions)
+
+                pre_avg = category_answers.filter(response__phase="pre").aggregate(Avg("answer_value"))["answer_value__avg"]
+                post_avg = category_answers.filter(response__phase="post").aggregate(Avg("answer_value"))["answer_value__avg"]
+
+                if pre_avg and post_avg and pre_avg > 0:
+                    growth_data[category] = ((post_avg - pre_avg) / pre_avg) * 100
+                else:
+                    growth_data[category] = 0  # Default to 0 if no valid pre-data
+
+            return growth_data
+
+        company_growth = calculate_growth(company_users)
+        industry_growth = calculate_growth(all_users)
+
+        response_data = {
+            "categories": CATEGORIES,
+            "company_scores": [company_growth.get(cat, 0) for cat in CATEGORIES],
+            "industry_scores": [industry_growth.get(cat, 0) for cat in CATEGORIES]
+        }
+
+        return Response(response_data, status=200)
+
+    except Company.DoesNotExist:
+        return Response({"error": "Company not found"}, status=404)

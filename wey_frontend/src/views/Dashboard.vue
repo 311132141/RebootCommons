@@ -11,6 +11,12 @@
         <canvas ref="leadershipChart"></canvas>
       </div>
 
+      <!-- Company vs Industry Growth Comparison -->
+      <div class="mt-10">
+        <h2 class="text-lg font-semibold text-gray-700">회사 vs. 업계 비교</h2>
+        <canvas ref="growthChart"></canvas>
+      </div>
+
       <!-- Dynamically Generated Demographic Charts -->
       <div v-for="category in demographicCategories" :key="category" class="mt-10">
         <h2 class="text-lg font-semibold text-gray-700">{{ category }} vs Survey Improvement</h2>
@@ -29,43 +35,57 @@ Chart.register(...registerables);
 export default {
   setup() {
     const leadershipChartInstance = ref(null);
+    const growthChartInstance = ref(null);
     const demographicChartInstances = reactive({});
     const loading = ref(true);
     const errorMessage = ref("");
     const leadershipData = ref(null);
+    const growthData = ref(null);
     const demographicData = reactive({});
     const demographicCategories = ["age", "salary", "education", "marital"];
 
     const fetchCompanyData = async () => {
-      console.log("Fetching data for company ID:", window.location.pathname.split("/").pop());
+      const companyId = window.location.pathname.split("/").pop();
+      console.log("Fetching data for company ID:", companyId);
       const accessToken = localStorage.getItem("access_token");
 
       if (!accessToken) {
-        console.error("❌ No authentication token found.");
+        console.error("No authentication token found.");
         errorMessage.value = "Authentication token missing.";
         return;
       }
 
       try {
         // Fetch gender-leadership data
+        console.log("Fetching gender vs leadership data...");
         const leadershipResponse = await fetch(
-          `http://127.0.0.1:8000/api/companies/${window.location.pathname.split("/").pop()}/gender-leadership/`,
+          `http://127.0.0.1:8000/api/companies/${companyId}/gender-leadership/`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
-
-        if (!leadershipResponse.ok) throw new Error(`API request failed.`);
-
+        if (!leadershipResponse.ok) throw new Error("API request failed.");
         leadershipData.value = (await leadershipResponse.json()).data;
+        console.log("✅ Gender vs Leadership Data:", leadershipData.value);
+
+        // Fetch company vs industry growth data
+        console.log("Fetching company vs industry growth data...");
+        const growthResponse = await fetch(
+          `http://127.0.0.1:8000/api/dashboard/${companyId}/growth-comparison/`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        if (!growthResponse.ok) throw new Error("Failed to fetch growth data.");
+        growthData.value = await growthResponse.json();
+        console.log("✅ Company vs Industry Growth Data:", growthData.value);
 
         // Fetch demographic data dynamically
         await fetchDemographicData(accessToken);
 
         nextTick(() => {
           renderLeadershipChart();
+          renderGrowthChart();
           renderDemographicCharts();
         });
       } catch (error) {
-        console.error("❌ Failed to fetch company data:", error);
+        console.error("Failed to fetch company data:", error);
         errorMessage.value = "Failed to load company data.";
       } finally {
         loading.value = false;
@@ -74,10 +94,12 @@ export default {
 
     const fetchDemographicData = async (accessToken) => {
       try {
+        const companyId = window.location.pathname.split("/").pop();
+        console.log("Fetching demographic data...");
         const responses = await Promise.all(
           demographicCategories.map(async (category) => {
             const response = await fetch(
-              `http://127.0.0.1:8000/api/dashboard/${window.location.pathname.split("/").pop()}/demographic-improvement/${category}/`,
+              `http://127.0.0.1:8000/api/dashboard/${companyId}/demographic-improvement/${category}/`,
               { headers: { Authorization: `Bearer ${accessToken}` } }
             );
             if (!response.ok) throw new Error(`Failed to fetch ${category} data.`);
@@ -92,7 +114,7 @@ export default {
 
         console.log("✅ Demographic API Responses:", demographicData);
       } catch (error) {
-        console.error("❌ Failed to fetch demographic data:", error);
+        console.error("Failed to fetch demographic data:", error);
       }
     };
 
@@ -102,6 +124,7 @@ export default {
         return;
       }
 
+      console.log("Rendering Leadership Chart...");
       const labels = leadershipData.value.map((entry) => entry.category);
       const maleData = leadershipData.value.map((entry) => entry["남성"]);
       const femaleData = leadershipData.value.map((entry) => entry["여성"]);
@@ -120,63 +143,48 @@ export default {
             { label: "여성 (Female)", data: femaleData, backgroundColor: "#A78BFA" },
           ],
         },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: "Average Rating" },
-            },
-          },
-        },
+        options: { responsive: true },
       });
     };
 
-    const renderDemographicCharts = () => {
-      for (const category in demographicData) {
-        const data = demographicData[category];
-
-        if (!data || data.length === 0) {
-          console.warn(`No data available for ${category} chart.`);
-          continue;
-        }
-
-        const labels = data.map((entry) => entry[`${category}_group`]);
-        const preData = data.map((entry) => entry.pre);
-        const postData = data.map((entry) => entry.post);
-
-        if (demographicChartInstances[category]) {
-          demographicChartInstances[category].destroy();
-        }
-
-        const canvas = document.querySelector(`[ref="${category}Chart"]`);
-        if (!canvas) {
-          console.error(`❌ Missing ref for ${category}Chart`);
-          continue;
-        }
-
-        const ctx = canvas.getContext("2d");
-        demographicChartInstances[category] = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels,
-            datasets: [
-              { label: "Pre Survey", data: preData, backgroundColor: "#FF5733" },
-              { label: "Post Survey", data: postData, backgroundColor: "#33FF57" },
-            ],
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: { display: true, text: "Average Rating" },
-              },
-            },
-          },
-        });
+    const renderGrowthChart = () => {
+      if (!growthData.value || !growthData.value.categories) {
+        console.warn("No data available for growth chart.");
+        return;
       }
+
+      console.log("Rendering Growth Chart...");
+      console.log("Growth Chart Data:", growthData.value);
+
+      // Extract raw data from Vue Proxy
+      const categories = [...growthData.value.categories];
+      const companyScores = [...growthData.value.company_scores];
+      const industryScores = [...growthData.value.industry_scores];
+
+      if (growthChartInstance.value) {
+        growthChartInstance.value.destroy();
+      }
+
+      const canvas = document.querySelector("[ref='growthChart']");
+      if (!canvas) {
+        console.error("❌ Growth chart canvas not found.");
+        return;
+      }
+
+      const ctx = canvas.getContext("2d");
+      growthChartInstance.value = new Chart(ctx, {
+        type: "radar",
+        data: {
+          labels: categories,  // Ensure extracted raw data
+          datasets: [
+            { label: "Company Growth", data: companyScores, borderColor: "yellow", fill: false },
+            { label: "Industry Growth", data: industryScores, borderColor: "red", fill: false },
+          ],
+        },
+        options: { responsive: true, scales: { r: { beginAtZero: true, max: 100 } } },
+      });
     };
+
 
     const setChartRef = (el, category) => {
       if (el) {
@@ -188,10 +196,12 @@ export default {
 
     return {
       leadershipChartInstance,
+      growthChartInstance,
       demographicChartInstances,
       loading,
       errorMessage,
       leadershipData,
+      growthData,
       demographicData,
       demographicCategories,
       setChartRef,
