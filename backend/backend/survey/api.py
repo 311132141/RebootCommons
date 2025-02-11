@@ -463,11 +463,17 @@ def get_company_vs_industry_growth(request, company_id):
     """
 
     try:
+        print(f"\n🔹 Fetching growth data for Company ID: {company_id}")
+
+        # Get company and users
         company = Company.objects.get(id=company_id)
         company_users = User.objects.filter(company=company)
         all_users = User.objects.all()
 
-        def calculate_growth(users):
+        print(f"✅ Company Found: {company.name}")
+        print(f"👥 Total Company Users: {company_users.count()}, Total All Users: {all_users.count()}")
+
+        def calculate_growth(users, user_type="Company"):
             """
             Given a queryset of users, compute the average percentage increase
             for each category by comparing pre-survey and post-survey values.
@@ -475,32 +481,158 @@ def get_company_vs_industry_growth(request, company_id):
             responses = UserSurveyResponse.objects.filter(user__in=users)
             answers = Answer.objects.filter(response__in=responses)
 
-            growth_data = {}
+            print(f"\n📊 Calculating {user_type} Growth | Total Responses: {responses.count()}, Total Answers: {answers.count()}")
+
+            growth_data = defaultdict(float)  # Default to 0 if category has no data
 
             for category in CATEGORIES:
                 questions = Question.objects.filter(category__icontains=category)
                 category_answers = answers.filter(question__in=questions)
 
+                print(f"🔎 Category: {category} | Questions Found: {questions.count()} | Answers Found: {category_answers.count()}")
+
+                # Compute pre-survey and post-survey averages
                 pre_avg = category_answers.filter(response__phase="pre").aggregate(Avg("answer_value"))["answer_value__avg"]
                 post_avg = category_answers.filter(response__phase="post").aggregate(Avg("answer_value"))["answer_value__avg"]
 
-                if pre_avg and post_avg and pre_avg > 0:
-                    growth_data[category] = ((post_avg - pre_avg) / pre_avg) * 100
+                if pre_avg is None or post_avg is None:
+                    print(f"⚠️ No valid data for {category}. Defaulting growth to 0%.")
+                    growth_data[category] = 0
+                    continue
+
+                # Calculate percentage growth
+                if pre_avg > 0:
+                    growth = ((post_avg - pre_avg) / pre_avg) * 100
                 else:
-                    growth_data[category] = 0  # Default to 0 if no valid pre-data
+                    growth = 0
 
-            return growth_data
+                growth_data[category] = growth
+                print(f"📈 {user_type} Growth for {category}: {growth:.2f}% (Pre: {pre_avg:.2f}, Post: {post_avg:.2f})")
 
-        company_growth = calculate_growth(company_users)
-        industry_growth = calculate_growth(all_users)
+            return dict(growth_data)
 
+        # Calculate growth for company users and all users
+        company_growth = calculate_growth(company_users, "Company")
+        industry_growth = calculate_growth(all_users, "Industry")
+
+        # Prepare response data
         response_data = {
             "categories": CATEGORIES,
             "company_scores": [company_growth.get(cat, 0) for cat in CATEGORIES],
             "industry_scores": [industry_growth.get(cat, 0) for cat in CATEGORIES]
         }
 
+        print("\n✅ Final Computed Growth Data:", response_data)
+
         return Response(response_data, status=200)
+
+    except Company.DoesNotExist:
+        print("❌ Error: Company not found.")
+        return Response({"error": "Company not found"}, status=404)
+    
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_lifestyle_vs_performance_growth(request, company_id):
+    """
+    Computes overall performance growth based on lifestyle question ratings.
+
+    This function creates data for a heatmap where:
+    - **X-axis**: Lifestyle-related questions.
+    - **Y-axis**: Ratings (1-5).
+    - **Cell values**: Percentage increase in overall performance for users who picked that rating.
+
+    Steps:
+    1. Identify users who selected each rating (1-5) for each lifestyle question.
+    2. Fetch **all** their survey responses (not just lifestyle).
+    3. Calculate their overall pre-survey & post-survey average across all answers.
+    4. Compute percentage growth and return structured data.
+
+    ---
+    **Output Format:**
+    ```json
+    {
+        "data": [
+            {
+                "question": "나는 건강을 위해 운동한다.",
+                "rating": 5,
+                "growth": 18.75
+            },
+            {
+                "question": "나는 새로운 도전을 즐긴다.",
+                "rating": 3,
+                "growth": -6.45
+            },
+            ...
+        ]
+    }
+    ```
+    - `question`: The lifestyle-related question.
+    - `rating`: The specific rating (1-5) chosen by users.
+    - `growth`: Percentage increase in overall performance for users who picked this rating.
+    """
+    try:
+        print(f"Fetching lifestyle vs performance growth data for company ID: {company_id}")
+
+        # Step 1: Get company and users
+        company = Company.objects.get(id=company_id)
+        users = User.objects.filter(company=company)
+        print(f"Company found: {company.name}, Total users: {users.count()}")
+
+        # Step 2: Fetch all lifestyle-related questions
+        lifestyle_questions = Question.objects.filter(category="lifestyle")
+        if not lifestyle_questions.exists():
+            return Response({"error": "No lifestyle questions found"}, status=404)
+
+        print(f"Total lifestyle questions found: {lifestyle_questions.count()}")
+
+        # Step 3: Fetch all answers related to lifestyle questions for users in this company
+        responses = UserSurveyResponse.objects.filter(user__in=users)
+        lifestyle_answers = Answer.objects.filter(response__in=responses, question__in=lifestyle_questions)
+
+        print(f"Total lifestyle responses found: {lifestyle_answers.count()}")
+
+        # Step 4: Store rating-based user groups
+        rating_users_map = defaultdict(lambda: defaultdict(set))
+
+        for ans in lifestyle_answers:
+            user_id = ans.response.user.id
+            question_text = ans.question.text
+            rating = int(ans.answer_value) if ans.answer_value else None
+
+            if rating and 1 <= rating <= 5:
+                rating_users_map[question_text][rating].add(user_id)
+
+                # Debugging: Track which users picked which rating for which question
+                print(f"User {ans.response.user.name} (ID={user_id}) chose rating {rating} for '{question_text}'")
+
+        # Step 5: Compute growth for each (question, rating) pair
+        formatted_data = []
+
+        for question, rating_map in rating_users_map.items():
+            for rating, user_ids in rating_map.items():
+                if not user_ids:
+                    continue
+
+                # Step 6: Fetch all responses (not just lifestyle) for these users
+                user_responses = UserSurveyResponse.objects.filter(user_id__in=user_ids)
+                all_answers = Answer.objects.filter(response__in=user_responses)
+
+                # Calculate pre & post survey averages
+                pre_avg = all_answers.filter(response__phase="pre").aggregate(Avg("answer_value"))["answer_value__avg"] or 0
+                post_avg = all_answers.filter(response__phase="post").aggregate(Avg("answer_value"))["answer_value__avg"] or 0
+
+                percentage_growth = ((post_avg - pre_avg) / pre_avg) * 100 if pre_avg else 0
+
+                # Debugging: Show calculated values for each (question, rating) pair
+                print(f"Question: '{question}', Rating: {rating}, Users: {len(user_ids)}, Pre Avg: {pre_avg}, Post Avg: {post_avg}, Growth: {percentage_growth:.2f}%")
+
+                formatted_data.append({
+                    "question": question,
+                    "rating": rating,
+                    "growth": percentage_growth
+                })
+
+        return Response({"data": formatted_data}, status=200)
 
     except Company.DoesNotExist:
         return Response({"error": "Company not found"}, status=404)

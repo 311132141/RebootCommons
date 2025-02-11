@@ -22,12 +22,19 @@
         <h2 class="text-lg font-semibold text-gray-700">{{ category }} vs Survey Improvement</h2>
         <canvas :ref="(el) => setChartRef(el, category)"></canvas>
       </div>
+
+      <!-- Lifestyle vs Performance Growth Heatmap -->
+      <div class="mt-10">
+        <h2 class="text-lg font-semibold text-gray-700">Lifestyle vs Performance Growth</h2>
+        <canvas ref="heatmapChart"></canvas>
+      </div>
     </main>
   </div>
 </template>
 
 <script>
 import { Chart, registerables } from "chart.js";
+import "chartjs-chart-matrix";
 import { ref, reactive, onMounted, nextTick } from "vue";
 
 Chart.register(...registerables);
@@ -90,6 +97,9 @@ export default {
       } finally {
         loading.value = false;
       }
+
+      // Fetch lifestyle vs performance heatmap data
+      
     };
 
     const fetchDemographicData = async (accessToken) => {
@@ -205,6 +215,125 @@ export default {
       demographicData,
       demographicCategories,
       setChartRef,
+    };
+  
+  
+  },
+  setup() {
+    const heatmapChart = ref(null);
+    const heatmapData = ref([]);
+    const loading = ref(true);
+    const errorMessage = ref("");
+
+    const fetchHeatmapData = async () => {
+      console.log("Fetching lifestyle vs performance growth data...");
+      const accessToken = localStorage.getItem("access_token");
+
+      if (!accessToken) {
+        console.error("❌ No authentication token found.");
+        errorMessage.value = "Authentication token missing.";
+        return;
+      }
+
+      try {
+        const companyId = window.location.pathname.split("/").pop();
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/dashboard/${companyId}/lifestyle-performance-growth/`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+
+        if (!response.ok) throw new Error("API request failed.");
+
+        const result = await response.json();
+        heatmapData.value = result.data;
+
+        console.log("✅ Heatmap API Response:", heatmapData.value);
+
+        nextTick(() => {
+          renderHeatmap();
+        });
+      } catch (error) {
+        console.error("❌ Failed to fetch heatmap data:", error);
+        errorMessage.value = "Failed to load heatmap data.";
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const renderHeatmap = () => {
+      if (!heatmapData.value.length) {
+        console.warn("⚠️ No heatmap data available.");
+        return;
+      }
+
+      const questions = [...new Set(heatmapData.value.map((d) => d.question))];
+      const ratings = [1, 2, 3, 4, 5];
+
+      // Transform data into matrix format
+      const matrixData = heatmapData.value.map((d) => ({
+        x: questions.indexOf(d.question),
+        y: ratings.indexOf(d.rating) + 1,
+        v: d.growth,
+      }));
+
+      if (heatmapChart.value) {
+        heatmapChart.value.destroy();
+      }
+
+      const ctx = document.querySelector("[ref='heatmapChart']").getContext("2d");
+      heatmapChart.value = new Chart(ctx, {
+        type: "matrix",
+        data: {
+          datasets: [
+            {
+              label: "Growth %",
+              data: matrixData,
+              backgroundColor: (ctx) => {
+                const value = ctx.raw.v;
+                if (value > 15) return "red";
+                if (value > 10) return "orange";
+                if (value > 5) return "yellow";
+                return "green";
+              },
+              width: ({ chart }) => (chart.chartArea || {}).width / questions.length - 2,
+              height: ({ chart }) => (chart.chartArea || {}).height / ratings.length - 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              type: "category",
+              labels: questions,
+              title: { display: true, text: "Lifestyle Questions" },
+            },
+            y: {
+              type: "linear",
+              min: 1,
+              max: 5,
+              title: { display: true, text: "Ratings" },
+            },
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title: (ctx) => `Rating: ${ctx[0].raw.y}`,
+                label: (ctx) => `Growth: ${ctx.raw.v.toFixed(2)}%`,
+              },
+            },
+          },
+        },
+      });
+    };
+
+    onMounted(fetchHeatmapData);
+
+    return {
+      heatmapChart,
+      heatmapData,
+      loading,
+      errorMessage,
     };
   },
 };

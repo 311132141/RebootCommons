@@ -12,10 +12,7 @@
 #     path('graphs/age-distribution/', age_distribution, name='age-distribution'),
 # ]
 from django.urls import path
-from .api import (
-    SurveyView, GenderDistributionView, age_distribution,
-    SurveyTypeListView, CourseTypeListView, get_gender_vs_leadership, get_demographic_vs_survey_improvement, get_company_vs_industry_growth
-)
+from .api import *
 
 urlpatterns = [
     # 1) Returns a list of all SurveyTypes (개인용, 기업용, etc.)
@@ -36,7 +33,12 @@ urlpatterns = [
     # path("companies/<uuid:company_id>/age-improvement/", get_age_vs_survey_improvement, name="age-improvement"),
     path("dashboard/<uuid:company_id>/demographic-improvement/<str:demographic_type>/", get_demographic_vs_survey_improvement),
     path("dashboard/<uuid:company_id>/growth-comparison/", get_company_vs_industry_growth, name="growth-comparison"),
-
+    # Lifestyle vs Performance Growth Heatmap
+    path(
+        "dashboard/<uuid:company_id>/lifestyle-performance-growth/",
+        get_lifestyle_vs_performance_growth,
+        name="lifestyle-performance-growth",
+    ),
     
 ]
 
