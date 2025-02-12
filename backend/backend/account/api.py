@@ -53,7 +53,7 @@ def get_companies(request):
             "name": company.name,
             "email": company.email,
             "phone": company.phone_number,
-            "programs": company.programs,
+            "course_type": company.course_type.name if company.course_type else "No Course Type Assigned",
             "growth": "20%"  # Placeholder, replace with actual logic
         }
         for company in companies

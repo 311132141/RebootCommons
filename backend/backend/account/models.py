@@ -57,8 +57,9 @@ class Company(models.Model):
     name = models.CharField(max_length=255, unique=True)
     email = models.EmailField(blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-    programs = models.CharField(max_length=30, blank=True, null=True)
+    course_type = models.ForeignKey('survey.CourseType', on_delete=models.SET_NULL, blank=True, null=True)
+    # programs = models.CharField(max_length=30, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.course_type.name if self.course_type else 'No Course'})"

@@ -39,6 +39,14 @@ urlpatterns = [
         get_lifestyle_vs_performance_growth,
         name="lifestyle-performance-growth",
     ),
-    
+    path("users/<uuid:user_id>/profile/", get_user_profile, name="user-profile"),
+    path("users/<uuid:user_id>/pre-post-comparison/", get_user_pre_post_comparison, name="user-pre-post-comparison"),
+    path("users/<uuid:user_id>/user-growth-comparison/", get_user_vs_all_growth, name="user-growth-comparison"),
+    path(
+    "dashboard/lifestyle-performance-growth/all/",
+    get_all_users_lifestyle_performance_growth,
+    name="all-users-lifestyle-performance-growth",),
+    path("users/<uuid:user_id>/question-pre-post-comparison/", get_user_question_pre_post_comparison, name="user-question-pre-post-comparison"),
+
 ]
 
