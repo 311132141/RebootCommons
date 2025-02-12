@@ -1,7 +1,7 @@
 <template>
   <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 relative">
     <div class="flex flex-col gap-2">
-      <span class="block text-surface-500 dark:text-surface-300 font-medium">{{ title }}</span>
+      <span class="block text-surface-500 dark:text-surface-300 font-medium print:text-black">{{ title }}</span>
       <div class="w-full">
         <p class="text-sm text-gray-700 mb-4 truncate">{{ description }}</p>
       </div>

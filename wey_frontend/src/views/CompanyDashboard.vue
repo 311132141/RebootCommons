@@ -4,27 +4,52 @@
 
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col">
-      <!-- Navbar -->
-      <main class="flex-1 p-6 ">
-        <div class="text-3xl text-bold pb-3 print:text-black ">Overview</div>
-        <button @click="printDashboard"
-          class=" bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 print:hidden">
-          Print
-        </button>
-        <!-- <router-view /> -->
-        <div class="grid grid-cols-12 gap-5 pb-5 print:hidden">
-          <DashCard />
-          <DashCard />
-          <DashCard />
-          <DashCard />
-        </div>
-        <!-- Loading / Error Messages -->
-        <p v-if="loading" class="text-gray-500">Loading data...</p>
-        <p v-if="errorMessage" class="text-red-500 print:hidden">{{ errorMessage }}</p>
 
-        <!-- Overview Cards (Example DashCards) -->
-        <!-- <div class="grid grid-cols-12 gap-5 pb-5" v-if="!loading">
+    <!-- Navbar -->
+    <main class="flex-1 p-6 ">
+      <div class="flex items-center justify-between mb-6 print:hidden">
+        <div class="flex items-center space-x-2 text-gray-400 ">
+          <span>Dashboard</span>
+          <span>></span>
+          <span>Companies</span>
+        </div>
+        <div class="flex items-center space-x-4 ">
+          <button @click="printDashboard"
+            class=" bg-gray-800 p-2 rounded-md text-white px-4 py-2 rounded hover:bg-blue-600 print:hidden">
+            리포트 작성하기
+          </button>
+          <!-- <div class="relative">
+              <input type="text" placeholder="Search"
+                class="bg-[#25262b] rounded-md px-4 py-2 pl-10 text-sm w-64 focus:outline-none" />
+              <svg class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div> -->
+          <!-- <button class="bg-gray-800 p-2 rounded-md">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+            </button> -->
+        </div>
+      </div>
+      <h1 class="text-2xl text-bold pb-3 print:text-black mb-6 print:mb-6">Overview</h1>
+
+      <!-- <router-view /> -->
+      <div class="grid grid-cols-12 gap-5 pb-5 print:hidden">
+        <DashCard />
+        <DashCard />
+        <DashCard />
+        <DashCard />
+      </div>
+      <!-- Loading / Error Messages -->
+      <p v-if="loading" class="text-gray-500">Loading data...</p>
+      <p v-if="errorMessage" class="text-red-500 print:hidden">{{ errorMessage }}</p>
+
+      <!-- Overview Cards (Example DashCards) -->
+      <!-- <div class="grid grid-cols-12 gap-5 pb-5" v-if="!loading">
    
           <div class="col-span-3 p-4 bg-white rounded shadow">DashCard 1</div>
           <div class="col-span-3 p-4 bg-white rounded shadow">DashCard 2</div>
@@ -32,107 +57,105 @@
           <div class="col-span-3 p-4 bg-white rounded shadow">DashCard 4</div>
         </div> -->
 
-        <!-- Charts Section -->
-        <div class="space-y-6">
-          <!-- Row 1: Gender Distribution and Leadership Comparison -->
-          <div class="grid grid-cols-12 gap-5 ">
-            <div class="col-span-12 sm:col-span-5 md:col-span-5  lg:col-span-5 ">
-              <ChartCard title="Leadership Comparison"
-                description="Comparison between Male and Female leadership ratings"
-                :labels="['남성 (Male)', '여성 (Female)']" title_z="Leadership Category" title_y="Average Score"
-                :chartType="'pie'" />
+      <!-- Charts Section -->
+      <div class="space-y-6">
+        <!-- Row 1: Gender Distribution and Leadership Comparison -->
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
+            <!-- <ChartCard title="Leadership Comparison" description="Comparison between Male and Female leadership ratings"
+              :labels="['남성 (Male)', '여성 (Female)']" title_z="Leadership Category" title_y="Average Score"
+              :chartType="'pie'" /> -->
+            <ChartCard canvasId="leadershipChart" title="남성과 여성의 성장률 비교"
+              description="본 그래프는 남성과 여성 참가자들의 리더십 프로그램 전후 성장률을 비교하여 성별에 따른 리더십 향상 정도를 시각화한 것입니다."
+              :labels="leadershipLabels" :datasets="computedDatasets" title_z="Leadership Category"
+              title_y="Average Score" :chartType="'bar'" />
 
-            </div>
-            <div class="col-span-12 sm:col-span-7 md:col-span-7 lg:col-span-7">
-
-              <ChartCard canvasId="leadershipChart" title="Leadership Comparison"
-                description="Comparison between Male and Female leadership ratings" :labels="leadershipLabels"
-                :datasets="computedDatasets" title_z="Leadership Category" title_y="Average Score" :chartType="'bar'" />
-
-
-            </div>
-          </div>
-          <div class="grid grid-cols-12 gap-5 ">
-            <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
-              <ChartCard_radar title="Leadership & Lifestyle Growth"
-                description="Comparison of improvements in Leadership Programs and Lifestyle"
-                :labels="['Selflead Behavior', 'Selflead Natural', 'Selflead Constructive', 'Lifestyle']" :datasets="[
-                  {
-                    label: 'Pre Survey',
-                    data: [2.5, 3.0, 2.8, 3.2],
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2
-                  },
-                  {
-                    label: 'Post Survey',
-                    data: [3.8, 4.2, 3.9, 4.6],
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2
-                  }
-                ]" />
-
-            </div>
-            <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
-
-              <ChartCard canvasId="demographicChart-age" title="age bro" description="i cbb living"
-                :labels="demographicLabels.salary" :datasets="demographicDatasets.age" title_z="end this life"
-                title_y="end" :chartType="'bar'" />
-
-
-            </div>
-          </div>
-          <div class="grid grid-cols-12 gap-5 pb-5">
-            <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
-              <HeatmapChart title="Lifestyle & Course Growth"
-                description="Shows how lifestyle factors impact course improvements"
-                :lifestyleLabels="['Sleep', 'Exercise', 'Meditation', 'Diet', 'Balance']" :scores="[1, 2, 3, 4, 5]"
-                :improvementData="[
-                  [1.2, 1.5, 2.1, 1.8, 1.9],
-                  [2.4, 2.7, 3.0, 2.9, 2.5],
-                  [3.5, 3.2, 3.8, 3.4, 3.9],
-                  [4.1, 4.3, 4.7, 4.5, 4.2],
-                  [5.0, 5.2, 5.5, 5.1, 5.3]
-                ]" />
-            </div>
 
           </div>
-          <div class="grid grid-cols-12 gap-5 ">
-            <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
-              <ChartCard canvasId="demographicChart-age" title="age bro" description="i cbb living"
-                :labels="demographicLabels.salary" :datasets="demographicDatasets.salary" title_z="end this life"
-                title_y="end" :chartType="'bar'" />
-
-            </div>
-            <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
-
-              <ChartCard canvasId="demographicChart-age" title="age bro" description="i cbb living"
-                :labels="demographicLabels.marital" :datasets="demographicDatasets.marital" title_z="end this life"
-                title_y="end" :chartType="'bar'" />
+          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
+            <ChartCard canvasId="demographicChart-age" title="결혼 여부에 따른 성장률 비교"
+              description="해당 그래프는 미혼과 기혼 참가자 간의 성장률 차이를 분석합니다. 가정이 있는 사람들이 리더십 성장에서 더 높은 성과를 보이는지 여부를 확인할 수 있습니다."
+              :labels="demographicLabels.marital" :datasets="demographicDatasets.marital" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
 
 
-            </div>
-          </div>
-          <div class="grid grid-cols-12 gap-5 ">
-            <div class="col-span-12 sm:col-span-12 md:col-span-12  lg:col-span-12 ">
-              <ChartCard canvasId="demographicChart-age" title="age bro" description="i cbb living"
-                :labels="demographicLabels.education" :datasets="demographicDatasets.education" title_z="end this life"
-                title_y="end" :chartType="'bar'" />
 
-            </div>
 
           </div>
-          <!-- Row 2: Age Distribution and Age Improvement Comparison -->
+        </div>
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
+            <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
+              description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다. 특정 기업이 다른 기업들과 비교했을 때 얼마나 효과적인 성장을 보였는지를 확인할 수 있습니다."
+              :labels="['Selflead Behavior', 'Selflead Natural', 'Selflead Constructive', 'Lifestyle']" :datasets="[
+                {
+                  label: 'Pre Survey',
+                  data: [2.5, 3.0, 2.8, 3.2],
+                  backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                  borderColor: 'rgba(54, 162, 235, 1)',
+                  borderWidth: 2
+                },
+                {
+                  label: 'Post Survey',
+                  data: [3.8, 4.2, 3.9, 4.6],
+                  backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                  borderColor: 'rgba(255, 99, 132, 1)',
+                  borderWidth: 2
+                }
+              ]" />
+
+          </div>
+          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
+
+            <ChartCard canvasId="demographicChart-age" title="연봉과 성장률 간의 관계 분석"
+              description="해당 그래프는 참가자의 연봉 수준과 리더십 프로그램 이후 성장률 간의 관계를 나타냅니다. 연봉이 높은 집단과 낮은 집단의 성장 패턴을 비교할 수 있습니다."
+              :labels="demographicLabels.salary" :datasets="demographicDatasets.age" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
 
 
-          <!-- Row 3: Job Distribution and Job Salary Comparison -->
-
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-5 pb-5">
+          <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
+            <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
+              description="수면, 운동, 식습관, 명상, 일과 삶의 균형과 같은 라이프스타일 요인이 리더십 성장률에 미치는 영향을 분석한 그래프입니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
+              :lifestyleLabels="['Sleep', 'Exercise', 'Meditation', 'Diet', 'Balance']" :scores="[1, 2, 3, 4, 5]"
+              :improvementData="[
+                [1.2, 1.5, 2.1, 1.8, 1.9],
+                [2.4, 2.7, 3.0, 2.9, 2.5],
+                [3.5, 3.2, 3.8, 3.4, 3.9],
+                [4.1, 4.3, 4.7, 4.5, 4.2],
+                [5.0, 5.2, 5.5, 5.1, 5.3]
+              ]" />
+          </div>
 
         </div>
-      </main>
-    </div>
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-12 md:col-span-12  lg:col-span-12 ">
+            <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
+              description=" 해당 그래프는 참가자의 최종 학력(고졸, 전문대졸, 대졸, 대학원 졸업 등)에 따른 리더십 성장률의 차이를 나타냅니다. 학력이 높은 집단과 낮은 집단의 성장률 차이를 분석할 수 있습니다."
+              :labels="demographicLabels.education" :datasets="demographicDatasets.education" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
+
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-12 md:col-span-12  lg:col-span-12 ">
+
+
+          </div>
+
+        </div>
+        <!-- Row 2: Age Distribution and Age Improvement Comparison -->
+
+
+        <!-- Row 3: Job Distribution and Job Salary Comparison -->
+
+
+      </div>
+    </main>
   </div>
+
 </template>
 <!-- <section class="mt-10" v-for="category in demographicCategories" :key="category">
   <h2 class="text-xl font-semibold text-gray-700 mb-2">
