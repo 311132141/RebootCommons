@@ -99,3 +99,8 @@ export default {
     }
 }
 </script>
+<style>
+body {
+    font-family: "Gmarket Sans", sans-serif;
+}
+</style>

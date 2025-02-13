@@ -11,18 +11,37 @@
 
     <!-- Single Choice -->
     <template v-if="question.type === radio">
-      <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 md:hidden">
-        <button v-for="option in question.options" :key="option.id || option"
-          @click="$emit('update:modelValue', option.id || option)" :class="[
-            'w-full py-4 rounded-2xl transition-colors',
-            modelValue === (option.id || option)
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-          ]">
-          <h2>{{ option.name || option }}</h2>
-        </button>
+      <div class="relative flex flex-col min-h-[calc(100vh_-_16vh)] md:hidden">
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-auto  pt-6">
+          <p class="text-white">
+            {{ question.text }}
+          </p>
+        </div>
+
+        <!-- Sticky Options & Button Container -->
+        <div class="sticky bottom-0 left-0 right-0 bg-gray-900 shadow-lg  py-5">
+          <div class="w-full flex flex-col items-center gap-2">
+            <!-- Question Options -->
+            <button v-for="option in question.options" :key="option.id || option"
+              @click="$emit('update:modelValue', option.id || option)" :class="[
+                'w-full py-[1.1rem] rounded-2xl transition-colors',
+                modelValue === (option.id || option)
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ]">
+              <b2>{{ option.name || option }}</b2>
+            </button>
+
+            <!-- Next Button -->
+            <button @click="$emit('next-question')"
+              class="mt-4 w-full py-[1.1rem] rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
+              <b2>다음</b2>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class=" hidden md:flex items-center justify-center min-h-[calc(100vh_-_13vh)]">
+      <div class=" hidden md:flex items-center justify-center min-h-[calc(100vh_-_13vh)] ">
         <div data-layer="Frame 660"
           class=" w-[30rem] lg:w-[36rem] flex-col justify-start items-center gap-14 inline-flex">
           <div data-layer="Group 26" class="flex-col items-center justify-center gap-4 inline-flex">
@@ -30,7 +49,7 @@
             <h4 class="font-bold">{{ question.text }}</h4>
 
           </div>
-          <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 ">
+          <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 mb-24 ">
             <button v-for="option in question.options" :key="option.id || option"
               @click="$emit('update:modelValue', option.id || option)" :class="[
                 'w-full py-[1.25rem] rounded-2xl transition-colors',
@@ -40,10 +59,36 @@
               ]">
               <b2>{{ option.name || option }}</b2>
             </button>
+
+          </div>
+          <!-- <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 ">
+            <button @click="$emit('next-question')"
+              class="mt-8 w-full py-5 rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
+              <b2>
+                다음
+              </b2>
+            </button>
+          </div> -->
+        </div>
+      </div>
+      <div class="w-full py-4  text-center  fixed bottom-10 left-0 right-0">
+        <div class="w-[30rem] lg:w-[36rem] flex-col justify-start items-center gap-14  hidden md:inline-flex">
+          <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 ">
+            <button v-if="!isLastPage" @click="$emit('next-question')"
+              class="mt-8 w-full py-5 rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
+              <b2>
+                다음
+              </b2>
+            </button>
+            <button v-else @click="$emit('submit-survey')"
+              class="mt-8 w-full py-5 rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
+              <b2>
+                제출하기
+              </b2>
+            </button>
           </div>
         </div>
       </div>
-
 
     </template>
 
@@ -104,7 +149,7 @@ export default {
       default: null,
     },
   },
-  emits: ["update:modelValue"], // Declare the emitted event
+  emits: ["update:modelValue", "next-question", "submit-survey"], // Declare the emitted event
   methods: {
     toggleOption(option) {
       // 다중 선택 값 업데이트

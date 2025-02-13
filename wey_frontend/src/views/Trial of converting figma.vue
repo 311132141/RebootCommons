@@ -37,40 +37,62 @@
     </div>
 
     <!-- Page Content -->
-    <div class="flex-grow sm:mt-auto md:mt-0 overflow-hidden">
+    <div class="flex-grow sm:mt-auto md:mt-0 overflow-hidden ">
       <!-- Render a single question page -->
       <template v-if="currentPage.type === 'single'">
         <Question :question="currentPage.questions[0]" v-model="responses[currentPage.questions[0].id]"
-          class="mx-auto" />
+          :isLastPage="isLastPage" @next-question="nextPage" @submit-survey="submitSurvey" class="mx-auto" />
       </template>
 
       <!-- Render a group page (list of questions, e.g. likert style) -->
       <template v-else-if="currentPage.type === 'group'">
         <div class="space-y-6">
-          <div class="text-xl font-bold mb-4">{{ currentPage.categoryTitle }}</div>
-          <div v-for="question in currentPage.questions" :key="question.id">
+          <!-- <div class="text-xl font-bold mb-4">{{ currentPage.categoryTitle }}</div> -->
+          <!-- <div v-for="question in currentPage.questions" :key="question.id">
             <Rating :question="question" v-model="responses[question.id]" />
+          </div> -->
+          <div v-for="(question, index) in currentPage.questions" :key="question.id" ref="ratingRefs"
+            :class="index === activeRatingIndex ? 'opacity-100' : 'opacity-50'">
+            <Rating :question="question" v-model="responses[question.id]" @answered="handleAnswered(index)" />
           </div>
+          <div class="w-full max-w-4xl mx-auto  py-6 transition-all duration-300">
+            <div class="w-full  flex-col justify-start items-center gap-14  inline-flex pb-6">
+
+              <button v-if="!isLastPage" @click="nextPage"
+                class=" w-full py-5 rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
+                <b2>
+                  다음
+                </b2>
+              </button>
+              <button v-else @click="submitSurvey"
+                class="w-full py-5 rounded-2xl transition-colors bg-green-700 text-gray-300 hover:bg-green-600">
+                <b2>
+                  제출하기
+                </b2>
+              </button>
+            </div>
+          </div>
+
         </div>
       </template>
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="flex justify-between mt-6">
-      <button @click="prevPage" :disabled="isFirstPage"
-        class="px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
-        이전
-      </button>
+    <!-- <div class="w-full py-4  text-center  fixed bottom-10 left-0 right-0">
+  
+      <div class="w-[30rem] lg:w-[36rem] flex-col justify-start items-center gap-14  hidden md:inline-flex">
 
-      <!-- Next / Submit Button -->
-      <button v-if="!isLastPage" @click="nextPage"
-        class="px-4 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white">
-        다음
-      </button>
-      <button v-else @click="submitSurvey" class="px-4 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white">
-        제출하기
-      </button>
-    </div>
+        <button v-if="!isLastPage" @click="nextPage"
+          class="mt-8 w-full py-5 rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
+          <b2>
+            다음
+          </b2>
+        </button>
+        <button v-else @click="submitSurvey" class="px-4 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white">
+          제출하기
+        </button>
+      </div>
+    </div> -->
   </div>
 </template>
 
@@ -108,6 +130,13 @@ export default {
   },
   computed: {
     // Build pages where each page is either a "single" question page or a "group" of questions.
+    activeRatingIndex() {
+      if (this.currentPage.type !== 'group') return null;
+      const idx = this.currentPage.questions.findIndex(q => !this.responses[q.id]);
+      // If all questions have been answered, return the last question's index.
+      return idx === -1 ? this.currentPage.questions.length - 1 : idx;
+    },
+
     pages() {
       // Start with the two static questions:
       const pages = [
@@ -142,8 +171,8 @@ export default {
         },
 
       ];
-      if (this.courseQuestions.demographic_personal) {
-        this.courseQuestions.demographic_personal.forEach((question) => {
+      if (this.courseQuestions.demographic) {
+        this.courseQuestions.demographic.forEach((question) => {
           pages.push({
             type: "single",
             questions: [question], // Single question per page
@@ -155,7 +184,7 @@ export default {
       // Now append pages for each category that was returned from the API.
       // (You can customise the order as needed.)
       for (const category in this.courseQuestions) {
-        if (category !== "demographic_personal") {
+        if (category !== "demographic") {
           pages.push({
             type: "group",
             category, // the raw category key
@@ -213,6 +242,27 @@ export default {
     this.fetchQuestions();
   },
   methods: {
+    handleAnswered(index) {
+      // Use $nextTick to wait for DOM updates
+      this.$nextTick(() => {
+        // Ensure we have an array of rating elements.
+        const ratingElements = Array.isArray(this.$refs.ratingRefs)
+          ? this.$refs.ratingRefs
+          : [this.$refs.ratingRefs];
+        // Loop from the next question to find the first unanswered question.
+        for (let i = index + 1; i < this.currentPage.questions.length; i++) {
+          const questionId = this.currentPage.questions[i].id;
+          if (!this.responses[questionId]) {
+            // Scroll the corresponding element into view
+            const element = ratingElements[i];
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            break;
+          }
+        }
+      });
+    },
     getCourseOptions() {
       console.log("📢 SurveyType ID when getting courses:", this.responses.surveyType);
       if (this.responses.surveyType === 1) {
@@ -237,7 +287,7 @@ export default {
       // For example, you might have:
       const titles = {
         lifestyle: "라이프스타일",
-        demographic_personal: "인구통계 (개인)",
+        demographic: "인구통계 (개인)",
         // Add more mappings as needed…
       };
       return titles[category] || category;

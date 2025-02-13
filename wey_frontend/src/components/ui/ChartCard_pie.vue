@@ -8,33 +8,41 @@
 
 
       <!-- Use the ChartComponent -->
-      <ReusableChart title="User Growth" description="Monthly active users over time" :chartType="'pie'" :chartData="{
-        labels: labels,
-        datasets: [{
-          label: label_name,
-          data: data,
-          backgroundColor: 'rgba(75, 192, 192, 0.6)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1,
-        }]
-      }" :title_x="title_z" :title_y="title_y" />
+      <ReusableChart :title="title" :description="description" :chartType="chartType" :chartData="computedChartData"
+        :title_x="title_z" :title_y="title_y" />
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from "vue";
 import ReusableChart from './ReusableChart.vue';
 
-// Define props
-defineProps({
-  title: { type: String, default: 'Chart Title' },
-  description: { type: String, default: 'This is a chart.' },
-  label_name: { type: String, default: 'User' },
-  labels: { type: Array, default: () => ['Jan', 'Feb', 'Mar', 'Apr', 'May'] },
-  data: { type: Array, default: () => [100, 200, 300, 400, 500] },
-  title_z: { type: String, default: 'Month' },
-  title_y: { type: String, default: 'User Count' },
-
-
+const props = defineProps({
+  title: { type: String, default: "성별 분포 (Gender Distribution)" },
+  description: { type: String, default: "이 그래프는 참가자의 성별 분포를 보여줍니다." },
+  chartType: { type: String, default: "pie" },
+  labels: { type: Array, default: () => ["남성 (Male)", "여성 (Female)"] },
+  datasets: {
+    type: Array,
+    default: () => [
+      {
+        label: "Gender Ratio",
+        data: [60, 40], // Example: 60% Male, 40% Female
+        backgroundColor: ["#4F46E5", "#A78BFA"]
+      }
+    ]
+  }
 });
+
+// Ensure computed reactivity for Chart.js data
+const computedChartData = computed(() => ({
+  labels: props.labels,
+  datasets: props.datasets.map(dataset => ({
+    ...dataset,
+    data: [...dataset.data], // Unwrap Proxy if necessary
+    borderColor: dataset.borderColor || "rgba(75, 192, 192, 1)",
+    borderWidth: dataset.borderWidth || 1
+  }))
+}));
 </script>
