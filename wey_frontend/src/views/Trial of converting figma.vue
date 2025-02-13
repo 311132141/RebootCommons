@@ -184,29 +184,40 @@ export default {
         },
 
       ];
-      if (this.courseQuestions.demographic) {
-        this.courseQuestions.demographic.forEach((question) => {
-          pages.push({
-            type: "single",
-            questions: [question], // Single question per page
-            pageTitle: "인구통계학",
-          });
-        });
-      }
+      const demoKeys = ["demographic", "demographic_corp", "demographic_personal"];
 
-      // Now append pages for each category that was returned from the API.
-      // (You can customise the order as needed.)
+      // Loop over each demographic key
+      demoKeys.forEach((key) => {
+        if (this.courseQuestions[key]) {
+          this.courseQuestions[key].forEach((question) => {
+            pages.push({
+              type: "single",
+              questions: [question], // Single question per page
+              // Set a title based on the key. You can customize these as needed.
+              pageTitle:
+                key === "demographic_corp"
+                  ? "기업 인구통계"
+                  : key === "demographic_personal"
+                    ? "개인 인구통계"
+                    : "인구통계학",
+            });
+          });
+        }
+      });
+
+      // Append pages for all other categories that are not in demoKeys
       for (const category in this.courseQuestions) {
-        if (category !== "demographic") {
+        if (!demoKeys.includes(category)) {
           pages.push({
             type: "group",
             category, // the raw category key
-            // Optionally, you could map the category key to a prettier title:
+            // Optionally, map the category key to a prettier title:
             categoryTitle: this.getCategoryTitle(category),
             questions: this.courseQuestions[category],
           });
         }
       }
+
 
       return pages;
     },

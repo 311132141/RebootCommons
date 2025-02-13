@@ -1,110 +1,164 @@
 <template>
-  <div class="container mx-auto px-8 py-6">
-    <!-- User Profile Section -->
-    <div class="bg-gray-900 text-white rounded-lg p-8 shadow-md flex items-center">
-      <!-- Avatar -->
-      <div class="w-32 h-32 bg-gray-700 rounded-lg flex items-center justify-center">
-        <img v-if="user.avatar" :src="user.avatar" alt="User Avatar" class="w-full h-full object-cover rounded-lg" />
-        <span v-else class="text-xl">No Avatar</span>
+  <div class="flex h-screen" v-if="!loading">
+    <main class="flex-1 p-6 ">
+      <div class="flex items-center justify-between mb-6 print:hidden">
+        <div class="flex items-center space-x-2 text-gray-400 ">
+          <span>Dashboard</span>
+          <span>></span>
+          <span>Companies</span>
+        </div>
+        <div class="flex items-center space-x-4 ">
+          <button @click="printDashboard"
+            class=" bg-gray-800 p-2 rounded-md text-white px-4 py-2 rounded hover:bg-blue-600 print:hidden">
+            리포트 작성하기
+          </button>
+        </div>
+      </div>
+      <h1 class="text-2xl text-bold pb-3 print:text-black mb-6 print:mb-6">User page</h1>
+
+      <div class="space-y-6">
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
+
+            <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 relative">
+              <div class="ml-8">
+                <h3 class="text-4xl font-bold text-gray-100">{{ user.name }}</h3>
+                <ul class="mt-4 text-gray-300">
+                  <li><strong>Email:</strong> {{ user.email }}</li>
+                  <li><strong>성별:</strong> {{ user.demographics.gender }}</li>
+                  <li><strong>연령:</strong> {{ user.demographics.age }}</li>
+                  <li><strong>결혼 여부:</strong> {{ user.demographics.marital_status }}</li>
+                  <li><strong>학력:</strong> {{ user.demographics.education }}</li>
+                  <li><strong>소득 수준:</strong> {{ user.demographics.income }}</li>
+                </ul>
+                <!-- Selected Program -->
+                <h2 class="text-xl font-semibold mt-6 text-gray-100">
+                  선택한 프로그램:
+                </h2>
+                <div>{{ user.demographics.selected_program }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
+            <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
+              description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다." :labels="radarChartLabel"
+              :datasets="radarChartData" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
+            <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
+              description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다." :labels="prepostChartLabel"
+              :datasets="prepostChartData" />
+
+          </div>
+          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
+            <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
+              description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다." :labels="prepostChartLabel"
+              :datasets="prepostChartData" />
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-5 pb-5">
+          <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
+            <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
+              description="수면, 운동, 식습관, 명상, 일과 삶의 균형과 같은 라이프스타일 요인이 리더십 성장률에 미치는 영향을 분석한 그래프입니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
+              :lifestyleLabels="['Sleep', 'Exercise', 'Meditation', 'Diet', 'Balance']" :scores="[1, 2, 3, 4, 5]"
+              :improvementData="[
+                [1.2, 1.5, 2.1, 1.8, 1.9],
+                [2.4, 2.7, 3.0, 2.9, 2.5],
+                [3.5, 3.2, 3.8, 3.4, 3.9],
+                [4.1, 4.3, 4.7, 4.5, 4.2],
+                [5.0, 5.2, 5.5, 5.1, 5.3]
+              ]" />
+          </div>
+
+        </div>
       </div>
 
-      <!-- User Info -->
-      <div class="ml-8">
-        <h1 class="text-4xl font-bold text-gray-100">{{ user.name }}</h1>
-        <ul class="mt-4 text-gray-300">
-          <li><strong>Email:</strong> {{ user.email }}</li>
-          <li><strong>성별:</strong> {{ user.demographics.gender }}</li>
-          <li><strong>연령:</strong> {{ user.demographics.age }}</li>
-          <li><strong>결혼 여부:</strong> {{ user.demographics.marital_status }}</li>
-          <li><strong>학력:</strong> {{ user.demographics.education }}</li>
-          <li><strong>소득 수준:</strong> {{ user.demographics.income }}</li>
-        </ul>
-        <!-- Selected Program -->
-        <h2 class="text-xl font-semibold mt-6 text-gray-100">
-          선택한 프로그램:
-        </h2>
-        <div>{{ user.demographics.selected_program }}</div>
-      </div>
-    </div>
 
-    <!-- Pre/Post Growth Radar Chart (still rendered manually) -->
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-700">프로그램 참여 전후 비교</h2>
-      <canvas ref="prePostRadarChart"></canvas>
-    </div>
 
-    <!-- Now, instead of using a canvas for the user vs all growth radar chart,
+      <div class="container mx-auto px-8 py-6">
+        <!-- User Profile Section -->
+
+
+        <!-- Pre/Post Growth Radar Chart (still rendered manually) -->
+        <div class="mt-6">
+          <h2 class="text-lg font-semibold text-gray-700">프로그램 참여 전후 비교</h2>
+          <canvas ref="prePostRadarChart"></canvas>
+        </div>
+
+        <!-- Now, instead of using a canvas for the user vs all growth radar chart,
          we use the built component and pass computed data -->
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-700">개인과 전체 평균 성장률 비교</h2>
-      <!-- ADDED: Use ChartCard_radar and pass the computed radarChartLabel and radarChartData -->
-      <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
-        description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다." :labels="radarChartLabel"
-        :datasets="radarChartData" />
-    </div>
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-700">개인과 전체 평균 성장률 비교</h2>
-      <!-- ADDED: Use ChartCard_radar and pass the computed radarChartLabel and radarChartData -->
-      <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
-        description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다." :labels="prepostChartLabel"
-        :datasets="prepostChartData" />
-    </div>
+        <div class="mt-6">
+          <h2 class="text-lg font-semibold text-gray-700">개인과 전체 평균 성장률 비교</h2>
+          <!-- ADDED: Use ChartCard_radar and pass the computed radarChartLabel and radarChartData -->
 
-    <!-- Lifestyle vs Performance Heatmap -->
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-700">라이프스타일과 성장률의 상관관계</h2>
-      <canvas ref="heatmapChart"></canvas>
-    </div>
+        </div>
+        <div class="mt-6">
+          <h2 class="text-lg font-semibold text-gray-700">개인과 전체 평균 성장률 비교</h2>
+          <!-- ADDED: Use ChartCard_radar and pass the computed radarChartLabel and radarChartData -->
 
-    <!-- Question Ratings Table -->
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-700">질문별 사용자 응답 비교</h2>
-      <table class="table-auto w-full text-gray-700 border border-gray-300">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="px-4 py-2">카테고리</th>
-            <th class="px-4 py-2">질문</th>
-            <th class="px-4 py-2">사전 응답</th>
-            <th class="px-4 py-2">사후 응답</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(question, index) in questionRatings" :key="index" class="border-b">
-            <td class="px-4 py-2">{{ question.category }}</td>
-            <td class="px-4 py-2">{{ question.question }}</td>
-            <td class="px-4 py-2">{{ question.pre_score }}</td>
-            <td class="px-4 py-2">{{ question.post_score }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+        </div>
 
-    <!-- Question-Level Radar Charts -->
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-700">카테고리별 질문 비교</h2>
-      <div v-for="(category, index) in questionGrowthData.categories" :key="index" class="mb-6">
-        <h3 class="text-md font-semibold text-gray-600">{{ category.name }}</h3>
-        <canvas :ref="el => questionRadarCharts[index] = el"></canvas>
+        <!-- Lifestyle vs Performance Heatmap -->
+        <div class="mt-6">
+          <h2 class="text-lg font-semibold text-gray-700">라이프스타일과 성장률의 상관관계</h2>
+          <canvas ref="heatmapChart"></canvas>
+        </div>
+
+        <!-- Question Ratings Table -->
+        <div class="mt-6">
+          <h2 class="text-lg font-semibold text-gray-700">질문별 사용자 응답 비교</h2>
+          <table class="table-auto w-full text-gray-700 border border-gray-300">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="px-4 py-2">카테고리</th>
+                <th class="px-4 py-2">질문</th>
+                <th class="px-4 py-2">사전 응답</th>
+                <th class="px-4 py-2">사후 응답</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(question, index) in questionRatings" :key="index" class="border-b">
+                <td class="px-4 py-2">{{ question.category }}</td>
+                <td class="px-4 py-2">{{ question.question }}</td>
+                <td class="px-4 py-2">{{ question.pre_score }}</td>
+                <td class="px-4 py-2">{{ question.post_score }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Question-Level Radar Charts -->
+        <div class="mt-6">
+          <h2 class="text-lg font-semibold text-gray-700">카테고리별 질문 비교</h2>
+          <div v-for="(category, index) in questionGrowthData.categories" :key="index" class="mb-6">
+            <h3 class="text-md font-semibold text-gray-600">{{ category.name }}</h3>
+            <canvas :ref="el => questionRadarCharts[index] = el"></canvas>
+          </div>
+        </div>
+        <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
+          description="수면, 운동, 식습관, 명상, 일과 삶의 균형과 같은 라이프스타일 요인이 리더십 성장률에 미치는 영향을 분석한 그래프입니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
+          :lifestyleLabels="['Sleep', 'Exercise', 'Meditation', 'Diet', 'Balance']" :scores="[1, 2, 3, 4, 5]"
+          :improvementData="[
+            [1.2, 1.5, 2.1, 1.8, 1.9],
+            [2.4, 2.7, 3.0, 2.9, 2.5],
+            [3.5, 3.2, 3.8, 3.4, 3.9],
+            [4.1, 4.3, 4.7, 4.5, 4.2],
+            [5.0, 5.2, 5.5, 5.1, 5.3]
+          ]" />
+
+
+        <div class="grid grid-cols-12 gap-5 pb-5">
+          <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
+
+
+          </div>
+
+        </div>
       </div>
-    </div>
-    <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
-      description="수면, 운동, 식습관, 명상, 일과 삶의 균형과 같은 라이프스타일 요인이 리더십 성장률에 미치는 영향을 분석한 그래프입니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
-      :lifestyleLabels="['Sleep', 'Exercise', 'Meditation', 'Diet', 'Balance']" :scores="[1, 2, 3, 4, 5]"
-      :improvementData="[
-        [1.2, 1.5, 2.1, 1.8, 1.9],
-        [2.4, 2.7, 3.0, 2.9, 2.5],
-        [3.5, 3.2, 3.8, 3.4, 3.9],
-        [4.1, 4.3, 4.7, 4.5, 4.2],
-        [5.0, 5.2, 5.5, 5.1, 5.3]
-      ]" />
-    <HeatmapChart />
-    <div class="grid grid-cols-12 gap-5 pb-5">
-      <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
-
-
-      </div>
-
-    </div>
+    </main>
   </div>
 </template>
 
@@ -124,6 +178,7 @@ Chart.register(...registerables);
 export default {
   components: {
     ChartCard_radar, // ADDED: Register the component
+    HeatmapChart
   },
   setup() {
     const route = useRoute();
