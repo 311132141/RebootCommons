@@ -171,6 +171,12 @@ const router = createRouter({
           component: CompanyDashboard,
           props: true,
         },
+        {
+          path: "/profile-view/:id",
+          name: "ProfileView",
+          component: ProfileView,
+          props: true,
+        },
         
 
 
@@ -181,12 +187,7 @@ const router = createRouter({
     // { path: '/companies', name: 'companies', component: Company_Page },
     // { path: '/companies/:id', name: 'company-details', component: CompanyDetails, props: true }, 
     
-    {
-      path: "/profile-view/:id",
-      name: "ProfileView",
-      component: ProfileView,
-      props: true,
-    },
+    
   ]
 
 })

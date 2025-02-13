@@ -1,6 +1,5 @@
 <template>
   <div class="container mx-auto px-8 py-6">
-    <!-- User Profile Section -->
     <div class="bg-gray-900 text-white rounded-lg p-8 shadow-md flex items-center">
       <!-- Avatar -->
       <div class="w-32 h-32 bg-gray-700 rounded-lg flex items-center justify-center">
@@ -27,27 +26,16 @@
       </div>
     </div>
 
-    <!-- Pre/Post Growth Radar Chart (still rendered manually) -->
+    <!-- Pre/Post Growth Radar Chart -->
     <div class="mt-6">
       <h2 class="text-lg font-semibold text-gray-700">프로그램 참여 전후 비교</h2>
       <canvas ref="prePostRadarChart"></canvas>
     </div>
 
-    <!-- Now, instead of using a canvas for the user vs all growth radar chart,
-         we use the built component and pass computed data -->
+    <!-- User vs. All Growth Radar Chart -->
     <div class="mt-6">
       <h2 class="text-lg font-semibold text-gray-700">개인과 전체 평균 성장률 비교</h2>
-      <!-- ADDED: Use ChartCard_radar and pass the computed radarChartLabel and radarChartData -->
-      <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
-        description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다." :labels="radarChartLabel"
-        :datasets="radarChartData" />
-    </div>
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-700">개인과 전체 평균 성장률 비교</h2>
-      <!-- ADDED: Use ChartCard_radar and pass the computed radarChartLabel and radarChartData -->
-      <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
-        description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다." :labels="prepostChartLabel"
-        :datasets="prepostChartData" />
+      <canvas ref="userVsAllGrowthChart"></canvas>
     </div>
 
     <!-- Lifestyle vs Performance Heatmap -->
@@ -87,44 +75,19 @@
         <canvas :ref="el => questionRadarCharts[index] = el"></canvas>
       </div>
     </div>
-    <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
-      description="수면, 운동, 식습관, 명상, 일과 삶의 균형과 같은 라이프스타일 요인이 리더십 성장률에 미치는 영향을 분석한 그래프입니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
-      :lifestyleLabels="['Sleep', 'Exercise', 'Meditation', 'Diet', 'Balance']" :scores="[1, 2, 3, 4, 5]"
-      :improvementData="[
-        [1.2, 1.5, 2.1, 1.8, 1.9],
-        [2.4, 2.7, 3.0, 2.9, 2.5],
-        [3.5, 3.2, 3.8, 3.4, 3.9],
-        [4.1, 4.3, 4.7, 4.5, 4.2],
-        [5.0, 5.2, 5.5, 5.1, 5.3]
-      ]" />
-    <HeatmapChart />
-    <div class="grid grid-cols-12 gap-5 pb-5">
-      <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
-
-
-      </div>
-
-    </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, computed, nextTick } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
 import { Chart, registerables } from "chart.js";
 import "chartjs-chart-matrix";
-import ChartCard_radar from "../components/ui/ChartCard_radar.vue";
-import HeatmapChart from "../components/ui/HeatmapChart.vue";
-
-
 
 Chart.register(...registerables);
 
 export default {
-  components: {
-    ChartCard_radar, // ADDED: Register the component
-  },
   setup() {
     const route = useRoute();
     const user = ref({
@@ -134,19 +97,15 @@ export default {
       demographics: {}
     });
 
-    // Canvas refs for charts (manual ones remain for some charts)
+    // Canvas refs for charts
     const prePostRadarChart = ref(null);
+    const userVsAllGrowthChart = ref(null);
     const heatmapChart = ref(null);
     const questionRadarCharts = ref([]);
 
     // Reactive properties for question-level data
     const questionRatings = ref([]);
     const questionGrowthData = ref({ categories: [] });
-
-    // New reactive variable for user vs all growth data
-    // ADDED CODE: Instead of manually rendering the chart, store data for ChartCard_radar
-    const userGrowthData = ref(null);
-    const prePostRadarData = ref(null);
 
     // Fetch user profile
     const fetchUserProfile = async () => {
@@ -159,7 +118,7 @@ export default {
       }
     };
 
-    // Fetch pre/post growth data (for radar chart) remains unchanged
+    // Fetch pre/post growth data (for radar chart)
     const fetchPrePostData = async () => {
       const userId = route.params.id;
       try {
@@ -168,16 +127,13 @@ export default {
           console.warn("No pre/post data returned");
           return;
         }
-        // We still render this manually into a canvas
-        // renderRadarChart(prePostRadarChart.value, response.data, "Pre-Lecture", "Post-Lecture");
-        prePostRadarData.value = response.data;
-        console.log("prepost", prePostRadarData.value)
+        renderRadarChart(prePostRadarChart.value, response.data, "Pre-Lecture", "Post-Lecture");
       } catch (error) {
         console.error("Error fetching pre/post data:", error);
       }
     };
 
-    // ADDED CODE: Fetch user vs all growth data and store it in userGrowthData instead of rendering a canvas
+    // Fetch user vs all growth data (for radar chart)
     const fetchUserVsAllGrowth = async () => {
       const userId = route.params.id;
       try {
@@ -186,7 +142,7 @@ export default {
           console.warn("No user vs all growth data returned");
           return;
         }
-        userGrowthData.value = response.data; // store the data for the ChartCard_radar component
+        renderRadarChart(userVsAllGrowthChart.value, response.data, "User Growth", "All Users Growth");
       } catch (error) {
         console.error("Error fetching user vs all growth data:", error);
       }
@@ -228,7 +184,7 @@ export default {
       }
     };
 
-    // Generic function to render a radar chart on a given canvas (used for prePostRadarChart)
+    // Generic function to render a radar chart on a given canvas
     const renderRadarChart = (canvas, data, label1, label2) => {
       if (!canvas || !data || !data.categories) {
         console.warn("No data for radar chart");
@@ -349,112 +305,24 @@ export default {
         });
       });
     };
-    // ADDED CODE: Create computed properties for the radar chart data to be used by <ChartCard_radar>
-    const prepostChartLabel = computed(() => {
-      // Use the data from userGrowthData (fetched from the user-growth-comparison endpoint)
-      return prePostRadarData.value?.categories || [];
-    });
-
-    const prepostChartData = computed(() => {
-
-      if (!prePostRadarData.value) return [];
-      console.log("this user", prePostRadarData.value.pre_scores);
-      console.log("all user", prePostRadarData.value.post_scores);
-      return [
-        {
-          label: "pre_scores",
-          data: prePostRadarData.value.pre_scores || [],
-          backgroundColor: "rgba(255, 99, 132, 0.2)",
-          borderColor: "rgba(255, 99, 132, 1)",
-          borderWidth: 2,
-        },
-        {
-          label: "post scores",
-          data: prePostRadarData.value.post_scores || [],
-          backgroundColor: "rgba(54, 162, 235, 0.2)",
-          borderColor: "rgba(54, 162, 235, 1)",
-          borderWidth: 2,
-        }
-      ];
-
-    });
-    // ADDED CODE: Create computed properties for the radar chart data to be used by <ChartCard_radar>
-    const radarChartLabel = computed(() => {
-      // Use the data from userGrowthData (fetched from the user-growth-comparison endpoint)
-      return userGrowthData.value?.categories || [];
-    });
-
-    const radarChartData = computed(() => {
-
-      if (!userGrowthData.value) return [];
-      console.log("this user", userGrowthData.value.user_scores);
-      console.log("all user", userGrowthData.value.all_users_scores);
-      return [
-        {
-          label: "User Growth",
-          data: userGrowthData.value.user_scores || [],
-          backgroundColor: "rgba(255, 99, 132, 0.2)",
-          borderColor: "rgba(255, 99, 132, 1)",
-          borderWidth: 2,
-        },
-        {
-          label: "All Users Growth",
-          data: userGrowthData.value.all_users_scores || [],
-          backgroundColor: "rgba(54, 162, 235, 0.2)",
-          borderColor: "rgba(54, 162, 235, 1)",
-          borderWidth: 2,
-        }
-      ];
-
-    });
-
-    // ADDED CODE: Fetch user vs all growth data and store it in userGrowthData
-    // const fetchUserVsAllGrowth = async () => {
-    //   const userId = route.params.id;
-    //   try {
-    //     const response = await axios.get(`http://127.0.0.1:8000/api/users/${userId}/user-growth-comparison/`);
-    //     if (!response.data.categories || response.data.categories.length === 0) {
-    //       console.warn("No user vs all growth data returned");
-    //       return;
-    //     }
-    //     userGrowthData.value = response.data;
-    //   } catch (error) {
-    //     console.error("Error fetching user vs all growth data:", error);
-    //   }
-    // };
 
     onMounted(async () => {
       await fetchUserProfile();
       await fetchPrePostData();
-      await fetchUserVsAllGrowth(); // ADDED: now fetch data for radar chart component
+      await fetchUserVsAllGrowth();
       await fetchHeatmapData();
       await fetchQuestionRatings();
-      nextTick(() => {
-        loading.value = false;
-      });
     });
 
     return {
       user,
       prePostRadarChart,
+      userVsAllGrowthChart,
       heatmapChart,
       questionRadarCharts,
       questionRatings,
       questionGrowthData,
-      radarChartLabel,   // ADDED: computed labels for ChartCard_radar
-      radarChartData,    // ADDED: computed datasets for ChartCard_radar
-      prepostChartData,
-      prepostChartLabel
     };
   },
 };
 </script>
-
-<style scoped>
-@media print {
-  body {
-    width: 1100px;
-    height: auto;
-  }
-}
-</style>
