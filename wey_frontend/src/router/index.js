@@ -15,7 +15,7 @@ import NotificationsView from '../views/NotificationsView.vue'
 import Overview from '../views/Overview.vue'
 import SurveyView from '../views/SurveyView.vue'
 import TrialOfConvertingFigma from '../views/Trial of converting figma.vue'
-import Dashboard from '../views/CompanyDashboard.vue'
+import Dashboard from '../views/Dashboard.vue'
 import Company_Page from '../views/Company_Page.vue'
 import CompanyDetails from '@/views/CompanyDetails.vue';
 import FakeLogin from '../views/FakeLogin.vue'
@@ -181,12 +181,12 @@ const router = createRouter({
     // { path: '/companies', name: 'companies', component: Company_Page },
     // { path: '/companies/:id', name: 'company-details', component: CompanyDetails, props: true }, 
     
-    // {
-    //   path: "/dashboard/:id",
-    //   name: "company-dashboard",
-    //   component: Dashboard,
-    //   props: true,
-    // },
+    {
+      path: "/profile-view/:id",
+      name: "ProfileView",
+      component: ProfileView,
+      props: true,
+    },
   ]
 
 })
