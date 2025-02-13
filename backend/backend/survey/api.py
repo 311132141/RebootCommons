@@ -17,6 +17,7 @@ from .models import (
 )
 from .serializers import QuestionSerializer
 from account.models import User, Company
+from account.serializer import *
 
 # =============================================================================
 # Constants and Mappings
@@ -40,6 +41,38 @@ CATEGORIES = ["entrepreneur", "org", "selflead", "ppc"]
 # =============================================================================
 # Helper Functions
 # =============================================================================
+
+def get_company_user_count(company):
+    """
+    Returns the number of users in a company.
+    """
+    return User.objects.filter(company=company).count()
+
+
+def get_company_average_growth(company):
+    """
+    Calculates the average growth of all users in a company.
+    """
+    company_users = User.objects.filter(company=company)
+    categories = get_company_categories(company)
+    
+    if not categories or not company_users.exists():
+        return 0  # Return 0 if no categories or users exist
+    
+    growth_data = calculate_growth(company_users, "Company", categories)
+    
+    # Compute overall average growth
+    total_growth = sum(growth_data.values())
+    average_growth = total_growth / len(growth_data) if growth_data else 0
+    
+    return round(average_growth, 2)  # Round to 2 decimal places
+
+
+def get_company_course_type(company):
+    """
+    Returns the course type name for a company.
+    """
+    return company.course_type.name if company.course_type else "정보 없음"
 
 def get_korean_question(english_key):
     """
@@ -335,31 +368,137 @@ class CourseTypeListView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
+# class SurveyView(APIView):
+#     """
+#     Handles retrieval and submission of survey responses for a specific
+#     SurveyType and CourseType combination.
+#     """
+
+#     # permission_classes = [AllowAny]
+#     def get(self, request, survey_type_id, course_type_id):
+#         """
+#         Returns the questions for a specific SurveyType and CourseType combination.
+#         """
+#         try:
+#             survey_type = SurveyType.objects.get(pk=survey_type_id)
+#             course_type = CourseType.objects.get(pk=course_type_id, survey_type=survey_type)
+#         except SurveyType.DoesNotExist:
+#             return Response(
+#                 {"detail": "SurveyType not found."},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+#         except CourseType.DoesNotExist:
+#             return Response(
+#                 {"detail": "CourseType not found for this SurveyType."},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         survey_type_questions = SurveyTypeQuestion.objects.filter(
+#             survey_type=survey_type
+#         ).select_related('question').order_by('order')
+#         course_type_questions = CourseTypeQuestion.objects.filter(
+#             course_type=course_type
+#         ).select_related('question').order_by('order')
+
+#         st_questions = [stq.question for stq in survey_type_questions]
+#         ct_questions = [ctq.question for ctq in course_type_questions]
+#         combined_questions = st_questions + ct_questions
+
+#         serializer = QuestionSerializer(combined_questions, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+#     def post(self, request, survey_type_id, course_type_id):
+#         """
+#         Handles submission of user responses for a specific SurveyType and CourseType combination.
+#         """
+#         if not request.user or not request.user.is_authenticated:
+#             return Response(
+#                 {"detail": "Authentication required."},
+#                 status=status.HTTP_401_UNAUTHORIZED
+#             )
+
+#         try:
+#             survey_type = SurveyType.objects.get(pk=survey_type_id)
+#             course_type = CourseType.objects.get(pk=course_type_id, survey_type=survey_type)
+#         except SurveyType.DoesNotExist:
+#             return Response(
+#                 {"detail": "SurveyType not found."},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+#         except CourseType.DoesNotExist:
+#             return Response(
+#                 {"detail": "CourseType not found for this SurveyType."},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         user = request.user
+#         phase = request.data.get("phase")
+#         if phase not in ['pre', 'post']:
+#             return Response(
+#                 {"detail": "Invalid phase. Must be 'pre' or 'post'."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         survey_response = UserSurveyResponse.objects.create(
+#             user=user,
+#             survey_type=survey_type,
+#             course_type=course_type,
+#             phase=phase
+#         )
+
+#         answers = request.data.get("answers", [])
+#         if not isinstance(answers, list):
+#             return Response(
+#                 {"detail": "Answers must be a list of objects."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         for answer in answers:
+#             question_id = answer.get("question_id")
+#             answer_text = answer.get("answer_text")
+#             answer_value = answer.get("answer_value")
+
+#             try:
+#                 question = Question.objects.get(pk=question_id)
+#             except Question.DoesNotExist:
+#                 return Response(
+#                     {"detail": f"Question with id {question_id} not found."},
+#                     status=status.HTTP_404_NOT_FOUND
+#                 )
+
+#             Answer.objects.create(
+#                 response=survey_response,
+#                 question=question,
+#                 answer_text=answer_text,
+#                 answer_value=answer_value
+#             )
+
+#         return Response(
+#             {"detail": "Survey responses submitted successfully."},
+#             status=status.HTTP_201_CREATED
+#         )
+
 class SurveyView(APIView):
     """
     Handles retrieval and submission of survey responses for a specific
     SurveyType and CourseType combination.
     """
 
-    # permission_classes = [AllowAny]
     def get(self, request, survey_type_id, course_type_id):
         """
         Returns the questions for a specific SurveyType and CourseType combination.
+        If the user is authenticated and has already submitted a survey response,
+        then questions with category "lifestyle" are filtered out.
         """
         try:
             survey_type = SurveyType.objects.get(pk=survey_type_id)
             course_type = CourseType.objects.get(pk=course_type_id, survey_type=survey_type)
         except SurveyType.DoesNotExist:
-            return Response(
-                {"detail": "SurveyType not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "SurveyType not found."}, status=status.HTTP_404_NOT_FOUND)
         except CourseType.DoesNotExist:
-            return Response(
-                {"detail": "CourseType not found for this SurveyType."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "CourseType not found for this SurveyType."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Get questions from both bridging tables.
         survey_type_questions = SurveyTypeQuestion.objects.filter(
             survey_type=survey_type
         ).select_related('question').order_by('order')
@@ -371,38 +510,54 @@ class SurveyView(APIView):
         ct_questions = [ctq.question for ctq in course_type_questions]
         combined_questions = st_questions + ct_questions
 
+        # If the user is authenticated and has any previous response,
+        # filter out lifestyle questions.
+        if request.user and request.user.is_authenticated:
+            if UserSurveyResponse.objects.filter(
+                user=request.user, survey_type=survey_type, course_type=course_type
+            ).exists():
+                combined_questions = [q for q in combined_questions if q.category != "lifestyle"]
+
         serializer = QuestionSerializer(combined_questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, survey_type_id, course_type_id):
         """
         Handles submission of user responses for a specific SurveyType and CourseType combination.
+        Determines the phase automatically:
+          - If no pre-phase response exists, phase is set to "pre".
+          - If a pre-phase exists but no post-phase exists, phase is set to "post"
+            and answers for lifestyle questions are skipped.
+          - If both pre and post responses exist, further submissions are rejected.
         """
         if not request.user or not request.user.is_authenticated:
-            return Response(
-                {"detail": "Authentication required."},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+            return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
             survey_type = SurveyType.objects.get(pk=survey_type_id)
             course_type = CourseType.objects.get(pk=course_type_id, survey_type=survey_type)
         except SurveyType.DoesNotExist:
-            return Response(
-                {"detail": "SurveyType not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "SurveyType not found."}, status=status.HTTP_404_NOT_FOUND)
         except CourseType.DoesNotExist:
-            return Response(
-                {"detail": "CourseType not found for this SurveyType."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "CourseType not found for this SurveyType."}, status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
-        phase = request.data.get("phase")
-        if phase not in ['pre', 'post']:
+
+        # Determine phase automatically:
+        pre_response = UserSurveyResponse.objects.filter(
+            user=user, survey_type=survey_type, course_type=course_type, phase="pre"
+        ).first()
+        post_response = UserSurveyResponse.objects.filter(
+            user=user, survey_type=survey_type, course_type=course_type, phase="post"
+        ).first()
+
+        if pre_response is None:
+            phase = "pre"
+        elif post_response is None:
+            phase = "post"
+        else:
             return Response(
-                {"detail": "Invalid phase. Must be 'pre' or 'post'."},
+                {"detail": "Both pre and post survey responses have already been submitted."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -415,10 +570,7 @@ class SurveyView(APIView):
 
         answers = request.data.get("answers", [])
         if not isinstance(answers, list):
-            return Response(
-                {"detail": "Answers must be a list of objects."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "Answers must be a list of objects."}, status=status.HTTP_400_BAD_REQUEST)
 
         for answer in answers:
             question_id = answer.get("question_id")
@@ -433,6 +585,10 @@ class SurveyView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
+            # For post-phase submissions, skip lifestyle questions.
+            if phase == "post" and question.category == "lifestyle":
+                continue
+
             Answer.objects.create(
                 response=survey_response,
                 question=question,
@@ -441,10 +597,9 @@ class SurveyView(APIView):
             )
 
         return Response(
-            {"detail": "Survey responses submitted successfully."},
+            {"detail": "Survey responses submitted successfully.", "phase": phase},
             status=status.HTTP_201_CREATED
         )
-
 
 class GenderDistributionView(APIView):
     """
@@ -884,6 +1039,40 @@ def get_user_question_pre_post_comparison(request, user_id):
 
     print("✅ Final Computed Question-Level Pre/Post Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_company_statistics(request, company_id):
+    """
+    Returns company statistics, including:
+    - Number of users
+    - Average growth rate
+    - Course type
+    """
+    try:
+        company = Company.objects.get(id=company_id)
+
+        data = {
+            "user_count": get_company_user_count(company),
+            "average_growth": get_company_average_growth(company),
+            "course_type": get_company_course_type(company),
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    except Company.DoesNotExist:
+        return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_users_without_company(request):
+    """
+    Returns a list of all users who do not belong to any company (company=None)
+    using the UserSerializer.
+    """
+    users = User.objects.filter(company__isnull=True)
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # =============================================================================

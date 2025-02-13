@@ -39,10 +39,24 @@
 
       <!-- <router-view /> -->
       <div class="grid grid-cols-12 gap-5 pb-5 print:hidden">
-        <DashCard />
-        <DashCard />
-        <DashCard />
-        <DashCard />
+        <DashCard
+          title="프로그램 참여 지원 수"
+          :description="companyStats.user_count + '명'"
+          percentage="26%"
+          content="증가(지난달 대비)"
+        />
+        <DashCard
+          title="평균 성장률"
+          :description="companyStats.average_growth + '%'"
+          percentage="14%"
+          content="증가(지난달 대비)"
+        />
+        <DashCard
+          title="선택 프로그램"
+          :description="companyStats.course_type"
+          percentage=""
+          content=""
+        />
       </div>
       <!-- Loading / Error Messages -->
       <p v-if="loading" class="text-gray-500">Loading data...</p>
@@ -188,6 +202,11 @@ const demographicData = reactive({
   education: [],
   marital: []
 });
+const companyStats = ref({
+  user_count: 0,
+  average_growth: 0,
+  course_type: '정보 없음',
+});
 
 
 
@@ -256,6 +275,31 @@ const fetchDemographicData = async () => {
     errorMessage.value = "Error fetching demographic data.";
   }
 };
+
+const fetchCompanyStatistics = async () => {
+  try {
+    // Extract company ID from URL (adjust this if needed)
+    const companyId = window.location.pathname.split('/').pop();
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      errorMessage.value = 'Authentication token missing.';
+      loading.value = false;
+      return;
+    }
+    const response = await fetch(`http://127.0.0.1:8000/api/companies/${companyId}/statistics/`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch company statistics');
+    }
+    companyStats.value = await response.json();
+    console.log("✅ Company Statistics:", companyStats.value);
+  } catch (err) {
+    console.error(err);
+    errorMessage.value = 'Error fetching company statistics.';
+  }
+};
+
 // Create a computed property that transforms raw leadershipData into Chart.js data.
 const leadershipChartData = computed(() => {
   if (!leadershipData.value || leadershipData.value.length === 0) {
@@ -360,6 +404,7 @@ onMounted(async () => {
   // Fetch all the necessary data
   await fetchLeadershipData();
   await fetchDemographicData();
+  await fetchCompanyStatistics();
   // Use nextTick to wait until the DOM is updated (all canvas elements are rendered)
   nextTick(() => {
     loading.value = false;

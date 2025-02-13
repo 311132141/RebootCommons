@@ -23,6 +23,7 @@ import FakeSignup from '../views/FakeSignup.vue'
 import Rating from '../components/ui/Rating.vue'
 import OuterContainer from '../views/OuterContainer.vue'
 import CompanyDashboard from '../views/CompanyDashboard.vue'
+import UserNoCompany from '../views/UserNoCompany.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -146,6 +147,12 @@ const router = createRouter({
       component: TrialOfConvertingFigma
     },
     {
+      path: "/users/no-company/",
+      name: "user-no-company",
+      component: UserNoCompany,
+      props: true,
+    },
+    {
       path: '/OuterContainer',
       
       component: OuterContainer,
@@ -171,6 +178,12 @@ const router = createRouter({
           component: CompanyDashboard,
           props: true,
         },
+        {
+          path: "/users/no-company/",
+          name: "user-no-company",
+          component: UserNoCompany,
+          props: true,
+        }
         
 
 

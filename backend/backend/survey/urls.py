@@ -47,6 +47,7 @@ urlpatterns = [
     get_all_users_lifestyle_performance_growth,
     name="all-users-lifestyle-performance-growth",),
     path("users/<uuid:user_id>/question-pre-post-comparison/", get_user_question_pre_post_comparison, name="user-question-pre-post-comparison"),
-
+    path("companies/<uuid:company_id>/statistics/", get_company_statistics, name="company-statistics"),
+    path("users/no-company/", get_users_without_company, name="users_without_company"),
 ]
 
