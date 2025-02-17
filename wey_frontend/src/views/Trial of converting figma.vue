@@ -82,7 +82,18 @@
               </button>
             </div>
           </div>
+          <div v-if="showPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-gray-700 p-6 rounded-lg shadow-lg w-80 text-center">
+              <h2 class="text-xl font-semibold mb-4 text-gray-100 break-keep">설문이 제출되었습니다!</h2>
+              <p class="break-keep text-gray-100">감사합니다! 더 많은 정보를 보려면 아래 버튼을 클릭하세요.</p>
 
+              <!-- Link to rebootcommons.com -->
+              <a href="https://rebootcommons.com" target="_blank"
+                class="break-keep block mt-4 bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600">
+                Reboot Commons 방문하기
+              </a>
+            </div>
+          </div>
         </div>
       </template>
 
@@ -137,6 +148,7 @@ export default {
 
       // Will store grouped questions by category after fetching
       courseQuestions: {},
+      showPopup: false, // Controls popup visibility
     };
   },
   computed: {
@@ -285,7 +297,7 @@ export default {
             // Scroll the corresponding element into view
             const element = ratingElements[i];
             if (element) {
-              element.scrollIntoView({ behavior: "smooth", block: "center" });
+              element.scrollIntoView({ behavior: "smooth", block: "nearest" });
             }
             break;
           }
@@ -372,6 +384,10 @@ export default {
     nextPage() {
       if (!this.isLastPage) {
         this.currentPageIndex++;
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth', // Optional smooth scrolling
+        });
       }
     },
     prevPage() {
@@ -434,7 +450,8 @@ export default {
         console.log("🟢 Survey submission response:", result);
 
         if (response.ok) {
-          alert("설문이 제출되었습니다. 감사합니다!");
+          // alert("설문이 제출되었습니다. 감사합니다!");
+          this.showPopup = true;
         } else {
           alert("설문 제출에 실패했습니다.");
         }
