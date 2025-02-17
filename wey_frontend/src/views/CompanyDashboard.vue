@@ -35,7 +35,7 @@
             </button> -->
         </div>
       </div>
-      <h1 class="text-2xl text-bold pb-3 print:text-black mb-6 print:mb-6">{{companyStats.name}}</h1>
+      <h1 class="text-2xl text-bold pb-3 print:text-black mb-6 print:mb-6">{{ companyStats.name }}</h1>
 
       <!-- <router-view /> -->
       <div class="grid grid-cols-12 gap-5 pb-5 print:hidden">
@@ -72,10 +72,10 @@
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-7 lg:col-span-7 print:col-span-7">
-            <ChartCard canvasId="leadershipChart" title="남성과 여성의 성장률 비교"
-              description="본 그래프는 남성과 여성 참가자들의 리더십 프로그램 전후 성장률을 비교하여 성별에 따른 리더십 향상 정도를 시각화한 것입니다."
-              :labels="leadershipLabels" :datasets="computedDatasets" title_z="Leadership Category"
-              title_y="Average Score" :chartType="'bar'" />
+            <ChartCard canvasId="leadershipChart" :title="'남성과 여성의 ' + companyStats.course_type + ' 비교'"
+              description="본 그래프는 특정 회사의 선택한 교육과정에 따른 질문 범주별 남성과 여성의 평균 점수를 비교합니다." :labels="leadershipLabels"
+              :datasets="computedDatasets" title_z="Leadership Category" title_y="Average Score" :chartType="'bar'" />
+
 
 
 
@@ -186,6 +186,7 @@ const heatmapData = ref(null);
 const company_vs_all = ref(null);
 const genderDistributionData = ref([]);
 const demographicData = reactive({
+  gender: [],
   age: [],
   salary: [],
   education: [],
@@ -215,7 +216,7 @@ const categoryNameMapping = {
 
 const route = useRoute()
 // Adjust these categories as needed (they should match your backend endpoint names)
-const demographicCategories = ['age', 'salary', 'education', 'marital'];
+const demographicCategories = ['gender', 'age', 'salary', 'education', 'marital'];
 
 
 // Helper to map raw category keys to display names
@@ -500,12 +501,12 @@ const genderLabels = computed(() => {
 const genderDatasets = computed(() => {
   return genderDistributionData.value
     ? [
-        {
-          label: "Gender Distribution",
-          data: Object.values(genderDistributionData.value), // [8, 7]
-          backgroundColor: ["#4F46E5", "#A78BFA"]
-        }
-      ]
+      {
+        label: "Gender Distribution",
+        data: Object.values(genderDistributionData.value), // [8, 7]
+        backgroundColor: ["#4F46E5", "#A78BFA"]
+      }
+    ]
     : [];
 });
 

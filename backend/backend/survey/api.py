@@ -19,6 +19,12 @@ from .serializers import QuestionSerializer
 from account.models import User, Company
 from account.serializer import *
 
+from functools import reduce
+from operator import or_
+from django.db.models import Q
+from django.db.models import Avg
+from django.db.models import Count
+
 # =============================================================================
 # Constants and Mappings
 # =============================================================================
@@ -534,7 +540,7 @@ def get_gender_counts(request, company_id):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def get_gender_vs_leadership(request, company_id):
+def get_gender_vs_leadership2(request, company_id):
     # # print(f"Fetching gender vs leadership data for company ID: {company_id}")
     company, users, user_genders, error = get_company_gender_data(company_id)
     if error:
@@ -562,12 +568,67 @@ def get_gender_vs_leadership(request, company_id):
     for category, ratings in category_ratings.items():
         male_avg = sum(ratings["남성"]) / len(ratings["남성"]) if ratings["남성"] else 0
         female_avg = sum(ratings["여성"]) / len(ratings["여성"]) if ratings["여성"] else 0
-        # print(f"Category: {category}, Male Avg: {male_avg}, Female Avg: {female_avg}")
+        print(f"Category: {category}, Male Avg: {male_avg}, Female Avg: {female_avg}")
         formatted_data.append({"category": category, "남성": male_avg, "여성": female_avg})
-    # print("Final computed data:", formatted_data)
+    print("Final computed data:", formatted_data)
     return Response({"data": formatted_data}, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_gender_vs_leadership(request, company_id):
+    """
+    Fetches average scores by gender for all question categories 
+    tied to the company's CourseType (rather than just 'selflead').
+    """
+    company, users, user_genders, error = get_company_gender_data(company_id)
+    if error:
+        return Response({"error": error}, status=404)
 
+    # 1) Get the company's course type name
+    if not company.course_type:
+        return Response({"error": "Company has no course type assigned."}, status=400)
+    course_name = company.course_type.name
+
+    # 2) Derive relevant categories from the course type
+    #    (Replace "개인용" or "기업용" with the actual usage context)
+    categories = get_categories_by_course_type(course_name, "기업용")
+
+    if not categories:
+        return Response({"error": f"No categories found for course type: {course_name}."}, status=400)
+
+    # 3) Gather all questions that match any of those categories
+    #    (If you need exact matches, consider using Q(category__in=categories). 
+    #     If partial matches, do Q(category__icontains=cat). Adjust as needed.)
+    #    Example: partial match with OR
+    query_list = [Q(category__icontains=cat) for cat in categories]
+    all_questions = Question.objects.filter(reduce(or_, query_list))
+
+    # 4) Build a rating dictionary { category: { "남성": [...], "여성": [...] } }
+    responses = UserSurveyResponse.objects.filter(user__in=users)
+    category_ratings = defaultdict(lambda: {"남성": [], "여성": []})
+
+    for question in all_questions:
+        answers = Answer.objects.filter(question=question, response__in=responses)
+        for ans in answers:
+            user_id = ans.response.user.id
+            gender = user_genders.get(user_id, "Unknown")
+            if ans.answer_value is not None and gender in ["남성", "여성"]:
+                category_ratings[question.category][gender].append(ans.answer_value)
+
+    # 5) Compute average male/female ratings per category
+    formatted_data = []
+    for cat_key, ratings in category_ratings.items():
+        male_avg = (sum(ratings["남성"]) / len(ratings["남성"])) if ratings["남성"] else 0
+        female_avg = (sum(ratings["여성"]) / len(ratings["여성"])) if ratings["여성"] else 0
+        formatted_data.append({
+            "category": cat_key,
+            "남성": male_avg,
+            "여성": female_avg
+        })
+
+    # Debug output (optional)
+    print("Final computed data:", formatted_data)
+    return Response({"data": formatted_data}, status=200)
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -579,7 +640,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
     Example URL: /api/companies/{company_id}/demographic-improvement/age/
     """
     try:
-        # print(f"Fetching {demographic_type} vs survey improvement data for company ID: {company_id}")
+        print(f"Fetching {demographic_type} vs survey improvement data for company ID: {company_id}")
 
         korean_question_text = get_korean_question(demographic_type)
         if not korean_question_text:
@@ -587,7 +648,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
 
         company = Company.objects.get(id=company_id)
         users = User.objects.filter(company=company)
-        # print(f"Company found: {company.name}, Total users: {users.count()}")
+        print(f"Company found: {company.name}, Total users: {users.count()}")
 
         question = Question.objects.filter(text__icontains=korean_question_text).first()
         if not question:
@@ -595,14 +656,14 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
                 {"error": f"Question not found for {demographic_type}."},
                 status=status.HTTP_404_NOT_FOUND
             )
-        # print(f"Demographic question ID: {question.id}, Text: {question.text}")
+        print(f"Demographic question ID: {question.id}, Text: {question.text}")
 
         answers = Answer.objects.filter(question=question, response__user__in=users)
-        # print(f"Total {demographic_type} responses found: {answers.count()}")
+        print(f"Total {demographic_type} responses found: {answers.count()}")
 
         user_categories = {ans.response.user.id: ans.answer_text for ans in answers}
         survey_answers = Answer.objects.filter(response__user__in=users)
-        # print(f"Processing {survey_answers.count()} total answers.")
+        print(f"Processing {survey_answers.count()} total answers.")
 
         category_ratings = defaultdict(lambda: {"pre": [], "post": []})
         for ans in survey_answers:
@@ -616,7 +677,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
         for category, phases in category_ratings.items():
             pre_avg = sum(phases["pre"]) / len(phases["pre"]) if phases["pre"] else 0
             post_avg = sum(phases["post"]) / len(phases["post"]) if phases["post"] else 0
-            # print(f"{demographic_type.capitalize()} Group: {category}, Pre Avg: {pre_avg}, Post Avg: {post_avg}")
+            print(f"{demographic_type.capitalize()} Group: {category}, Pre Avg: {pre_avg}, Post Avg: {post_avg}")
             formatted_data.append({
                 f"{demographic_type}_group": category,
                 "pre": pre_avg,
