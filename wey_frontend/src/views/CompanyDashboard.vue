@@ -132,6 +132,19 @@
           </div>
 
         </div>
+        <!-- Large Text Box for Admin Explanation -->
+        <div class="grid grid-cols-12 gap-5 pb-5">
+          <div class="col-span-12">
+            <h2 class="text-xl font-semibold text-gray-100 print:text-black">리포트 설명</h2>
+            <textarea v-model="adminExplanation"
+              class="w-full h-48 p-4 border border-gray-600 rounded-md  text-white print:text-black print:border-black bg-transparent"
+              placeholder="차트에 대한 설명을 입력하세요..."></textarea>
+            <button class=" right-4 bottom-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+              저장
+            </button>
+
+          </div>
+        </div>
         <!-- Row 2: Age Distribution and Age Improvement Comparison -->
 
 

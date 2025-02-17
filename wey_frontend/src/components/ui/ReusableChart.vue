@@ -28,7 +28,30 @@ const chartOptions = {
   plugins: {
     legend: {
       display: true,
-      position: 'top'
+      position: 'top',
+      labels: {
+        color: "#FFF", // ← Change this to the desired text color
+        font: { size: 14 }
+      }
+    }
+  },
+  // If you want to change axis label colors, define your scales here (for bar/line charts):
+  scales: {
+    x: {
+      ticks: {
+        color: '#B0B0B0', // default label color
+      },
+      grid: {
+        color: 'rgba(200,200,200,0.2)', // default grid color
+      }
+    },
+    y: {
+      ticks: {
+        color: '#B0B0B0',
+      },
+      grid: {
+        color: 'rgba(200,200,200,0.2)',
+      }
     }
   }
 };
@@ -52,13 +75,77 @@ const handleResize = () => {
     chartInstance.value.resize();
   }
 };
+const handleCustomBeforePrint = () => {
+  if (chartInstance.value) {
+    console.log("Niggaaa")
+    // Change legend labels
+    chartInstance.value.options.plugins.legend.labels.color = "#000000"; // black
 
+    chartInstance.value.options.scales.x.ticks.color = '#000000';  // black
+    chartInstance.value.options.scales.x.grid.color = 'rgba(0,0,0,0.2)';
+
+    // For y-axis labels
+    chartInstance.value.options.scales.y.ticks.color = '#000000';
+    chartInstance.value.options.scales.y.grid.color = 'rgba(0,0,0,0.2)';
+
+    // For legend labels
+    if (chartInstance.value.options.plugins.legend.labels) {
+      chartInstance.value.options.plugins.legend.labels.color = '#000000';
+    }
+
+    // If you want to update dataset colors for printing:
+    chartInstance.value.data.datasets.forEach(ds => {
+      // Save original if not saved
+      if (!ds._defaultBackground) ds._defaultBackground = ds.backgroundColor;
+      if (!ds._defaultBorder) ds._defaultBorder = ds.borderColor;
+
+      // Example: set them to print-friendly colors
+      ds.backgroundColor = 'rgba(255,0,0,0.2)';
+      ds.borderColor = 'rgba(255,0,0,1)';
+    })
+
+    chartInstance.update();
+  }
+};
+
+const handleCustomAfterPrint = () => {
+  if (chartInstance.value) {
+    // Revert x-axis
+    chartInstance.value.options.scales.x.ticks.color = '#FFFFFF';
+    chartInstance.value.options.scales.x.grid.color = 'rgba(200,200,200,0.2)';
+
+    // Revert y-axis
+    chartInstance.value.options.scales.y.ticks.color = '#B0B0B0';
+    chartInstance.value.options.scales.y.grid.color = 'rgba(200,200,200,0.2)';
+
+    // Revert legend
+    if (chartInstance.value.options.plugins.legend.labels) {
+      chartInstance.value.options.plugins.legend.labels.color = '#B0B0B0';
+    }
+
+    // Revert dataset colors
+    chartInstance.value.data.datasets.forEach(ds => {
+      if (ds._defaultBackground) {
+        ds.backgroundColor = ds._defaultBackground;
+      }
+      if (ds._defaultBorder) {
+        ds.borderColor = ds._defaultBorder;
+      }
+    });
+    chartInstance.value.update();
+  }
+};
 onMounted(() => {
   initChart();
   resizeObserver = new ResizeObserver(handleResize);
   if (chartContainer.value) {
     resizeObserver.observe(chartContainer.value);
   }
+  window.addEventListener("chartBeforePrint", handleCustomBeforePrint);
+  window.addEventListener("chartAfterPrint", handleCustomAfterPrint);
+  // window.addEventListener("beforeprint", handleBeforePrint);
+  // window.addEventListener("afterprint", handleAfterPrint);
+  // window.addEventListener("chartBeforePrint", handlePrintResize);
 });
 
 onUnmounted(() => {
@@ -68,7 +155,11 @@ onUnmounted(() => {
   if (resizeObserver) {
     resizeObserver.disconnect();
   }
+  window.removeEventListener("chartBeforePrint", handleCustomBeforePrint);
+  window.removeEventListener("chartAfterPrint", handleCustomAfterPrint);
 });
+
+
 </script>
 
 <style scoped></style>

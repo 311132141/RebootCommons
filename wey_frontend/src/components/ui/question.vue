@@ -14,10 +14,10 @@
       <div class="relative flex flex-col min-h-[calc(100vh_-_16vh)] md:hidden">
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-auto  pt-6">
-          <p class="text-white">
+          <h6 class="text-white break-keep text-base md:text-lg">
             {{ question.text }}
 
-          </p>
+          </h6>
         </div>
 
         <!-- Sticky Options & Button Container -->
@@ -46,11 +46,12 @@
         <div data-layer="Frame 660"
           class=" w-[30rem] lg:w-[36rem] flex-col justify-start items-center gap-14 inline-flex">
           <div data-layer="Group 26" class="flex-col items-center justify-center gap-4 inline-flex">
-            <b2>{{ question.category }}</b2>
+            <!-- <b2>{{ question.category }} hello</b2> -->
             <h4 class="font-bold">{{ question.text }}</h4>
 
           </div>
-          <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 mb-24 ">
+
+          <!-- <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 mb-24 ">
             <button v-for="option in question.options" :key="option.id || option"
               @click="$emit('update:modelValue', option.id || option)" :class="[
                 'w-full py-[1.25rem] rounded-2xl transition-colors',
@@ -61,15 +62,30 @@
               <b2>{{ option.name || option }}</b2>
             </button>
 
-          </div>
-          <!-- <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 ">
-            <button @click="$emit('next-question')"
-              class="mt-8 w-full py-5 rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
-              <b2>
-                다음
-              </b2>
-            </button>
           </div> -->
+
+          <div class="w-full relative" :style="{ maxHeight: containerMaxHeight }">
+            <!-- Scrollable content container -->
+            <div ref="scrollContainer" class="overflow-y-auto" :style="{ maxHeight: containerMaxHeight }">
+              <div class="flex flex-col gap-2">
+                <button v-for="option in question.options" :key="option.id || option"
+                  @click="$emit('update:modelValue', option.id || option)" :class="[
+                    'w-full py-[1.25rem] rounded-2xl transition-colors',
+                    modelValue === (option.id || option)
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ]">
+                  <b2>{{ option.name || option }}</b2>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bottom fade overlay (conditionally rendered if content overflows) -->
+            <div v-if="showFade"
+              class="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-gray-900 to-transparent">
+            </div>
+          </div>
+
         </div>
       </div>
       <div class="w-full py-4  text-center  fixed bottom-10 left-0 right-0">
@@ -143,6 +159,20 @@
 
 <script>
 export default {
+  data() {
+    return {
+      containerMaxHeight: '',
+      showFade: false,
+    };
+  },
+  mounted() {
+    this.checkFade();
+    this.updateContainerHeight();
+    window.addEventListener('resize', this.updateContainerHeight);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.updateContainerHeight);
+  },
   props: {
     question: Object,
     modelValue: {
@@ -152,6 +182,21 @@ export default {
   },
   emits: ["update:modelValue", "next-question", "submit-survey"], // Declare the emitted event
   methods: {
+    updateContainerHeight() {
+      // For example, set max height to the window height minus a fixed offset (e.g., 10rem)
+      const offset = 35 * parseFloat(getComputedStyle(document.documentElement).fontSize); // 10rem in pixels
+      this.containerMaxHeight = (window.innerHeight - offset) + 'px';
+      this.checkFade();
+    },
+    checkFade() {
+      this.$nextTick(() => {
+        const scrollContainer = this.$refs.scrollContainer;
+        if (scrollContainer) {
+          // If the content's scroll height is greater than its visible height, enable the fade.
+          this.showFade = scrollContainer.scrollHeight > scrollContainer.clientHeight;
+        }
+      });
+    },
     toggleOption(option) {
       // 다중 선택 값 업데이트
       const newValue = [...(this.modelValue || [])];
@@ -162,6 +207,11 @@ export default {
         newValue.splice(index, 1); // 선택 제거
       }
       this.$emit("update:modelValue", newValue);
+    },
+  },
+  watch: {
+    'question.options'(newVal) {
+      this.$nextTick(this.checkFade);
     },
   },
 };

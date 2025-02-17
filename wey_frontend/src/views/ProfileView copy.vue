@@ -22,8 +22,8 @@
 
             <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 relative">
               <div class="ml-8">
-                <h3 class="text-4xl font-bold text-gray-100">{{ user.name }}</h3>
-                <ul class="mt-4 text-gray-300">
+                <h3 class="text-4xl font-bold text-white print:text-black">{{ user.name }}</h3>
+                <ul class="mt-4 text-white print:text-black">
                   <li><strong>Email:</strong> {{ user.email }}</li>
                   <li><strong>성별:</strong> {{ user.demographics.gender }}</li>
                   <li><strong>연령:</strong> {{ user.demographics.age }}</li>

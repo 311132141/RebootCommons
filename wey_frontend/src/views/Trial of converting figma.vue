@@ -4,10 +4,15 @@
     <div class="w-full flex flex-col items-center gap-[1.625rem] pt-14">
       <!-- Mobile Header -->
       <div class="flex justify-between items-center self-stretch md:hidden" data-layer="Header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-          class="size-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-        </svg>
+
+
+        <button @click="prevPage" :disabled="isFirstQuestion"
+          class="px-4 py-3 rounded-lg  hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
         <h6>{{ currentPageTitle }}</h6>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
           class="size-6">
@@ -24,10 +29,14 @@
 
       <!-- Desktop Header -->
       <div class="justify-between items-center self-stretch hidden md:inline-flex" data-layer="second_header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-          class="size-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-        </svg>
+
+        <button @click="prevPage" :disabled="isFirstQuestion"
+          class="px-4 py-3 rounded-lg  hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
         <h6>{{ currentPageTitle }}</h6>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
           class="size-6">
@@ -55,6 +64,7 @@
             :class="index === activeRatingIndex ? 'opacity-100' : 'opacity-50'">
             <Rating :question="question" v-model="responses[question.id]" @answered="handleAnswered(index)" />
           </div>
+
           <div class="w-full max-w-4xl mx-auto  py-6 transition-all duration-300">
             <div class="w-full  flex-col justify-start items-center gap-14  inline-flex pb-6">
 
@@ -72,9 +82,21 @@
               </button>
             </div>
           </div>
+          <div v-if="showPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-gray-700 p-6 rounded-lg shadow-lg w-80 text-center">
+              <h2 class="text-xl font-semibold mb-4 text-gray-100 break-keep">설문이 제출되었습니다!</h2>
+              <p class="break-keep text-gray-100">감사합니다! 더 많은 정보를 보려면 아래 버튼을 클릭하세요.</p>
 
+              <!-- Link to rebootcommons.com -->
+              <a href="https://rebootcommons.com" target="_blank"
+                class="break-keep block mt-4 bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600">
+                Reboot Commons 방문하기
+              </a>
+            </div>
+          </div>
         </div>
       </template>
+
     </div>
 
     <!-- Navigation Buttons -->
@@ -126,6 +148,7 @@ export default {
 
       // Will store grouped questions by category after fetching
       courseQuestions: {},
+      showPopup: false, // Controls popup visibility
     };
   },
   computed: {
@@ -212,10 +235,28 @@ export default {
     },
     // This can be used in the header – you might choose a title based on the page type.
     currentPageTitle() {
+      const NameMapping = {
+        "demographic": "인구통셰학",
+        "lifestlyes": "라이프",
+        "entrepreneur_risk": "위험감수성",
+        "entrepreneur_proact": "진취성",
+        "entrepreneur_innov": "혁신성",
+        "org_normative": "규범적몰입",
+        "org_continuance": "지속적몰입",
+        "org_affective": "정서적몰입",
+        "ppc_resilience": "회복탄력성",
+        "ppc_hope": "희망",
+        "ppc_optimism": "낙관성",
+        "ppc_efficacy": "자기효능감",
+        "selflead_behavior": "행동지향전략",
+        "selflead_natural": "자연보상전략",
+        "selflead_constructive": "건설적사고전략",
+      };
       if (this.currentPage.pageTitle) {
+        console.log(this.currentPage.pageTitle)
         return this.currentPage.pageTitle;
       } else if (this.currentPage.categoryTitle) {
-        return this.currentPage.categoryTitle;
+        return NameMapping[this.currentPage.categoryTitle] || this.currentPage.categoryTitle;
       }
       return "";
     },
@@ -256,7 +297,7 @@ export default {
             // Scroll the corresponding element into view
             const element = ratingElements[i];
             if (element) {
-              element.scrollIntoView({ behavior: "smooth", block: "center" });
+              element.scrollIntoView({ behavior: "smooth", block: "nearest" });
             }
             break;
           }
@@ -269,13 +310,13 @@ export default {
         // 개인용 (101, 103, 105)
         return [
           { id: 101, name: "비전하우스" },
-          { id: 103, name: "자기 개발" },
-          { id: 105, name: "커뮤니케이션" },
+          { id: 103, name: "리더십과 혁신" },
+          { id: 105, name: "기업가정신과 혁신" },
         ];
       } else if (this.responses.surveyType === 2) {
         // 기업용 (102, 104, 106)
         return [
-          { id: 102, name: "경영 전략" },
+          { id: 102, name: "비전하우스" },
           { id: 104, name: "리더십과 혁신" },
           { id: 106, name: "기업가정신과 혁신" },
         ];
@@ -292,6 +333,7 @@ export default {
       };
       return titles[category] || category;
     },
+
     async fetchQuestions() {
       try {
         console.log("Fetching questions for:", this.surveyTypeId, this.courseTypeId);
@@ -317,6 +359,8 @@ export default {
           console.error("Failed to fetch questions, status:", response.status);
           return;
         }
+
+
         const fetchedQuestions = await response.json();
         console.log("Fetched questions:", fetchedQuestions);
 
@@ -340,6 +384,10 @@ export default {
     nextPage() {
       if (!this.isLastPage) {
         this.currentPageIndex++;
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth', // Optional smooth scrolling
+        });
       }
     },
     prevPage() {
@@ -402,7 +450,8 @@ export default {
         console.log("🟢 Survey submission response:", result);
 
         if (response.ok) {
-          alert("설문이 제출되었습니다. 감사합니다!");
+          // alert("설문이 제출되었습니다. 감사합니다!");
+          this.showPopup = true;
         } else {
           alert("설문 제출에 실패했습니다.");
         }
