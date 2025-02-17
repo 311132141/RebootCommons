@@ -16,6 +16,7 @@
         <div class="flex-1 overflow-auto  pt-6">
           <p class="text-white">
             {{ question.text }}
+
           </p>
         </div>
 

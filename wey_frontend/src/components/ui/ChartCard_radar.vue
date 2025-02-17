@@ -1,7 +1,9 @@
 <template>
-  <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 relative ">
+  <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 relative">
     <div class="flex flex-col gap-2">
-      <span class="block text-surface-500 dark:text-surface-300 font-medium print:text-black">{{ title }}</span>
+      <span class="block text-surface-500 dark:text-surface-300 font-medium print:text-black">
+        {{ title }}
+      </span>
       <div class="w-full">
         <p class="text-sm text-gray-700 mb-4 truncate">{{ description }}</p>
       </div>
@@ -15,7 +17,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted } from "vue";
+import { ref, onMounted, watch, onUnmounted, computed } from "vue";
 import { Chart, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from "chart.js";
 
 // Register required components
@@ -31,7 +33,22 @@ const props = defineProps({
 const chartCanvas = ref(null);
 const chartContainer = ref(null);
 let chartInstance = null;
-let resizeObserver = null; // Declare resizeObserver
+let resizeObserver = null;
+
+// ADDED CODE: Compute maximum value from all dataset values (with padding)
+const computedMaxValue = computed(() => {
+  let maxVal = 0;
+  for (const ds of props.datasets) {
+    if (ds.data && ds.data.length > 0) {
+      const currentMax = Math.max(...ds.data);
+      if (currentMax > maxVal) {
+        maxVal = currentMax;
+      }
+    }
+  }
+  // Multiply by 1.1 for padding and round up; default to 5 if no data.
+  return Math.ceil(maxVal * 1.1) || 5;
+});
 
 const createChart = () => {
   if (!chartCanvas.value) return;
@@ -39,34 +56,40 @@ const createChart = () => {
   if (chartInstance) {
     chartInstance.destroy();
   }
+  const adjustedDatasets = props.datasets.map((ds) => ({
+    ...ds,
+    data: ds.data.map((value) => (value < 0 ? 0 : value))
+  }));
 
   chartInstance = new Chart(chartCanvas.value, {
     type: "radar",
     data: {
       labels: props.labels,
-      datasets: props.datasets
+      datasets: adjustedDatasets
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false, // ✅ Prevents weird stretching issues
+      maintainAspectRatio: false,
       scales: {
         r: {
           beginAtZero: true,
           min: 0,
-          max: 5,
+          // CHANGED CODE: Use computed max value from the data
+          max: computedMaxValue.value,
           ticks: {
-            stepSize: 1,
+            stepSize: Math.max(1, computedMaxValue.value / 5),
             font: { size: 14 },
             color: "#B0B0B0",
-            backdropColor: "rgba(0,0,0,0)", // ✅ Removes background box
-            padding: 5, // ✅ Ensures spacing
-            showLabelBackdrop: false, // ✅ Removes default box around numbers
+            backdropColor: "rgba(0,0,0,0)",
+            padding: 5,
+            showLabelBackdrop: false,
           },
           grid: {
             color: "rgba(200, 200, 200, 0.2)",
-            circular: false // ✅ Ensures circular radar layout
+            circular: false
           }
         }
+
       },
       plugins: {
         legend: {
@@ -83,7 +106,6 @@ const createChart = () => {
   });
 };
 
-// Handle chart resize properly
 const handleResize = () => {
   if (chartInstance) {
     chartInstance.resize();
@@ -92,28 +114,25 @@ const handleResize = () => {
 
 const handlePrintResize = () => {
   console.log("🔄 Adjusting chart size for print...");
-
   if (chartInstance) {
-    chartInstance.resize(); // ✅ Force chart to resize properly
+    chartInstance.resize();
   }
 };
 
 onMounted(() => {
   createChart();
 
-  // ✅ Properly attach ResizeObserver
+  // Attach ResizeObserver to the container
   resizeObserver = new ResizeObserver(handleResize);
   if (chartContainer.value) {
     resizeObserver.observe(chartContainer.value);
   }
-
   window.addEventListener("beforeprint", handlePrintResize);
 });
 
-// Watch for prop changes and re-render the chart
+// Watch for changes in props and re-create the chart
 watch(() => [props.labels, props.datasets], createChart, { deep: true });
 
-// ✅ Cleanup observer on unmount
 onUnmounted(() => {
   if (resizeObserver && chartContainer.value) {
     resizeObserver.unobserve(chartContainer.value);
@@ -126,7 +145,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ✅ Ensure Proper Sizing */
 .chart-container {
   width: 100%;
   height: 100%;

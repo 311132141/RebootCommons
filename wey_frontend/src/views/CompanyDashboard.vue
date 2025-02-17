@@ -39,24 +39,11 @@
 
       <!-- <router-view /> -->
       <div class="grid grid-cols-12 gap-5 pb-5 print:hidden">
-        <DashCard
-          title="프로그램 참여 지원 수"
-          :description="companyStats.user_count + '명'"
-          percentage="26%"
-          content="증가(지난달 대비)"
-        />
-        <DashCard
-          title="평균 성장률"
-          :description="companyStats.average_growth + '%'"
-          percentage="14%"
-          content="증가(지난달 대비)"
-        />
-        <DashCard
-          title="선택 프로그램"
-          :description="companyStats.course_type"
-          percentage=""
-          content=""
-        />
+        <DashCard title="프로그램 참여 지원 수" :description="companyStats.user_count + '명'" percentage="26%"
+          content="증가(지난달 대비)" />
+        <DashCard title="평균 성장률" :description="companyStats.average_growth + '%'" percentage="14%"
+          content="증가(지난달 대비)" />
+        <DashCard title="선택 프로그램" :description="companyStats.course_type" percentage="" content="" />
       </div>
       <!-- Loading / Error Messages -->
       <p v-if="loading" class="text-gray-500">Loading data...</p>
@@ -75,15 +62,48 @@
       <div class="space-y-6">
         <!-- Row 1: Gender Distribution and Leadership Comparison -->
         <div class="grid grid-cols-12 gap-5 ">
-          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
-            <!-- <ChartCard title="Leadership Comparison" description="Comparison between Male and Female leadership ratings"
+          <div class="col-span-12 sm:col-span-6 md:col-span-5  lg:col-span-5 print:col-span-5">
+            <ChartCard title="Leadership Comparison" description="Comparison between Male and Female leadership ratings"
               :labels="['남성 (Male)', '여성 (Female)']" title_z="Leadership Category" title_y="Average Score"
-              :chartType="'pie'" /> -->
+              :chartType="'pie'" />
+            <!--  -->
+
+
+          </div>
+          <div class="col-span-12 sm:col-span-6 md:col-span-7 lg:col-span-7 print:col-span-7">
             <ChartCard canvasId="leadershipChart" title="남성과 여성의 성장률 비교"
               description="본 그래프는 남성과 여성 참가자들의 리더십 프로그램 전후 성장률을 비교하여 성별에 따른 리더십 향상 정도를 시각화한 것입니다."
               :labels="leadershipLabels" :datasets="computedDatasets" title_z="Leadership Category"
               title_y="Average Score" :chartType="'bar'" />
 
+
+
+
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-7  lg:col-span-7 print:col-span-7">
+            <ChartCard canvasId="demographicChart-age" title="연봉과 성장률 간의 관계 분석"
+              description="해당 그래프는 참가자의 연봉 수준과 리더십 프로그램 이후 성장률 간의 관계를 나타냅니다. 연봉이 높은 집단과 낮은 집단의 성장 패턴을 비교할 수 있습니다."
+              :labels="demographicLabels.salary" :datasets="demographicDatasets.age" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
+
+          </div>
+          <div class="col-span-12 sm:col-span-6 md:col-span-5 lg:col-span-5 print:col-span-5">
+            <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
+              description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다. 특정 기업이 다른 기업들과 비교했을 때 얼마나 효과적인 성장을 보였는지를 확인할 수 있습니다."
+              :labels="prepostChartLabel" :datasets="prepostChartData" />
+
+
+
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
+            <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
+              description=" 해당 그래프는 참가자의 최종 학력(고졸, 전문대졸, 대졸, 대학원 졸업 등)에 따른 리더십 성장률의 차이를 나타냅니다. 학력이 높은 집단과 낮은 집단의 성장률 차이를 분석할 수 있습니다."
+              :labels="demographicLabels.education" :datasets="demographicDatasets.education" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
@@ -91,68 +111,19 @@
               description="해당 그래프는 미혼과 기혼 참가자 간의 성장률 차이를 분석합니다. 가정이 있는 사람들이 리더십 성장에서 더 높은 성과를 보이는지 여부를 확인할 수 있습니다."
               :labels="demographicLabels.marital" :datasets="demographicDatasets.marital" title_z="end this life"
               title_y="end" :chartType="'bar'" />
-
-
-
-
-          </div>
-        </div>
-        <div class="grid grid-cols-12 gap-5 ">
-          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
-            <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
-              description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다. 특정 기업이 다른 기업들과 비교했을 때 얼마나 효과적인 성장을 보였는지를 확인할 수 있습니다."
-              :labels="['Selflead Behavior', 'Selflead Natural', 'Selflead Constructive', 'Lifestyle']" :datasets="[
-                {
-                  label: 'Pre Survey',
-                  data: [2.5, 3.0, 2.8, 3.2],
-                  backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                  borderColor: 'rgba(54, 162, 235, 1)',
-                  borderWidth: 2
-                },
-                {
-                  label: 'Post Survey',
-                  data: [3.8, 4.2, 3.9, 4.6],
-                  backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                  borderColor: 'rgba(255, 99, 132, 1)',
-                  borderWidth: 2
-                }
-              ]" />
-
-          </div>
-          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
-
-            <ChartCard canvasId="demographicChart-age" title="연봉과 성장률 간의 관계 분석"
-              description="해당 그래프는 참가자의 연봉 수준과 리더십 프로그램 이후 성장률 간의 관계를 나타냅니다. 연봉이 높은 집단과 낮은 집단의 성장 패턴을 비교할 수 있습니다."
-              :labels="demographicLabels.salary" :datasets="demographicDatasets.age" title_z="end this life"
-              title_y="end" :chartType="'bar'" />
-
-
           </div>
         </div>
         <div class="grid grid-cols-12 gap-5 pb-5">
           <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
+
             <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
-              description="수면, 운동, 식습관, 명상, 일과 삶의 균형과 같은 라이프스타일 요인이 리더십 성장률에 미치는 영향을 분석한 그래프입니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
-              :lifestyleLabels="['Sleep', 'Exercise', 'Meditation', 'Diet', 'Balance']" :scores="[1, 2, 3, 4, 5]"
-              :improvementData="[
-                [1.2, 1.5, 2.1, 1.8, 1.9],
-                [2.4, 2.7, 3.0, 2.9, 2.5],
-                [3.5, 3.2, 3.8, 3.4, 3.9],
-                [4.1, 4.3, 4.7, 4.5, 4.2],
-                [5.0, 5.2, 5.5, 5.1, 5.3]
-              ]" />
+              description="수면, 운동, 식습관, 명상, 워크라이프 밸런스와 같은 요소가 리더십 성장률에 미치는 영향을 분석합니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
+              :lifestyleLabels="['여유', '에너지', '스타일', '패션', '신제품', '취미', '거주', '근무', '노후', '변화', '심플', '전통', '자기개발', '건강', '운동']"
+              :scores="[1, 2, 3, 4, 5]" :improvementData="transformedHeatmapData" />
           </div>
 
         </div>
-        <div class="grid grid-cols-12 gap-5 ">
-          <div class="col-span-12 sm:col-span-12 md:col-span-12  lg:col-span-12 ">
-            <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
-              description=" 해당 그래프는 참가자의 최종 학력(고졸, 전문대졸, 대졸, 대학원 졸업 등)에 따른 리더십 성장률의 차이를 나타냅니다. 학력이 높은 집단과 낮은 집단의 성장률 차이를 분석할 수 있습니다."
-              :labels="demographicLabels.education" :datasets="demographicDatasets.education" title_z="end this life"
-              title_y="end" :chartType="'bar'" />
 
-          </div>
-        </div>
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-12 md:col-span-12  lg:col-span-12 ">
 
@@ -182,8 +153,9 @@
 
 <script setup>
 import { ref, reactive, onMounted, nextTick, computed, inject } from 'vue';
+import { useRoute } from 'vue-router';
 import { Chart, registerables } from 'chart.js';
-
+import axios from 'axios';
 import DashCard from '../components/ui/DashCard.vue';
 
 Chart.register(...registerables);
@@ -196,6 +168,8 @@ import HeatmapChart from '../components/ui/HeatmapChart.vue';
 const loading = ref(true);
 const errorMessage = ref('');
 const leadershipData = ref([]);
+const heatmapData = ref(null);
+const company_vs_all = ref(null);
 const demographicData = reactive({
   age: [],
   salary: [],
@@ -207,9 +181,23 @@ const companyStats = ref({
   average_growth: 0,
   course_type: '정보 없음',
 });
+const categoryNameMapping = {
+  "entrepreneur_risk": "위험감수성",
+  "entrepreneur_proact": "진취성",
+  "entrepreneur_innov": "혁신성",
+  "org_normative": "규범적몰입",
+  "org_continuance": "지속적몰입",
+  "org_affective": "정서적몰입",
+  "ppc_resilience": "회복탄력성",
+  "ppc_hope": "희망",
+  "ppc_optimism": "낙관성",
+  "ppc_efficacy": "자기효능감",
+  "selflead_behavior": "행동지향전략",
+  "selflead_natural": "자연보상전략",
+  "selflead_constructive": "건설적사고전략",
+};
 
-
-
+const route = useRoute()
 // Adjust these categories as needed (they should match your backend endpoint names)
 const demographicCategories = ['age', 'salary', 'education', 'marital'];
 
@@ -248,8 +236,34 @@ const fetchLeadershipData = async () => {
   }
 };
 
+const fetchCompanyStatistics = async () => {
+  try {
+    // Extract company ID from URL (adjust this if needed)
+    const companyId = window.location.pathname.split('/').pop();
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      errorMessage.value = 'Authentication token missing.';
+      loading.value = false;
+      return;
+    }
+    const response = await fetch(`http://127.0.0.1:8000/api/companies/${companyId}/statistics/`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch company statistics');
+    }
+    companyStats.value = await response.json();
+    console.log("✅ Company Statistics:", companyStats.value);
+  } catch (err) {
+    console.error(err);
+    errorMessage.value = 'Error fetching company statistics.';
+  }
+};
+
 // Fetch demographic data for each category from the backend
 const fetchDemographicData = async () => {
+  const userId = route.params.id;
+  console.log(userId);
   try {
     const companyId = window.location.pathname.split("/").pop();
     const accessToken = localStorage.getItem('access_token');
@@ -275,55 +289,6 @@ const fetchDemographicData = async () => {
     errorMessage.value = "Error fetching demographic data.";
   }
 };
-
-const fetchCompanyStatistics = async () => {
-  try {
-    // Extract company ID from URL (adjust this if needed)
-    const companyId = window.location.pathname.split('/').pop();
-    const accessToken = localStorage.getItem('access_token');
-    if (!accessToken) {
-      errorMessage.value = 'Authentication token missing.';
-      loading.value = false;
-      return;
-    }
-    const response = await fetch(`http://127.0.0.1:8000/api/companies/${companyId}/statistics/`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch company statistics');
-    }
-    companyStats.value = await response.json();
-    console.log("✅ Company Statistics:", companyStats.value);
-  } catch (err) {
-    console.error(err);
-    errorMessage.value = 'Error fetching company statistics.';
-  }
-};
-
-// Create a computed property that transforms raw leadershipData into Chart.js data.
-const leadershipChartData = computed(() => {
-  if (!leadershipData.value || leadershipData.value.length === 0) {
-    return { labels: [], datasets: [] };
-  }
-  const labels = leadershipData.value.map(entry => entry.category);
-  const maleData = leadershipData.value.map(entry => entry['남성']);
-  const femaleData = leadershipData.value.map(entry => entry['여성']);
-  return {
-    labels,
-    datasets: [
-      { label: '남성 (Male)', data: maleData, backgroundColor: '#4F46E5' },
-      { label: '여성 (Female)', data: femaleData, backgroundColor: '#A78BFA' }
-    ]
-  };
-});
-const leadershipLabels = computed(() => leadershipChartData.value?.labels ?? []);
-const computedDatasets = computed(() => {
-  if (!leadershipChartData.value || !leadershipChartData.value.datasets) return [];
-  return leadershipChartData.value.datasets.map(dataset => ({
-    ...dataset,
-    data: [...dataset.data] // ✅ Unwrap Proxy safely
-  }));
-});
 
 
 const demographicChartData = computed(() => {
@@ -381,6 +346,165 @@ const demographicDatasets = computed(() => {
   });
   return result;
 });
+// Create a computed property that transforms raw leadershipData into Chart.js data.
+const leadershipChartData = computed(() => {
+  if (!leadershipData.value || leadershipData.value.length === 0) {
+    return { labels: [], datasets: [] };
+  }
+  const labels = leadershipData.value.map(entry => categoryNameMapping[entry.category] || entry.category);
+  const maleData = leadershipData.value.map(entry => entry['남성']);
+  const femaleData = leadershipData.value.map(entry => entry['여성']);
+  return {
+    labels,
+    datasets: [
+      { label: '남성 (Male)', data: maleData, backgroundColor: '#4F46E5' },
+      { label: '여성 (Female)', data: femaleData, backgroundColor: '#A78BFA' }
+    ]
+  };
+});
+const leadershipLabels = computed(() => leadershipChartData.value?.labels ?? []);
+
+const computedDatasets = computed(() => {
+  if (!leadershipChartData.value || !leadershipChartData.value.datasets) return [];
+  return leadershipChartData.value.datasets.map(dataset => ({
+    ...dataset,
+    data: [...dataset.data] // ✅ Unwrap Proxy safely
+  }));
+});
+
+// Fetch heatmap data from the API.
+const fetchHeatmapData = async () => {
+  try {
+    const companyId = window.location.pathname.split("/").pop();
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      errorMessage.value = "Authentication token missing.";
+      return;
+    }
+    const response = await axios.get(
+      `http://127.0.0.1:8000/api/dashboard/${companyId}/lifestyle-performance-growth/`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    heatmapData.value = response.data;
+    console.log("✅ Raw heatmap data:", heatmapData.value);
+  } catch (err) {
+    console.error("Error fetching heatmap data:", err);
+  }
+};
+
+const fetchRadarData = async () => {
+  try {
+    const companyId = window.location.pathname.split("/").pop();
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      errorMessage.value = "Authentication token missing.";
+      return;
+    }
+    const response = await axios.get(
+      `http://127.0.0.1:8000/api/dashboard/${companyId}/growth-comparison/`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    company_vs_all.value = response.data;
+    console.log("✅ Raw Radar data:", company_vs_all.value);
+  } catch (err) {
+    console.error("Error fetching radar data:", err);
+  }
+};
+
+// ADDED CODE: Create computed properties for the radar chart data to be used by <ChartCard_radar>
+const prepostChartLabel = computed(() => {
+  // Use the data from userGrowthData (fetched from the user-growth-comparison endpoint)
+  // return company_vs_all.value?.categories || [];
+  return company_vs_all.value?.categories.map(category => {
+    console.log(category)
+    // console.log(category.name)
+    return categoryNameMapping[category] || category;
+  });
+});
+
+const prepostChartData = computed(() => {
+
+  if (!company_vs_all.value) return [];
+  console.log("this user", company_vs_all.value.company_scores);
+  console.log("all user", company_vs_all.value.industry_scores);
+  return [
+    {
+      label: "company_scores",
+      data: company_vs_all.value.company_scores || [],
+      backgroundColor: "rgba(255, 99, 132, 0.2)",
+      borderColor: "rgba(255, 99, 132, 1)",
+      borderWidth: 2,
+    },
+    {
+      label: "industry_scores",
+      data: company_vs_all.value.industry_scores || [],
+      backgroundColor: "rgba(54, 162, 235, 0.2)",
+      borderColor: "rgba(54, 162, 235, 1)",
+      borderWidth: 2,
+    }
+  ];
+
+});
+// Define the mapping between the API question prefix and the full Korean label.
+const lifestyleMappings = [
+  { key: "라이프스타일: 1", label: "삶의 여유를 가지고 생활하는 편이다." },
+  { key: "라이프스타일: 2", label: "하고 싶은 일을 할 충분한 에너지가 있다." },
+  { key: "라이프스타일: 3", label: "나만의 스타일이 있다는 이야기를 자주 듣는다." },
+  { key: "라이프스타일: 4", label: "새로운 패션이나 유행에 민감하다." },
+  { key: "라이프스타일: 5", label: "신제품이 출시되면 남보다 빨리 구매하는 편이다." },
+  { key: "라이프스타일: 6", label: "취미활동을 위한 모임이나 동호회 활동에 정기적으로 참여한다." },
+  { key: "라이프스타일: 7", label: "이사를 하지 않고 한 곳에서 오래 사는 것이 좋다." },
+  { key: "라이프스타일: 8", label: "나는 제한된 근무를 선호한다." },
+  { key: "라이프스타일: 9", label: "노후를 대비하여 계획을 세우고 있다." },
+  { key: "라이프스타일: 10", label: "다양한 변화가 있는 생활을 좋아한다." },
+  { key: "라이프스타일: 11", label: "단순한 삶(심플·미니멀 라이프)을 살고 싶다." },
+  { key: "라이프스타일: 12", label: "새로운 것을 추구하기보다 전부터 해 오던 방식을 따르는 편이다." },
+  { key: "라이프스타일: 13", label: "자기개발을 위한 노력을 계속하는 편이다." },
+  { key: "라이프스타일: 14", label: "나의 건강과 노후에 관심이 많다." },
+  { key: "라이프스타일: 15", label: "건강을 위해 주기적인 운동을 하며 정기검진을 받고 있다." }
+];
+
+// Compute the transformed heatmap data (averaged to one decimal place).
+const transformedHeatmapData = computed(() => {
+  // Extract only the keys from the mapping.
+  const keys = lifestyleMappings.map(mapping => mapping.key);
+
+  // Initialize a matrix with 5 rows (for ratings 1-5) and as many columns as there are keys.
+  const matrix = Array.from({ length: 5 }, () =>
+    Array.from({ length: keys.length }, () => [])
+  );
+
+  if (!heatmapData.value || !heatmapData.value.data) return [];
+
+  // Loop over each data item and place the growth values into the correct cell.
+  heatmapData.value.data.forEach(item => {
+    keys.forEach((key, colIndex) => {
+      if (item.question.startsWith(key)) {
+        const rowIndex = item.rating - 1;
+        if (rowIndex >= 0 && rowIndex < 5) {
+          matrix[rowIndex][colIndex].push(item.growth);
+        }
+      }
+    });
+  });
+
+  // Compute the average for each cell and show one decimal place.
+  const result = matrix.map(row =>
+    row.map(cell => {
+      if (cell.length === 0) return 0;
+      const sum = cell.reduce((acc, val) => acc + val, 0);
+      return Number((sum / cell.length).toFixed(1));
+    })
+  );
+  console.log("Transformed heatmap data (2D array):", result);
+  return result;
+});
+
+// Compute the labels in Korean for use in the chart.
+const heatmapLabels = computed(() =>
+  lifestyleMappings.map(mapping => mapping.label)
+);
+
 
 const isPrinting = inject("isPrinting");
 const printDashboard = () => {
@@ -404,6 +528,8 @@ onMounted(async () => {
   // Fetch all the necessary data
   await fetchLeadershipData();
   await fetchDemographicData();
+  await fetchHeatmapData();
+  await fetchRadarData();
   await fetchCompanyStatistics();
   // Use nextTick to wait until the DOM is updated (all canvas elements are rendered)
   nextTick(() => {
