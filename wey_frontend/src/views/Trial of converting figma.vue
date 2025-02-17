@@ -4,10 +4,15 @@
     <div class="w-full flex flex-col items-center gap-[1.625rem] pt-14">
       <!-- Mobile Header -->
       <div class="flex justify-between items-center self-stretch md:hidden" data-layer="Header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-          class="size-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-        </svg>
+
+
+        <button @click="prevPage" :disabled="isFirstQuestion"
+          class="px-4 py-3 rounded-lg  hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
         <h6>{{ currentPageTitle }}</h6>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
           class="size-6">
@@ -24,10 +29,14 @@
 
       <!-- Desktop Header -->
       <div class="justify-between items-center self-stretch hidden md:inline-flex" data-layer="second_header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-          class="size-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-        </svg>
+
+        <button @click="prevPage" :disabled="isFirstQuestion"
+          class="px-4 py-3 rounded-lg  hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
         <h6>{{ currentPageTitle }}</h6>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
           class="size-6">
@@ -55,6 +64,7 @@
             :class="index === activeRatingIndex ? 'opacity-100' : 'opacity-50'">
             <Rating :question="question" v-model="responses[question.id]" @answered="handleAnswered(index)" />
           </div>
+
           <div class="w-full max-w-4xl mx-auto  py-6 transition-all duration-300">
             <div class="w-full  flex-col justify-start items-center gap-14  inline-flex pb-6">
 
@@ -75,6 +85,7 @@
 
         </div>
       </template>
+
     </div>
 
     <!-- Navigation Buttons -->
@@ -212,10 +223,28 @@ export default {
     },
     // This can be used in the header – you might choose a title based on the page type.
     currentPageTitle() {
+      const NameMapping = {
+        "demographic": "인구통셰학",
+        "lifestlyes": "라이프",
+        "entrepreneur_risk": "위험감수성",
+        "entrepreneur_proact": "진취성",
+        "entrepreneur_innov": "혁신성",
+        "org_normative": "규범적몰입",
+        "org_continuance": "지속적몰입",
+        "org_affective": "정서적몰입",
+        "ppc_resilience": "회복탄력성",
+        "ppc_hope": "희망",
+        "ppc_optimism": "낙관성",
+        "ppc_efficacy": "자기효능감",
+        "selflead_behavior": "행동지향전략",
+        "selflead_natural": "자연보상전략",
+        "selflead_constructive": "건설적사고전략",
+      };
       if (this.currentPage.pageTitle) {
+        console.log(this.currentPage.pageTitle)
         return this.currentPage.pageTitle;
       } else if (this.currentPage.categoryTitle) {
-        return this.currentPage.categoryTitle;
+        return NameMapping[this.currentPage.categoryTitle] || this.currentPage.categoryTitle;
       }
       return "";
     },
@@ -269,13 +298,13 @@ export default {
         // 개인용 (101, 103, 105)
         return [
           { id: 101, name: "비전하우스" },
-          { id: 103, name: "자기 개발" },
-          { id: 105, name: "커뮤니케이션" },
+          { id: 103, name: "리더십과 혁신" },
+          { id: 105, name: "기업가정신과 혁신" },
         ];
       } else if (this.responses.surveyType === 2) {
         // 기업용 (102, 104, 106)
         return [
-          { id: 102, name: "경영 전략" },
+          { id: 102, name: "비전하우스" },
           { id: 104, name: "리더십과 혁신" },
           { id: 106, name: "기업가정신과 혁신" },
         ];
@@ -292,6 +321,7 @@ export default {
       };
       return titles[category] || category;
     },
+
     async fetchQuestions() {
       try {
         console.log("Fetching questions for:", this.surveyTypeId, this.courseTypeId);
@@ -317,6 +347,8 @@ export default {
           console.error("Failed to fetch questions, status:", response.status);
           return;
         }
+
+
         const fetchedQuestions = await response.json();
         console.log("Fetched questions:", fetchedQuestions);
 
