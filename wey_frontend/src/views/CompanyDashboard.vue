@@ -39,11 +39,17 @@
 
       <!-- <router-view /> -->
       <div class="grid grid-cols-12 gap-5 pb-5 print:hidden">
-        <DashCard title="프로그램 참여 지원 수" :description="companyStats.user_count + '명'" percentage="26%"
-          content="증가(지난달 대비)" />
-        <DashCard title="평균 성장률" :description="companyStats.average_growth + '%'" percentage="14%"
-          content="증가(지난달 대비)" />
-        <DashCard title="선택 프로그램" :description="companyStats.course_type" percentage="" content="" />
+        <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-4 ">
+          <DashCard title="프로그램 참여 지원 수" :description="companyStats.user_count + '명'" percentage="26%"
+            content="증가(지난달 대비)" />
+        </div>
+        <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-4  ">
+          <DashCard title="평균 성장률" :description="companyStats.average_growth + '%'" percentage="14%"
+            content="증가(지난달 대비)" />
+        </div>
+        <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-4 ">
+          <DashCard title="선택 프로그램" :description="companyStats.course_type" percentage="" content="" />
+        </div>
       </div>
       <!-- Loading / Error Messages -->
       <p v-if="loading" class="text-gray-500">Loading data...</p>
@@ -85,15 +91,15 @@
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-7  lg:col-span-7 print:col-span-7">
             <ChartCard canvasId="demographicChart-age" title="연봉과 성장률 간의 관계 분석"
-              description="해당 그래프는 참가자의 연봉 수준과 리더십 프로그램 이후 성장률 간의 관계를 나타냅니다. 연봉이 높은 집단과 낮은 집단의 성장 패턴을 비교할 수 있습니다."
+              description="본 그래프는 참가자의 연봉 수준과 리더십 프로그램 이후 성장률 간의 관계를 나타냅니다. 연봉이 높은 집단과 낮은 집단의 성장 패턴을 비교할 수 있습니다."
               :labels="demographicLabels.salary" :datasets="demographicDatasets.age" title_z="end this life"
               title_y="end" :chartType="'bar'" />
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-5 lg:col-span-5 print:col-span-5">
             <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
-              description="본 그래프는 특정 회사의 참가자들이 리더십 프로그램을 통해 성장한 정도를 전체 평균과 비교하여 나타낸 것입니다. 특정 기업이 다른 기업들과 비교했을 때 얼마나 효과적인 성장을 보였는지를 확인할 수 있습니다."
-              :labels="prepostChartLabel" :datasets="prepostChartData" />
+              description="본 그래프는 특정 회사 참가자의 리더십 성장률을 전체 평균과 비교하여 기업 간 성장 차이를 확인합니다." :labels="prepostChartLabel"
+              :datasets="prepostChartData" />
 
 
 
@@ -102,14 +108,13 @@
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
             <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
-              description=" 해당 그래프는 참가자의 최종 학력(고졸, 전문대졸, 대졸, 대학원 졸업 등)에 따른 리더십 성장률의 차이를 나타냅니다. 학력이 높은 집단과 낮은 집단의 성장률 차이를 분석할 수 있습니다."
-              :labels="demographicLabels.education" :datasets="demographicDatasets.education" title_z="end this life"
-              title_y="end" :chartType="'bar'" />
+              description=" 본 그래프는 참가자의 학력 수준(고졸, 대졸 등)에 따른 리더십 성장률 차이를 분석합니다." :labels="demographicLabels.education"
+              :datasets="demographicDatasets.education" title_z="end this life" title_y="end" :chartType="'bar'" />
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
             <ChartCard canvasId="demographicChart-age" title="결혼 여부에 따른 성장률 비교"
-              description="해당 그래프는 미혼과 기혼 참가자 간의 성장률 차이를 분석합니다. 가정이 있는 사람들이 리더십 성장에서 더 높은 성과를 보이는지 여부를 확인할 수 있습니다."
+              description="본 그래프는 미혼과 기혼 참가자의 리더십 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다."
               :labels="demographicLabels.marital" :datasets="demographicDatasets.marital" title_z="end this life"
               title_y="end" :chartType="'bar'" />
           </div>
@@ -166,7 +171,7 @@
 </section> -->
 
 <script setup>
-import { ref, reactive, onMounted, nextTick, computed, inject } from 'vue';
+import { ref, reactive, onMounted, nextTick, computed, inject, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { Chart, registerables } from 'chart.js';
 import axios from 'axios';
@@ -348,14 +353,18 @@ const demographicChartData = computed(() => {
         labels: data.map(entry => entry[`${category}_group`]),
         datasets: [
           {
-            label: 'Pre Survey',
+            label: '사전 점수',
             data: data.map(entry => entry.pre),
             backgroundColor: '#4F46E5'
           },
           {
-            label: 'Post Survey',
+            label: '사후 점수',
             data: data.map(entry => entry.post),
             backgroundColor: '#A78BFA'
+            // backgroundColor: "rgba(182, 91, 252, 0.2)",
+            // borderColor: "rgba(182, 91, 252, 1)",
+            // borderWidth: 2,
+            // backgroundColor: '#A78BFA'
           }
         ]
       };
@@ -403,8 +412,8 @@ const leadershipChartData = computed(() => {
   return {
     labels,
     datasets: [
-      { label: '남성 (Male)', data: maleData, backgroundColor: '#4F46E5' },
-      { label: '여성 (Female)', data: femaleData, backgroundColor: '#A78BFA' }
+      { label: '남성', data: maleData, backgroundColor: '#4F46E5' },
+      { label: '여성', data: femaleData, backgroundColor: '#A78BFA' }
     ]
   };
 });
@@ -475,16 +484,16 @@ const prepostChartData = computed(() => {
   console.log("all user", company_vs_all.value.industry_scores);
   return [
     {
-      label: "company_scores",
+      label: "기업 점수",
       data: company_vs_all.value.company_scores || [],
-      backgroundColor: "rgba(255, 99, 132, 0.2)",
-      borderColor: "rgba(255, 99, 132, 1)",
+      backgroundColor: "rgba(193, 99, 255, 0.3)",
+      borderColor: "rgba(193, 99, 255, 1)",
       borderWidth: 2,
     },
     {
-      label: "industry_scores",
+      label: "산업 평균 점수",
       data: company_vs_all.value.industry_scores || [],
-      backgroundColor: "rgba(54, 162, 235, 0.2)",
+      backgroundColor: "rgba(54, 162, 235, 0.3)",
       borderColor: "rgba(54, 162, 235, 1)",
       borderWidth: 2,
     }
@@ -566,10 +575,12 @@ const transformedHeatmapData = computed(() => {
   return result;
 });
 
-// Compute the labels in Korean for use in the chart.
-const heatmapLabels = computed(() =>
-  lifestyleMappings.map(mapping => mapping.label)
-);
+const revertBodyStyles = () => {
+  console.log("🔙 Reverting body styles after print...");
+  document.body.style.width = "";
+  document.body.style.height = "";
+  isPrinting.value = false;
+};
 
 
 const isPrinting = inject("isPrinting");
@@ -578,13 +589,13 @@ const printDashboard = () => {
   isPrinting.value = true;
   document.body.style.width = "1000px";
   document.body.style.height = "auto";
-
-  window.dispatchEvent(new Event("resize")); // ✅ Force resize event
-
+  window.dispatchEvent(new Event("resize"));
+  window.dispatchEvent(new Event("chartBeforePrint"));
   setTimeout(() => {
     console.log("🖨 Printing...");
     window.print();
-  }, 500); // ✅ Delay ensures chart resize before printing
+    window.dispatchEvent(new Event("chartAfterPrint"));
+  }, 500);
 };
 
 
@@ -598,10 +609,15 @@ onMounted(async () => {
   await fetchRadarData();
   await fetchCompanyStatistics();
   await fetchGenderDistribution();
+  window.addEventListener("chartAfterPrint", revertBodyStyles);
   // Use nextTick to wait until the DOM is updated (all canvas elements are rendered)
   nextTick(() => {
     loading.value = false;
   });
+});
+
+onUnmounted(() => {
+  window.removeEventListener("chartAfterPrint", revertBodyStyles);
 });
 </script>
 

@@ -404,14 +404,14 @@ const radarDataPerCategory = computed(() => {
       }),
       datasets: [
         {
-          label: "Pre Survey",
+          label: "사전 점수",
           data: category.questions.map(q => q.pre_score),
-          backgroundColor: "rgba(255, 99, 132, 0.2)",
-          borderColor: "rgba(255, 99, 132, 1)",
+          backgroundColor: "rgba(193, 99, 255, 0.3)",
+          borderColor: "rgba(193, 99, 255, 1)",
           borderWidth: 2,
         },
         {
-          label: "Post Survey",
+          label: "사후 점수",
           data: category.questions.map(q => q.post_score),
           backgroundColor: "rgba(54, 162, 235, 0.2)",
           borderColor: "rgba(54, 162, 235, 1)",
@@ -438,14 +438,14 @@ const prepostChartData = computed(() => {
   console.log("Post Survey Scores:", prePostRadarData.value.post_scores);
   return [
     {
-      label: "pre_scores",
+      label: "사전 점수",
       data: prePostRadarData.value.pre_scores || [],
-      backgroundColor: "rgba(255, 99, 132, 0.2)",
-      borderColor: "rgba(255, 99, 132, 1)",
+      backgroundColor: "rgba(193, 99, 255, 0.3)",
+      borderColor: "rgba(193, 99, 255, 1)",
       borderWidth: 2,
     },
     {
-      label: "post scores",
+      label: "사후 점수",
       data: prePostRadarData.value.post_scores || [],
       backgroundColor: "rgba(54, 162, 235, 0.2)",
       borderColor: "rgba(54, 162, 235, 1)",
@@ -467,14 +467,14 @@ const UserVsAllDataset = computed(() => {
   console.log("All Users Growth:", UserVsAllData.value.all_users_scores);
   return [
     {
-      label: "User Growth",
+      label: "개별 성장률",
       data: UserVsAllData.value.user_scores || [],
-      backgroundColor: "rgba(255, 99, 132, 0.2)",
-      borderColor: "rgba(255, 99, 132, 1)",
+      backgroundColor: "rgba(193, 99, 255, 0.3)",
+      borderColor: "rgba(193, 99, 255, 1)",
       borderWidth: 2,
     },
     {
-      label: "All Users Growth",
+      label: "전체 사용자 성장률",
       data: UserVsAllData.value.all_users_scores || [],
       backgroundColor: "rgba(54, 162, 235, 0.2)",
       borderColor: "rgba(54, 162, 235, 1)",

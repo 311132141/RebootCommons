@@ -94,15 +94,15 @@ const handleCustomBeforePrint = () => {
     }
 
     // If you want to update dataset colors for printing:
-    chartInstance.value.data.datasets.forEach(ds => {
-      // Save original if not saved
-      if (!ds._defaultBackground) ds._defaultBackground = ds.backgroundColor;
-      if (!ds._defaultBorder) ds._defaultBorder = ds.borderColor;
+    // chartInstance.value.data.datasets.forEach(ds => {
 
-      // Example: set them to print-friendly colors
-      ds.backgroundColor = 'rgba(255,0,0,0.2)';
-      ds.borderColor = 'rgba(255,0,0,1)';
-    })
+    //   if (!ds._defaultBackground) ds._defaultBackground = ds.backgroundColor;
+    //   if (!ds._defaultBorder) ds._defaultBorder = ds.borderColor;
+
+
+    //   ds.backgroundColor = 'rgba(255,0,0,0.2)';
+    //   ds.borderColor = 'rgba(255,0,0,1)';
+    // })
 
     chartInstance.update();
   }
@@ -124,14 +124,14 @@ const handleCustomAfterPrint = () => {
     }
 
     // Revert dataset colors
-    chartInstance.value.data.datasets.forEach(ds => {
-      if (ds._defaultBackground) {
-        ds.backgroundColor = ds._defaultBackground;
-      }
-      if (ds._defaultBorder) {
-        ds.borderColor = ds._defaultBorder;
-      }
-    });
+    // chartInstance.value.data.datasets.forEach(ds => {
+    //   if (ds._defaultBackground) {
+    //     ds.backgroundColor = ds._defaultBackground;
+    //   }
+    //   if (ds._defaultBorder) {
+    //     ds.borderColor = ds._defaultBorder;
+    //   }
+    // });
     chartInstance.value.update();
   }
 };

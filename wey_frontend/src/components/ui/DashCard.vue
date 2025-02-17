@@ -1,17 +1,18 @@
 <template>
-  <div class="col-span-12 sm:col-span-6 lg:col-span-3 ">
-    <div class=" shadow p-4 rounded-border border border-gray-600 rounded-lg print:border-gray-500 print:shadow-none">
-      <div class="flex justify-between flex-col gap-2">
-        <span class="block text-surface-500 dark:text-surface-300 font-medium print:text-black">{{ title }}</span>
-        <h5 class=" print:text-black">{{ description }}</h5>
-        <div>
-          <span class="text-green-500 font-medium">{{ percentage }} </span>
-          <span class="text-surface-500 dark:text-surface-300 print:text-black">{{ content }}</span>
-        </div>
-      </div>
 
+  <div
+    class=" shadow p-4 rounded-border border border-gray-600 rounded-lg print:border-gray-500 h-full print:shadow-none">
+    <div class="flex justify-between flex-col gap-2">
+      <span class="block text-surface-500 dark:text-surface-300 font-medium print:text-black">{{ title }}</span>
+      <h5 class=" print:text-black">{{ description }}</h5>
+      <div>
+        <span class="text-green-500 font-medium">{{ percentage }} </span>
+        <span class="text-surface-500 dark:text-surface-300 print:text-black">{{ content }}</span>
+      </div>
     </div>
+
   </div>
+
 
 </template>
 
