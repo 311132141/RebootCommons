@@ -1,11 +1,11 @@
 <template>
-  <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 relative">
+  <div class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 h-full items-stretch relative">
     <div class="flex flex-col gap-2">
       <span class="block text-surface-500 dark:text-surface-300 font-medium print:text-black">
         {{ title }}
       </span>
       <div class="w-full">
-        <p class="text-sm text-gray-700 mb-4 truncate">{{ description }}</p>
+        <p class="text-sm text-gray-400 mb-4 break-keep">{{ description }}</p>
       </div>
 
       <!-- Chart Container -->
@@ -84,6 +84,11 @@ const createChart = () => {
             padding: 5,
             showLabelBackdrop: false,
           },
+          pointLabels: {
+            // font: { size: 14 },
+            // Use a callback to color each label individually
+            color: "#B0B0B0",
+          },
           grid: {
             color: "rgba(200, 200, 200, 0.2)",
             circular: false
@@ -111,7 +116,56 @@ const handleResize = () => {
     chartInstance.resize();
   }
 };
+const handleCustomBeforePrint = () => {
+  if (chartInstance) {
+    // Change legend labels
+    chartInstance.options.plugins.legend.labels.color = "#000000"; // black
 
+    // Change radial scale tick labels and grid
+    chartInstance.options.scales.r.ticks.color = "#000000"; // dark blue ticks
+    chartInstance.options.scales.r.grid.color = "rgba(0,0,0,0.3)"; // darker grid lines
+    chartInstance.options.scales.r.pointLabels.color = "#000000";
+    // Optionally change dataset colors for print mode:
+    // chartInstance.data.datasets.forEach(ds => {
+    //   if (ds.label === "User Growth") {
+    //     ds.backgroundColor = "rgba(0, 255, 0, 0.2)"; 
+    //     ds.borderColor = "rgba(0, 255, 0, 1)";         
+    //   } else if (ds.label === "All Users Growth") {
+    //     ds.backgroundColor = "rgba(255, 165, 0, 0.2)"; 
+    //     ds.borderColor = "rgba(255, 165, 0, 1)";        
+    //   }
+    // });
+
+    chartInstance.update();
+    console.log("Chart colors updated for print mode.");
+  }
+};
+
+const handleCustomAfterPrint = () => {
+  if (chartInstance) {
+    // Revert legend labels
+    chartInstance.options.plugins.legend.labels.color = "#FFF"; // original white
+
+    // Revert radial scale tick labels and grid
+    chartInstance.options.scales.r.ticks.color = "#B0B0B0"; // original tick color
+    chartInstance.options.scales.r.grid.color = "rgba(200,200,200,0.2)"; // original grid color
+    chartInstance.options.scales.r.pointLabels.color = "#B0B0B0";
+
+    // Revert dataset colors
+    chartInstance.data.datasets.forEach(ds => {
+      if (ds.label === "User Growth") {
+        ds.backgroundColor = "rgba(255, 99, 132, 0.2)";
+        ds.borderColor = "rgba(255, 99, 132, 1)";
+      } else if (ds.label === "All Users Growth") {
+        ds.backgroundColor = "rgba(54, 162, 235, 0.2)";
+        ds.borderColor = "rgba(54, 162, 235, 1)";
+      }
+    });
+
+    chartInstance.update();
+    console.log("Chart colors reverted after print.");
+  }
+};
 const handlePrintResize = () => {
   console.log("🔄 Adjusting chart size for print...");
   if (chartInstance) {
@@ -127,20 +181,30 @@ onMounted(() => {
   if (chartContainer.value) {
     resizeObserver.observe(chartContainer.value);
   }
-  window.addEventListener("beforeprint", handlePrintResize);
+  // Listen for print events
+  window.addEventListener("chartBeforePrint", handleCustomBeforePrint);
+  window.addEventListener("chartAfterPrint", handleCustomAfterPrint);
+  // window.addEventListener("beforeprint", handleBeforePrint);
+  // window.addEventListener("afterprint", handleAfterPrint);
+  window.addEventListener("chartBeforePrint", handlePrintResize);
 });
+// const handlePrintResize = () => {
+//   console.log("🔄 Adjusting chart size for print...");
+//   if (chartInstance) {
+//     chartInstance.resize();
+//   }
+// };
+
+
 
 // Watch for changes in props and re-create the chart
 watch(() => [props.labels, props.datasets], createChart, { deep: true });
 
 onUnmounted(() => {
-  if (resizeObserver && chartContainer.value) {
-    resizeObserver.unobserve(chartContainer.value);
-  }
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
-  window.removeEventListener("beforeprint", handlePrintResize);
+  if (resizeObserver && chartContainer.value) resizeObserver.unobserve(chartContainer.value);
+  if (chartInstance) chartInstance.destroy();
+  window.removeEventListener("chartBeforePrint", handleCustomBeforePrint);
+  window.removeEventListener("chartAfterPrint", handleCustomAfterPrint);
 });
 </script>
 

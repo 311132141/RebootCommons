@@ -27,13 +27,12 @@
 
         <!-- Loop through each category and render a radar chart -->
         <div class="grid grid-cols-12 gap-5 ">
-          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-8 ">
-
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-7 print:col-span-7 ">
             <div
               class="shadow p-4 rounded-border border border-gray-600 rounded-lg max-h-120 h-full items-stretch relative">
               <div class="ml-8">
-                <h3 class="text-4xl font-bold text-gray-100">{{ user.name }}</h3>
-                <ul class="mt-4 text-gray-300">
+                <h3 class="text-4xl font-bold text-white print:text-black">{{ user.name }}</h3>
+                <ul class="mt-4 text-white print:text-black">
                   <li><strong>Email:</strong> {{ user.email }}</li>
                   <li><strong>성별:</strong> {{ user.demographics.gender }}</li>
                   <li><strong>연령:</strong> {{ user.demographics.age }}</li>
@@ -42,36 +41,36 @@
                   <li><strong>소득 수준:</strong> {{ user.demographics.income }}</li>
                 </ul>
                 <!-- Selected Program -->
-                <h2 class="text-xl font-semibold mt-6 text-gray-100">
+                <h2 class="text-xl font-semibold mt-6 text-gray-100 print:text-black">
                   선택한 프로그램:
                 </h2>
-                <div>{{ user.demographics.selected_program }}</div>
+                <div class="print:text-black">{{ user.demographics.selected_program }}</div>
               </div>
             </div>
           </div>
-          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-4">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-5 print:col-span-5">
             <ChartCard_radar title="개인 & 전체 프로그램 평균 성장률 비교" description="본 그래프는 개인의 성장률을 전체 프로그램 평균과 비교한 결과를 보여줍니다."
               :labels="UserVsAllLabel" :datasets="UserVsAllDataset" />
           </div>
-          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-4 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-5 print:col-span-5">
             <ChartCard_radar :title="`${user.demographics.selected_program} - 성장률 (전/후) 비교`"
               :description="`본 레이더 차트는 ${user.demographics.selected_program} 수강 전후의 성장률 변화를 항목별로 보여줍니다.`"
               :labels="prepostChartLabel" :datasets="prepostChartData" />
 
           </div>
-          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-8">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-7 print:col-span-7">
             <ChartCard :title="`${user.demographics.selected_program} - 성장률 (전/후) 비교`"
               :description="`본 막대 차트는 ${user.demographics.selected_program} 수강 전후의 성장률 변화를 항목별로 보여줍니다.`"
               :labels="prepostChartLabel" :datasets="prepostChartData" :chartType="'bar'" />
           </div>
           <div v-for="(radar, index) in radarDataPerCategory" :key="index"
-            class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-4">
+            class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-4 print:col-span-4">
             <ChartCard_radar :title="`${radar.categoryName} - 성장률 (전/후) 비교`"
               :description="`본 그래프는 ${radar.categoryName} 내 전후 성장률 변화를 비교한 결과를 나타냅니다.`" :labels="radar.labels"
               :datasets="radar.datasets" />
           </div>
         </div>
-        <div class="grid grid-cols-12 gap-5 pb-5">
+        <div class="grid grid-cols-12 gap-5 pb-5 ">
           <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
             <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
               description="수면, 운동, 식습관, 명상, 워크라이프 밸런스와 같은 요소가 리더십 성장률에 미치는 영향을 분석합니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
@@ -79,6 +78,19 @@
               :scores="[1, 2, 3, 4, 5]" :improvementData="transformedHeatmapData" />
           </div>
 
+        </div>
+        <!-- Large Text Box for Admin Explanation -->
+        <div class="grid grid-cols-12 gap-5 pb-5">
+          <div class="col-span-12">
+            <h2 class="text-xl font-semibold text-gray-100 print:text-black">리포트 설명</h2>
+            <textarea v-model="adminExplanation"
+              class="w-full h-48 p-4 border border-gray-600 rounded-md  text-white print:text-black print:border-black bg-transparent"
+              placeholder="차트에 대한 설명을 입력하세요..."></textarea>
+            <button class=" right-4 bottom-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+              저장
+            </button>
+
+          </div>
         </div>
       </div>
 
@@ -90,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick, computed, inject } from 'vue';
+import { ref, reactive, onMounted, nextTick, computed, inject, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
@@ -137,7 +149,7 @@ const questionNameMapping = {
     "실패 후 재도전 의지",
     "예상치 못한 문제 해결, 새로운 기회 발견",
     "적극적으로 기회에 뛰어들어 위험 감수",
-    "미래 이익 위해 과감히 결정",
+    ["미래 이익 위해", "과감히 결정"],
   ],
 
   // 기업가정신(진취성)
@@ -517,7 +529,12 @@ const transformedHeatmapData = computed(() => {
   console.log("Transformed heatmap data (2D array):", result);
   return result;
 });
-
+const revertBodyStyles = () => {
+  console.log("🔙 Reverting body styles after print...");
+  document.body.style.width = "";
+  document.body.style.height = "";
+  isPrinting.value = false;
+};
 
 const isPrinting = inject("isPrinting");
 const printDashboard = () => {
@@ -526,9 +543,11 @@ const printDashboard = () => {
   document.body.style.width = "1000px";
   document.body.style.height = "auto";
   window.dispatchEvent(new Event("resize"));
+  window.dispatchEvent(new Event("chartBeforePrint"));
   setTimeout(() => {
     console.log("🖨 Printing...");
     window.print();
+    window.dispatchEvent(new Event("chartAfterPrint"));
   }, 500);
 };
 
@@ -539,9 +558,14 @@ onMounted(async () => {
   await fetchHeatmapData();
   // await fetchRadarData();
   await fetchQuestionRatings();
+  window.addEventListener("chartAfterPrint", revertBodyStyles);
   nextTick(() => {
     loading.value = false;
   });
+});
+
+onUnmounted(() => {
+  window.removeEventListener("chartAfterPrint", revertBodyStyles);
 });
 </script>
 
