@@ -234,10 +234,10 @@ def get_company_categories(company):
     if not company.course_type:
         return []
 
-    return get_categories_by_course_type(company.course_type.name)
+    return get_categories_by_course_type(company.course_type.name, "기업용")
 
 
-def get_categories_by_course_type(course_name):
+def get_categories_by_course_type(course_name, survey_type_name="개인용"):
     """
     Returns the list of categories based on the given CourseType name.
 
@@ -247,11 +247,18 @@ def get_categories_by_course_type(course_name):
     Returns:
         list: A list of category strings related to the course type.
     """
-    course_category_map = {
-        "기업가정신과 혁신": ["entrepreneur_risk", "entrepreneur_proact", "entrepreneur_innov"],
-        "리더십과 혁신": ["org_normative", "org_continuance", "org_affective", "selflead_constructive", "selflead_natural", "selflead_behavior"],
-        "비전하우스": ["ppc_resilience", "ppc_hope", "ppc_optimism"]
-    }
+    if (survey_type_name == "개인용"):
+        course_category_map = {
+            "비전하우스": ["ppc_resilience", "ppc_hope", "ppc_optimism", "ppc_efficacy"],
+            "리더십과 혁신": ["selflead_constructive", "selflead_natural", "selflead_behavior"],
+            "기업가정신과 혁신": ["entrepreneur_risk", "entrepreneur_proact", "entrepreneur_innov"]
+        }
+    else:
+        course_category_map = {
+            "기업가정신과 혁신": ["entrepreneur_risk", "entrepreneur_proact", "entrepreneur_innov"],
+            "리더십과 혁신": ["org_normative", "org_continuance", "org_affective", "selflead_constructive", "selflead_natural", "selflead_behavior"],
+            "비전하우스": ["ppc_resilience", "ppc_hope", "ppc_optimism", "ppc_efficacy"]
+        }
 
     return course_category_map.get(course_name, [])
 
@@ -367,117 +374,6 @@ class CourseTypeListView(APIView):
         ]
         return Response(data, status=status.HTTP_200_OK)
 
-
-# class SurveyView(APIView):
-#     """
-#     Handles retrieval and submission of survey responses for a specific
-#     SurveyType and CourseType combination.
-#     """
-
-#     # permission_classes = [AllowAny]
-#     def get(self, request, survey_type_id, course_type_id):
-#         """
-#         Returns the questions for a specific SurveyType and CourseType combination.
-#         """
-#         try:
-#             survey_type = SurveyType.objects.get(pk=survey_type_id)
-#             course_type = CourseType.objects.get(pk=course_type_id, survey_type=survey_type)
-#         except SurveyType.DoesNotExist:
-#             return Response(
-#                 {"detail": "SurveyType not found."},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-#         except CourseType.DoesNotExist:
-#             return Response(
-#                 {"detail": "CourseType not found for this SurveyType."},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#         survey_type_questions = SurveyTypeQuestion.objects.filter(
-#             survey_type=survey_type
-#         ).select_related('question').order_by('order')
-#         course_type_questions = CourseTypeQuestion.objects.filter(
-#             course_type=course_type
-#         ).select_related('question').order_by('order')
-
-#         st_questions = [stq.question for stq in survey_type_questions]
-#         ct_questions = [ctq.question for ctq in course_type_questions]
-#         combined_questions = st_questions + ct_questions
-
-#         serializer = QuestionSerializer(combined_questions, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-#     def post(self, request, survey_type_id, course_type_id):
-#         """
-#         Handles submission of user responses for a specific SurveyType and CourseType combination.
-#         """
-#         if not request.user or not request.user.is_authenticated:
-#             return Response(
-#                 {"detail": "Authentication required."},
-#                 status=status.HTTP_401_UNAUTHORIZED
-#             )
-
-#         try:
-#             survey_type = SurveyType.objects.get(pk=survey_type_id)
-#             course_type = CourseType.objects.get(pk=course_type_id, survey_type=survey_type)
-#         except SurveyType.DoesNotExist:
-#             return Response(
-#                 {"detail": "SurveyType not found."},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-#         except CourseType.DoesNotExist:
-#             return Response(
-#                 {"detail": "CourseType not found for this SurveyType."},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#         user = request.user
-#         phase = request.data.get("phase")
-#         if phase not in ['pre', 'post']:
-#             return Response(
-#                 {"detail": "Invalid phase. Must be 'pre' or 'post'."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         survey_response = UserSurveyResponse.objects.create(
-#             user=user,
-#             survey_type=survey_type,
-#             course_type=course_type,
-#             phase=phase
-#         )
-
-#         answers = request.data.get("answers", [])
-#         if not isinstance(answers, list):
-#             return Response(
-#                 {"detail": "Answers must be a list of objects."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         for answer in answers:
-#             question_id = answer.get("question_id")
-#             answer_text = answer.get("answer_text")
-#             answer_value = answer.get("answer_value")
-
-#             try:
-#                 question = Question.objects.get(pk=question_id)
-#             except Question.DoesNotExist:
-#                 return Response(
-#                     {"detail": f"Question with id {question_id} not found."},
-#                     status=status.HTTP_404_NOT_FOUND
-#                 )
-
-#             Answer.objects.create(
-#                 response=survey_response,
-#                 question=question,
-#                 answer_text=answer_text,
-#                 answer_value=answer_value
-#             )
-
-#         return Response(
-#             {"detail": "Survey responses submitted successfully."},
-#             status=status.HTTP_201_CREATED
-#         )
-
 class SurveyView(APIView):
     """
     Handles retrieval and submission of survey responses for a specific
@@ -516,7 +412,7 @@ class SurveyView(APIView):
             if UserSurveyResponse.objects.filter(
                 user=request.user, survey_type=survey_type, course_type=course_type
             ).exists():
-                combined_questions = [q for q in combined_questions if q.category != "lifestyle"]
+                combined_questions = [q for q in combined_questions if ((q.category != "lifestyle") and (q.category != "demographic"))]
 
         serializer = QuestionSerializer(combined_questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -899,7 +795,7 @@ def get_user_pre_post_comparison(request, user_id):
         return Response({"error": "User's course type is unrecognized."}, status=status.HTTP_400_BAD_REQUEST)
 
     print(f"📌 User: {user.name}, Course Type: {user_course_type}")
-    print(f"📊 Categories Used: {categories}")
+    print(f"📊 Categories Used: {categories}\n")
 
     # Compute pre/post scores
     pre_scores = [calculate_average_score(user, "pre", category) for category in categories]
@@ -955,7 +851,7 @@ def get_user_vs_all_growth(request, user_id):
         "all_users_scores": [all_users_growth.get(cat, 0) for cat in categories]
     }
 
-    print("✅ Final Computed User vs All Growth Data:", response_data)
+    # print("✅ Final Computed User vs All Growth Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
 
     
