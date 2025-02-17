@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
 import random
 
 from django.db import models
@@ -216,7 +216,7 @@ def calculate_growth(users, user_type="Generic", categories=None):
         else:
             growth_data[category] = 0  # Default to 0% growth if no valid data
 
-        print(f"{user_type} Growth for {category}: {growth_data[category]:.2f}% (Pre: {pre_avg}, Post: {post_avg})")
+        # # print(f"{user_type} Growth for {category}: {growth_data[category]:.2f}% (Pre: {pre_avg}, Post: {post_avg})")
 
     return growth_data
 
@@ -310,6 +310,24 @@ def calculate_lifestyle_performance_growth(users):
             })
 
     return formatted_data
+
+def get_company_gender_data(company_id):
+    """
+    Helper function to retrieve the company, its users, and a mapping of user IDs to their gender.
+    Returns a tuple: (company, users, user_genders, error_message)
+    """
+    try:
+        company = Company.objects.get(id=company_id)
+    except Company.DoesNotExist:
+        return None, None, None, "Company not found."
+    users = User.objects.filter(company=company)
+    responses = UserSurveyResponse.objects.filter(user__in=users)
+    gender_question = Question.objects.filter(text__icontains="성별").first()
+    if not gender_question:
+        return company, users, None, "Gender question not found."
+    gender_answers = Answer.objects.filter(question=gender_question, response__in=responses)
+    user_genders = {ans.response.user.id: ans.answer_text for ans in gender_answers}
+    return company, users, user_genders, None
 
 
 # =============================================================================
@@ -498,105 +516,57 @@ class SurveyView(APIView):
             status=status.HTTP_201_CREATED
         )
 
-class GenderDistributionView(APIView):
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_gender_counts(request, company_id):
     """
-    Provides gender distribution data from surveys.
+    Returns the number of male and female responses for users in the given company.
     """
-
-    def get(self, request):
-        data = (
-            UserSurvey.objects.values('gender')
-            .annotate(count=models.Count('gender'))
-            .order_by('gender')
-        )
-        labels = [item['gender'] for item in data]
-        values = [item['count'] for item in data]
-        return Response({
-            'labels': labels,
-            'datasets': [
-                {
-                    'data': values,
-                    'backgroundColor': ['#4F46E5', '#A78BFA'],
-                }
-            ]
-        })
-
-
-@api_view(['GET'])
-def age_distribution(request):
-    """
-    Returns age distribution data from survey responses.
-    """
-    try:
-        age_data = (
-            UserSurvey.objects.values('age')
-            .annotate(count=Count('age'))
-        )
-        colour_palette = ["#A78BFA", "#C4B5FD", "#DDD6FE", "#EDE9FE", "#F5F3FF"]
-        chart_data = prepare_chart_data(age_data, 'age', colour_palette)
-        return Response(chart_data, status=status.HTTP_200_OK)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    company, users, user_genders, error = get_company_gender_data(company_id)
+    if error:
+        return Response({"error": error}, status=status.HTTP_404_NOT_FOUND)
+    gender_counts = Counter(user_genders.values())
+    male_count = gender_counts.get("남성", 0)
+    female_count = gender_counts.get("여성", 0)
+    print({"data": {"남성": male_count, "여성": female_count}})
+    return Response({"data": {"남성": male_count, "여성": female_count}}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_gender_vs_leadership(request, company_id):
-    """
-    Fetches average leadership ratings split by gender.
-    """
-    try:
-        print(f"Fetching gender vs leadership data for company ID: {company_id}")
+    # # print(f"Fetching gender vs leadership data for company ID: {company_id}")
+    company, users, user_genders, error = get_company_gender_data(company_id)
+    if error:
+        # print(error)
+        return Response({"error": error}, status=status.HTTP_404_NOT_FOUND)
+    
+    # print(f"Company found: {company.name}, Total users: {users.count()}")
+    responses = UserSurveyResponse.objects.filter(user__in=users)
+    # print(f"Total survey responses found: {responses.count()}")
 
-        company = Company.objects.get(id=company_id)
-        users = User.objects.filter(company=company)
-        print(f"Company found: {company.name}, Total users: {users.count()}")
+    leadership_questions = Question.objects.filter(category__icontains="selflead")
+    # print(f"Total leadership-related questions found: {leadership_questions.count()}")
 
-        responses = UserSurveyResponse.objects.filter(user__in=users)
-        print(f"Total survey responses found: {responses.count()}")
+    category_ratings = defaultdict(lambda: {"남성": [], "여성": []})
+    for question in leadership_questions:
+        answers = Answer.objects.filter(question=question, response__in=responses)
+        # print(f"Processing question ID: {question.id}, Category: {question.category}, Total answers: {answers.count()}")
+        for ans in answers:
+            user_id = ans.response.user.id
+            gender = user_genders.get(user_id, "Unknown")
+            if ans.answer_value is not None and gender in ["남성", "여성"]:
+                category_ratings[question.category][gender].append(ans.answer_value)
 
-        gender_question = Question.objects.filter(text__icontains="성별").first()
-        if not gender_question:
-            print("Error: Gender question not found.")
-            return Response(
-                {"error": "Gender question not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        print(f"Gender question ID: {gender_question.id}, Text: {gender_question.text}")
+    formatted_data = []
+    for category, ratings in category_ratings.items():
+        male_avg = sum(ratings["남성"]) / len(ratings["남성"]) if ratings["남성"] else 0
+        female_avg = sum(ratings["여성"]) / len(ratings["여성"]) if ratings["여성"] else 0
+        # print(f"Category: {category}, Male Avg: {male_avg}, Female Avg: {female_avg}")
+        formatted_data.append({"category": category, "남성": male_avg, "여성": female_avg})
+    # print("Final computed data:", formatted_data)
+    return Response({"data": formatted_data}, status=status.HTTP_200_OK)
 
-        leadership_questions = Question.objects.filter(category__icontains="selflead")
-        print(f"Total leadership-related questions found: {leadership_questions.count()}")
-
-        gender_answers = Answer.objects.filter(question=gender_question, response__in=responses)
-        print(f"Total gender responses found: {gender_answers.count()}")
-
-        user_genders = {ans.response.user.id: ans.answer_text for ans in gender_answers}
-        print(f"User genders mapped: {len(user_genders)} users have gender recorded.")
-
-        category_ratings = defaultdict(lambda: {"남성": [], "여성": []})
-        for question in leadership_questions:
-            answers = Answer.objects.filter(question=question, response__in=responses)
-            print(f"Processing question ID: {question.id}, Category: {question.category}, Total answers: {answers.count()}")
-            for ans in answers:
-                user_id = ans.response.user.id
-                gender = user_genders.get(user_id, "Unknown")
-                if ans.answer_value is not None:
-                    if gender in ["남성", "여성"]:
-                        category_ratings[question.category][gender].append(ans.answer_value)
-
-        formatted_data = []
-        for category, ratings in category_ratings.items():
-            male_avg = sum(ratings["남성"]) / len(ratings["남성"]) if ratings["남성"] else 0
-            female_avg = sum(ratings["여성"]) / len(ratings["여성"]) if ratings["여성"] else 0
-            print(f"Category: {category}, Male Avg: {male_avg}, Female Avg: {female_avg}")
-            formatted_data.append({"category": category, "남성": male_avg, "여성": female_avg})
-
-        print("Final computed data:", formatted_data)
-        return Response({"data": formatted_data}, status=status.HTTP_200_OK)
-
-    except Company.DoesNotExist:
-        print(f"Error: Company with ID {company_id} not found.")
-        return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(["GET"])
@@ -609,7 +579,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
     Example URL: /api/companies/{company_id}/demographic-improvement/age/
     """
     try:
-        print(f"Fetching {demographic_type} vs survey improvement data for company ID: {company_id}")
+        # print(f"Fetching {demographic_type} vs survey improvement data for company ID: {company_id}")
 
         korean_question_text = get_korean_question(demographic_type)
         if not korean_question_text:
@@ -617,7 +587,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
 
         company = Company.objects.get(id=company_id)
         users = User.objects.filter(company=company)
-        print(f"Company found: {company.name}, Total users: {users.count()}")
+        # print(f"Company found: {company.name}, Total users: {users.count()}")
 
         question = Question.objects.filter(text__icontains=korean_question_text).first()
         if not question:
@@ -625,14 +595,14 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
                 {"error": f"Question not found for {demographic_type}."},
                 status=status.HTTP_404_NOT_FOUND
             )
-        print(f"Demographic question ID: {question.id}, Text: {question.text}")
+        # print(f"Demographic question ID: {question.id}, Text: {question.text}")
 
         answers = Answer.objects.filter(question=question, response__user__in=users)
-        print(f"Total {demographic_type} responses found: {answers.count()}")
+        # print(f"Total {demographic_type} responses found: {answers.count()}")
 
         user_categories = {ans.response.user.id: ans.answer_text for ans in answers}
         survey_answers = Answer.objects.filter(response__user__in=users)
-        print(f"Processing {survey_answers.count()} total answers.")
+        # print(f"Processing {survey_answers.count()} total answers.")
 
         category_ratings = defaultdict(lambda: {"pre": [], "post": []})
         for ans in survey_answers:
@@ -646,7 +616,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
         for category, phases in category_ratings.items():
             pre_avg = sum(phases["pre"]) / len(phases["pre"]) if phases["pre"] else 0
             post_avg = sum(phases["post"]) / len(phases["post"]) if phases["post"] else 0
-            print(f"{demographic_type.capitalize()} Group: {category}, Pre Avg: {pre_avg}, Post Avg: {post_avg}")
+            # print(f"{demographic_type.capitalize()} Group: {category}, Pre Avg: {pre_avg}, Post Avg: {post_avg}")
             formatted_data.append({
                 f"{demographic_type}_group": category,
                 "pre": pre_avg,
@@ -666,24 +636,24 @@ def get_company_vs_industry_growth(request, company_id):
     Returns growth for the company and the overall industry, based on its selected CourseType.
     """
     try:
-        print(f"🔹 Fetching growth data for Company ID: {company_id}")
+        # print(f"🔹 Fetching growth data for Company ID: {company_id}")
 
         # Get company and users
         company = Company.objects.get(id=company_id)
         company_users = User.objects.filter(company=company)
         all_users = User.objects.all()
 
-        # Print debug info
-        print(f"✅ Company: {company.name}")
-        print(f"📌 Course Type: {company.course_type}")  # Debug course type
-        print(f"👥 Company Users: {company_users.count()}, All Users: {all_users.count()}")
+        # # print debug info
+        # print(f"✅ Company: {company.name}")
+        # print(f"📌 Course Type: {company.course_type}")  # Debug course type
+        # print(f"👥 Company Users: {company_users.count()}, All Users: {all_users.count()}")
 
         # Get categories based on company's CourseType
         categories = get_company_categories(company)
-        print(f"📊 Categories Used: {categories}")
+        # print(f"📊 Categories Used: {categories}")
 
         if not categories:
-            print("❌ Error: Company has no valid course type.")
+            # print("❌ Error: Company has no valid course type.")
             return Response({"error": "Company has no valid course type."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Compute growth
@@ -696,11 +666,11 @@ def get_company_vs_industry_growth(request, company_id):
             "industry_scores": [industry_growth.get(cat, 0) for cat in categories]
         }
 
-        print("\n✅ Final Computed Growth Data:", response_data)
+        # print("\n✅ Final Computed Growth Data:", response_data)
         return Response(response_data, status=status.HTTP_200_OK)
 
     except Company.DoesNotExist:
-        print("❌ Error: Company not found.")
+        # print("❌ Error: Company not found.")
         return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -796,8 +766,8 @@ def get_user_pre_post_comparison(request, user_id):
     if not categories:
         return Response({"error": "User's course type is unrecognized."}, status=status.HTTP_400_BAD_REQUEST)
 
-    print(f"📌 User: {user.name}, Course Type: {user_course_type}")
-    print(f"📊 Categories Used: {categories}\n")
+    # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
+    # print(f"📊 Categories Used: {categories}\n")
 
     # Compute pre/post scores
     pre_scores = [calculate_average_score(user, "pre", category) for category in categories]
@@ -809,7 +779,7 @@ def get_user_pre_post_comparison(request, user_id):
         "post_scores": post_scores
     }
 
-    print("✅ Final Computed Pre/Post Comparison Data:", response_data)
+    # print("✅ Final Computed Pre/Post Comparison Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -839,8 +809,8 @@ def get_user_vs_all_growth(request, user_id):
     if not categories:
         return Response({"error": "User's course type is unrecognized."}, status=status.HTTP_400_BAD_REQUEST)
 
-    print(f"📌 User: {user.name}, Course Type: {user_course_type}")
-    print(f"📊 Categories Used: {categories}")
+    # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
+    # print(f"📊 Categories Used: {categories}")
 
     # Compute growth for the individual user and all users based on relevant categories
     user_growth = calculate_growth([user], "Individual User", categories)
@@ -853,7 +823,7 @@ def get_user_vs_all_growth(request, user_id):
         "all_users_scores": [all_users_growth.get(cat, 0) for cat in categories]
     }
 
-    # print("✅ Final Computed User vs All Growth Data:", response_data)
+    # # print("✅ Final Computed User vs All Growth Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
 
     
@@ -903,8 +873,8 @@ def get_user_question_pre_post_comparison(request, user_id):
     if not categories:
         return Response({"error": "User's course type is unrecognized."}, status=status.HTTP_400_BAD_REQUEST)
 
-    print(f"📌 User: {user.name}, Course Type: {user_course_type}")
-    print(f"📊 Categories Used: {categories}")
+    # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
+    # print(f"📊 Categories Used: {categories}")
 
     # Fetch pre/post scores for each question within each category
     category_data = []
@@ -936,7 +906,7 @@ def get_user_question_pre_post_comparison(request, user_id):
         "categories": category_data
     }
 
-    print("✅ Final Computed Question-Level Pre/Post Data:", response_data)
+    # print("✅ Final Computed Question-Level Pre/Post Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
@@ -955,6 +925,7 @@ def get_company_statistics(request, company_id):
             "user_count": get_company_user_count(company),
             "average_growth": get_company_average_growth(company),
             "course_type": get_company_course_type(company),
+            "name": company.name
         }
 
         return Response(data, status=status.HTTP_200_OK)

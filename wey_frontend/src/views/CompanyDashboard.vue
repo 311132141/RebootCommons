@@ -35,7 +35,7 @@
             </button> -->
         </div>
       </div>
-      <h1 class="text-2xl text-bold pb-3 print:text-black mb-6 print:mb-6">Overview</h1>
+      <h1 class="text-2xl text-bold pb-3 print:text-black mb-6 print:mb-6">{{companyStats.name}}</h1>
 
       <!-- <router-view /> -->
       <div class="grid grid-cols-12 gap-5 pb-5 print:hidden">
@@ -64,8 +64,9 @@
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-5  lg:col-span-5 print:col-span-5">
             <ChartCard title="Leadership Comparison" description="Comparison between Male and Female leadership ratings"
-              :labels="['남성 (Male)', '여성 (Female)']" title_z="Leadership Category" title_y="Average Score"
+              :labels="genderLabels" :datasets="genderDatasets" title_z="Leadership Category" title_y="Average Score"
               :chartType="'pie'" />
+
             <!--  -->
 
 
@@ -170,6 +171,7 @@ const errorMessage = ref('');
 const leadershipData = ref([]);
 const heatmapData = ref(null);
 const company_vs_all = ref(null);
+const genderDistributionData = ref([]);
 const demographicData = reactive({
   age: [],
   salary: [],
@@ -180,6 +182,7 @@ const companyStats = ref({
   user_count: 0,
   average_growth: 0,
   course_type: '정보 없음',
+  company_name: '정보 없음'
 });
 const categoryNameMapping = {
   "entrepreneur_risk": "위험감수성",
@@ -235,6 +238,35 @@ const fetchLeadershipData = async () => {
     errorMessage.value = "Error fetching leadership data.";
   }
 };
+
+const fetchGenderDistribution = async () => {
+  try {
+    const companyId = window.location.pathname.split("/").pop();
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      errorMessage.value = "Authentication token missing.";
+      return;
+    }
+
+    const response = await fetch(`http://127.0.0.1:8000/api/companies/${companyId}/gender-counts/`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch gender distribution. Status: ${response.status}`);
+    }
+
+    const json = await response.json();
+    console.log("✅ Gender Distribution Data:", json); // Ensure correct response
+
+    // Assign data to ref
+    genderDistributionData.value = json.data;
+  } catch (error) {
+    console.error("Error fetching gender distribution:", error);
+    errorMessage.value = "Error fetching gender distribution.";
+  }
+};
+
 
 const fetchCompanyStatistics = async () => {
   try {
@@ -445,6 +477,26 @@ const prepostChartData = computed(() => {
   ];
 
 });
+
+const genderLabels = computed(() => {
+  return genderDistributionData.value
+    ? Object.keys(genderDistributionData.value) // ["남성", "여성"]
+    : [];
+});
+
+const genderDatasets = computed(() => {
+  return genderDistributionData.value
+    ? [
+        {
+          label: "Gender Distribution",
+          data: Object.values(genderDistributionData.value), // [8, 7]
+          backgroundColor: ["#4F46E5", "#A78BFA"]
+        }
+      ]
+    : [];
+});
+
+
 // Define the mapping between the API question prefix and the full Korean label.
 const lifestyleMappings = [
   { key: "라이프스타일: 1", label: "삶의 여유를 가지고 생활하는 편이다." },
@@ -531,6 +583,7 @@ onMounted(async () => {
   await fetchHeatmapData();
   await fetchRadarData();
   await fetchCompanyStatistics();
+  await fetchGenderDistribution();
   // Use nextTick to wait until the DOM is updated (all canvas elements are rendered)
   nextTick(() => {
     loading.value = false;
