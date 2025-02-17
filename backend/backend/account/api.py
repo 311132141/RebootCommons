@@ -21,7 +21,7 @@ def signup(request):
     data = request.data
     message = 'success'
 
-    company_name = data.get('company_name')
+    company_name = data.get('company')
     company = None
 
     # Check if a company name is provided
@@ -33,7 +33,7 @@ def signup(request):
         'name': data.get('name'),
         'password1': data.get('password1'),
         'password2': data.get('password2'),
-        'company': company.id if company else None
+        'company': company if company else None
     })
 
     if form.is_valid():
