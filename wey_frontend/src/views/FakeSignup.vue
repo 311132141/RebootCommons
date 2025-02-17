@@ -24,6 +24,12 @@
               required />
           </div>
           <div>
+            <label class="text-white text-sm mb-2 block">회사</label>
+            <input v-model="form.company" type="company" placeholder="Company"
+              class="text-white bg-gray-700 border border-gray-600 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
+              required />
+          </div>
+          <div>
             <label class="text-white text-sm mb-2 block">비밀번호</label>
             <input v-model="form.password1" type="password" placeholder="Password"
               class="text-white bg-gray-700 border border-gray-600 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
@@ -87,6 +93,7 @@ export default {
       form: {
         email: '',
         name: '',
+        company: '',
         password1: '',
         password2: ''
       },
@@ -106,6 +113,10 @@ export default {
         this.errors.push('Your name is missing')
       }
 
+      if (this.form.company === '') {
+        this.errors.push('Your company is missing')
+      }
+
       if (this.form.password1 === '') {
         this.errors.push('Your password is missing')
       }
@@ -123,6 +134,7 @@ export default {
 
               this.form.email = ''
               this.form.name = ''
+              this.form.company = ''
               this.form.password1 = ''
               this.form.password2 = ''
             } else {

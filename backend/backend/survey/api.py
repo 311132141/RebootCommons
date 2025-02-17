@@ -375,6 +375,7 @@ class CourseTypeListView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 class SurveyView(APIView):
+    permission_classes = [AllowAny]
     """
     Handles retrieval and submission of survey responses for a specific
     SurveyType and CourseType combination.
@@ -416,7 +417,7 @@ class SurveyView(APIView):
 
         serializer = QuestionSerializer(combined_questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    permission_classes = [AllowAny]
     def post(self, request, survey_type_id, course_type_id):
         """
         Handles submission of user responses for a specific SurveyType and CourseType combination.
@@ -771,6 +772,7 @@ def get_user_profile(request, user_id):
 
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def get_user_pre_post_comparison(request, user_id):
     """
     Fetches a user's pre/post average scores for different categories based on their CourseType.
@@ -870,6 +872,7 @@ def get_all_users_lifestyle_performance_growth(request):
     return Response({"data": formatted_data}, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def get_user_question_pre_post_comparison(request, user_id):
     """
     Fetches a user's pre/post scores for each question within their CourseType categories.

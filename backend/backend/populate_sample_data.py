@@ -24,6 +24,11 @@ def create_companies():
     company_data = [
         ("TechCorp", "리더십과 혁신"),
         ("Innovate Ltd", "기업가정신과 혁신"),
+        ("FutureVision", "비전하우스"),
+        ("AlphaEnterprises", "리더십과 혁신"),
+        ("BetaLogics", "기업가정신과 혁신"),
+        ("CyberEdge", "비전하우스"),
+        ("SkyHigh Innovations", "기업가정신과 혁신"),
     ]
     created_companies = []
 
