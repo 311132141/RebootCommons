@@ -5,16 +5,13 @@
         <!-- <a href="javascript:void(0)"><img src="https://readymadeui.com/readymadeui.svg" alt="logo"
             class='w-40 inline-block' />
         </a> -->
-        <!-- <div>Reboot Toolbox</div> -->
-        <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
-          REBOOT TOOLBOX
-        </span>
+        <div>Company Register</div>
       </div>
       <form v-on:submit.prevent="submitForm" class="space-y-6">
         <div class="space-y-6">
 
           <div>
-            <label class="text-white text-sm mb-2 block">이메일</label>
+            <label class="text-white text-sm mb-2 block">회사 이름</label>
             <input v-model="form.email" type="email" placeholder="Email"
               class="text-white bg-gray-700 border border-gray-600 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
               required />
@@ -26,7 +23,7 @@
               minlength="8" required />
           </div>
 
-
+          <!-- 
           <div class="flex items-center">
             <input id="remember-me" name="remember-me" type="checkbox"
               class="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
@@ -34,7 +31,7 @@
               I accept the <a href="javascript:void(0);" class="text-blue-600 font-semibold hover:underline ml-1">Terms
                 and Conditions</a>
             </label>
-          </div>
+          </div> -->
         </div>
 
 
@@ -47,13 +44,13 @@
         <!-- Submit Button -->
         <div class="!mt-8">
           <button type="submit" class="w-full bg-purple-600 text-white p-3 rounded-md hover:bg-purple-700 transition">
-            Sign Up
+            Register
           </button>
         </div>
-        <p class="text-gray-100 text-sm mt-6 text-center">Forgot <a href="javascript:void(0);"
+        <!-- <p class="text-gray-100 text-sm mt-6 text-center">Forgot <a href="javascript:void(0);"
             class="text-blue-600 font-semibold hover:underline ml-1">Username / Password?</a></p>
         <p class="text-gray-100 text-sm mb-6 text-center">Don't have an account? <a href="javascript:void(0);"
-            class="text-blue-600 font-semibold hover:underline ml-1">Sign up</a></p>
+            class="text-blue-600 font-semibold hover:underline ml-1">Sign up</a></p> -->
       </form>
     </div>
   </div>

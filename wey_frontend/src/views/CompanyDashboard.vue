@@ -69,9 +69,9 @@
         <!-- Row 1: Gender Distribution and Leadership Comparison -->
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-5  lg:col-span-5 print:col-span-5">
-            <ChartCard title="Leadership Comparison" description="Comparison between Male and Female leadership ratings"
-              :labels="genderLabels" :datasets="genderDatasets" title_z="Leadership Category" title_y="Average Score"
-              :chartType="'pie'" />
+            <ChartCard title="남성과 여성 리더십 분포 비교"
+              description="이 파이 그래프는 조직 내 남성과 여성 리더의 비율을 비교하여, 기업·공공기관·산업별 리더십 분포를 시각적으로 나타냅니다." :labels="genderLabels"
+              :datasets="genderDatasets" title_z="Leadership Category" title_y="Average Score" :chartType="'pie'" />
 
             <!--  -->
 
@@ -144,7 +144,8 @@
             <textarea v-model="adminExplanation"
               class="w-full h-48 p-4 border border-gray-600 rounded-md  text-white print:text-black print:border-black bg-transparent"
               placeholder="차트에 대한 설명을 입력하세요..."></textarea>
-            <button class=" right-4 bottom-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            <button
+              class=" right-4 bottom-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 print:hidden">
               저장
             </button>
 
@@ -155,7 +156,13 @@
 
         <!-- Row 3: Job Distribution and Job Salary Comparison -->
 
+        <div class="print:flex flex-col items-end justify-end p-4 space-y-2 hidden">
 
+          <a href="https://yourwebsite.com" target="_blank">
+            <img src="/Images/Logo.png" alt="Logo" class="w-[13rem] h-auto rounded-full ">
+          </a>
+          <div class="text-black">https://rebootcommons.com</div>
+        </div>
       </div>
     </main>
   </div>

@@ -24,6 +24,7 @@ import Rating from '../components/ui/Rating.vue'
 import OuterContainer from '../views/OuterContainer.vue'
 import CompanyDashboard from '../views/CompanyDashboard.vue'
 import UserNoCompany from '../views/UserNoCompany.vue'
+import CompanyRegister from '../views/CompanyRegister.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -189,6 +190,12 @@ const router = createRouter({
           name: "ProfileView",
           component: ProfileView,
           props: true,
+        },
+        {
+          path: "/register",
+          name: "register",
+          component: CompanyRegister,
+         
         },
         
 

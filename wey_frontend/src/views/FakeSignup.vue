@@ -6,6 +6,9 @@
             class='w-40 inline-block' />
         </a> -->
         <div>Reboot Toolbox</div>
+        <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
+          REBOOT TOOLBOX
+        </span>
       </div>
       <form v-on:submit.prevent="submitForm" class="space-y-6">
         <div class="space-y-6">
