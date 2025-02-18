@@ -142,15 +142,15 @@
           <div class="col-span-12">
             <h2 class="text-xl font-semibold text-gray-100 print:text-black">리포트 설명</h2>
             <textarea v-model="adminExplanation"
-              class="w-full h-48 p-4 border border-gray-600 rounded-md  text-white print:text-black print:border-black bg-transparent"
+              class="w-full h-48 p-4 border border-gray-600 rounded-md text-white print:text-black print:border-black bg-transparent"
               placeholder="차트에 대한 설명을 입력하세요..."></textarea>
-            <button
-              class=" right-4 bottom-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 print:hidden">
+            <button @click="saveExplanation"
+              class="right-4 bottom-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 print:hidden">
               저장
             </button>
-
           </div>
         </div>
+
         <!-- Row 2: Age Distribution and Age Improvement Comparison -->
 
 
@@ -197,6 +197,7 @@ const leadershipData = ref([]);
 const heatmapData = ref(null);
 const company_vs_all = ref(null);
 const genderDistributionData = ref([]);
+const adminExplanation = ref("");
 const demographicData = reactive({
   gender: [],
   age: [],
@@ -348,6 +349,35 @@ const fetchDemographicData = async () => {
   }
 };
 
+// Function to fetch the current explanation from the backend
+const fetchExplanation = async () => {
+  const companyId = window.location.pathname.split('/').pop();
+  try {
+    const response = await axios.get(`/api/companies/${companyId}/explanation/`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+    });
+
+    adminExplanation.value = response.data.explanation_text;
+    console.log("Fetched explanation:", adminExplanation.value);
+  } catch (error) {
+    console.error("Error fetching explanation:", error);
+  }
+};
+
+// Function to save (update) the explanation
+const saveExplanation = async () => {
+  const companyId = window.location.pathname.split('/').pop();
+  try {
+    const response = await axios.put(
+      `/api/companies/${companyId}/explanation/`,
+      { explanation_text: adminExplanation.value },
+      { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }
+    );
+    console.log("Explanation saved successfully:", response.data);
+  } catch (error) {
+    console.error("Error saving explanation:", error);
+  }
+};
 
 const demographicChartData = computed(() => {
   const result = {};
@@ -616,6 +646,7 @@ onMounted(async () => {
   await fetchRadarData();
   await fetchCompanyStatistics();
   await fetchGenderDistribution();
+  await fetchExplanation();
   window.addEventListener("chartAfterPrint", revertBodyStyles);
   // Use nextTick to wait until the DOM is updated (all canvas elements are rendered)
   nextTick(() => {

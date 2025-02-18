@@ -63,3 +63,19 @@ class Company(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.course_type.name if self.course_type else 'No Course'})"
+
+class CompanyExplanation(models.Model):
+    company = models.OneToOneField(Company, on_delete=models.CASCADE, primary_key=True)
+    explanation_text = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Explanation for {self.company.name}"
+    
+class UserExplanation(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    explanation_text = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Explanation for User: {self.user.email}"
