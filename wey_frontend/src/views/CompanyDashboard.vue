@@ -69,7 +69,7 @@
         <!-- Row 1: Gender Distribution and Leadership Comparison -->
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-5  lg:col-span-5 print:col-span-5">
-            <ChartCard title="남성과 여성 리더십 분포 비교"
+            <ChartCard :title="'남성과 여성 ' + companyStats.course_type + ' 분포 비교'"
               description="이 파이 그래프는 조직 내 남성과 여성 리더의 비율을 비교하여, 기업·공공기관·산업별 리더십 분포를 시각적으로 나타냅니다." :labels="genderLabels"
               :datasets="genderDatasets" title_z="Leadership Category" title_y="Average Score" :chartType="'pie'" />
 
@@ -81,25 +81,20 @@
             <ChartCard canvasId="leadershipChart" :title="'남성과 여성의 ' + companyStats.course_type + ' 비교'"
               description="본 그래프는 특정 회사의 선택한 교육과정에 따른 질문 범주별 남성과 여성의 평균 점수를 비교합니다." :labels="leadershipLabels"
               :datasets="computedDatasets" title_z="Leadership Category" title_y="Average Score" :chartType="'bar'" />
-
-
-
-
-
           </div>
         </div>
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-7  lg:col-span-7 print:col-span-7">
-            <ChartCard canvasId="demographicChart-age" title="연봉과 성장률 간의 관계 분석"
-              description="본 그래프는 참가자의 연봉 수준과 리더십 프로그램 이후 성장률 간의 관계를 나타냅니다. 연봉이 높은 집단과 낮은 집단의 성장 패턴을 비교할 수 있습니다."
+            <ChartCard canvasId="demographicChart-age" :title="'연봉과 ' + companyStats.course_type + ' 간의 관계 분석'"
+              :description="'본 그래프는 참가자의 연봉 수준과 ' + companyStats.course_type + ' 프로그램 이후 성장률 간의 관계를 나타냅니다.'"
               :labels="demographicLabels.salary" :datasets="demographicDatasets.salary" title_z="end this life"
               title_y="end" :chartType="'bar'" />
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-5 lg:col-span-5 print:col-span-5">
             <ChartCard_radar title="회사 내 성장률 vs 전체 평균 성장률 비교"
-              description="본 그래프는 특정 회사 참가자의 리더십 성장률을 전체 평균과 비교하여 기업 간 성장 차이를 확인합니다." :labels="prepostChartLabel"
-              :datasets="prepostChartData" />
+              :description="'본 그래프는 특정 회사 참가자의 ' + companyStats.course_type + ' 성장률을 전체 평균과 비교하여 기업 간 성장 차이를 확인합니다.'"
+              :labels="prepostChartLabel" :datasets="prepostChartData" />
 
 
 
@@ -107,47 +102,50 @@
         </div>
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
-            <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
-              description=" 본 그래프는 참가자의 학력 수준(고졸, 대졸 등)에 따른 리더십 성장률 차이를 분석합니다." :labels="demographicLabels.education"
-              :datasets="demographicDatasets.education" title_z="end this life" title_y="end" :chartType="'bar'" />
+            <ChartCard canvasId="demographicChart-age" :title="'학력과' + companyStats.course_type + '성장률 비교'"
+              :description="'본 그래프는 참가자의 학력 수준(고졸, 대졸 등)에 따른' + companyStats.course_type + '성장률 차이를 분석합니다.'"
+              :labels="demographicLabels.education" :datasets="demographicDatasets.education" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
-            <ChartCard canvasId="demographicChart-age" title="결혼 여부에 따른 성장률 비교"
-              description="본 그래프는 미혼과 기혼 참가자의 리더십 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다."
+            <ChartCard canvasId="demographicChart-age" :title="'결혼 여부에 따른 ' + companyStats.course_type + ' 비교'"
+              :description="'본 그래프는 미혼과 기혼 참가자의 ' + companyStats.course_type + ' 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다.'"
               :labels="demographicLabels.marital" :datasets="demographicDatasets.marital" title_z="end this life"
               title_y="end" :chartType="'bar'" />
           </div>
         </div>
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
-            <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
-              description=" 본 그래프는 참가자의 학력 수준(고졸, 대졸 등)에 따른 리더십 성장률 차이를 분석합니다." :labels="demographicLabels.job_field"
-              :datasets="demographicDatasets.job_field" title_z="end this life" title_y="end" :chartType="'bar'" />
+            <ChartCard canvasId="demographicChart-age" :title="'직무 분야와 ' + companyStats.course_type + ' 성장률 비교'"
+              :description="'이 그래프는 참가자의 직무 분야(IT, 금융, 교육 등)에 따른 ' + companyStats.course_type + ' 성장률 차이를 분석합니다.'"
+              :labels="demographicLabels.job_field" :datasets="demographicDatasets.job_field" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
-            <ChartCard canvasId="demographicChart-age" title="결혼 여부에 따른 성장률 비교"
-              description="본 그래프는 미혼과 기혼 참가자의 리더십 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다."
+            <ChartCard canvasId="demographicChart-age" :title="'고용 형태와 ' + companyStats.course_type + ' 성장률 비교'"
+              :description="'이 그래프는 참가자의 고용 형태(정규직, 계약직, 프리랜서 등)에 따른 ' + companyStats.course_type + ' 성장 차이를 분석합니다.'"
               :labels="demographicLabels.employment_type" :datasets="demographicDatasets.employment_type"
               title_z="end this life" title_y="end" :chartType="'bar'" />
           </div>
         </div>
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
-            <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
-              description=" 본 그래프는 참가자의 학력 수준(고졸, 대졸 등)에 따른 리더십 성장률 차이를 분석합니다." :labels="demographicLabels.tenure"
-              :datasets="demographicDatasets.tenure" title_z="end this life" title_y="end" :chartType="'bar'" />
+            <ChartCard canvasId="demographicChart-age" :title="'근속 연수와 ' + companyStats.course_type + ' 성장률 비교'"
+              :description="'이 그래프는 참가자의 근속 연수(재직 기간)에 따른 ' + companyStats.course_type + ' 성장률을 분석합니다.'"
+              :labels="demographicLabels.tenure" :datasets="demographicDatasets.tenure" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
-            <ChartCard canvasId="demographicChart-age" title="결혼 여부에 따른 성장률 비교"
-              description="본 그래프는 미혼과 기혼 참가자의 리더십 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다."
+            <ChartCard canvasId="demographicChart-age" :title="'직급과 ' + companyStats.course_type + ' 성장률 비교'"
+              :description="'이 그래프는 참가자의 직급(사원, 대리, 팀장, 임원 등)에 따른 ' + companyStats.course_type + ' 성장률 차이를 분석합니다.'"
               :labels="demographicLabels.position" :datasets="demographicDatasets.position" title_z="end this life"
               title_y="end" :chartType="'bar'" />
           </div>
         </div>
-        <div class="grid grid-cols-12 gap-5 pb-5">
+        <div class="grid grid-cols-12 gap-5 print:pb-24">
           <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
 
             <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
@@ -158,13 +156,7 @@
 
         </div>
 
-        <div class="grid grid-cols-12 gap-5 ">
-          <div class="col-span-12 sm:col-span-12 md:col-span-12  lg:col-span-12 ">
 
-
-          </div>
-
-        </div>
         <!-- Large Text Box for Admin Explanation -->
         <div class="grid grid-cols-12 gap-5 pb-5">
           <div class="col-span-12">
@@ -187,7 +179,7 @@
         <div class="print:flex flex-col items-end justify-end p-4 space-y-2 hidden">
 
           <a href="https://yourwebsite.com" target="_blank">
-            <img src="/Images/Logo.png" alt="Logo" class="w-[13rem] h-auto rounded-full ">
+            <img src="/Images/Logo.png" alt="Logo" class="w-[13rem] h-auto  ">
           </a>
           <div class="text-black">https://rebootcommons.com</div>
         </div>
@@ -257,7 +249,7 @@ const categoryNameMapping = {
 
 const route = useRoute()
 // Adjust these categories as needed (they should match your backend endpoint names)
-const demographicCategories = ['gender', 'age', 'salary', 'education', 'marital'];
+const demographicCategories = ['gender', 'age', 'salary', 'education', 'marital', 'job_field', 'employment_type', 'position', 'tenure'];
 
 
 // Helper to map raw category keys to display names
