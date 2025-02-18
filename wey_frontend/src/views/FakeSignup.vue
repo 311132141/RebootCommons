@@ -40,10 +40,13 @@
               required />
           </div>
           <div class="flex items-center">
-            <input id="remember-me" name="remember-me" type="checkbox"
+            <input id="terms" name="terms" type="checkbox"
               class="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-            <label for="remember-me" class="text-gray-100 ml-3 block text-sm">
-              이용 약관에 동의합니다.
+            <label for="terms" class="text-gray-100 ml-3 block text-sm">
+              <!-- 클릭 시 팝업이 뜨도록 span에 이벤트 추가 -->
+              <span @click="openModal" class="cursor-pointer underline">
+                설문 안내문을 확인합니다.
+              </span>
             </label>
           </div>
         </div>
@@ -63,10 +66,32 @@
         <router-link to="/fakelogin">
           <p class="text-gray-100 text-sm mt-6 mb-6 text-center">
             이미 계정이 있으신가요?
-            <span class="text-blue-500 font-semibold hover:underline ml-1">로그인하기</span>
+            <span class="text-blue-500 font-semibold hover:underline ml-1"> 로그인하기</span>
           </p>
         </router-link>
       </form>
+    </div>
+
+    <!-- 안내 문구 팝업 -->
+    <div v-if="showTermsModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      @click.self="closeModal">
+      <div class="bg-white p-6 rounded-lg max-w-lg w-full">
+        <p class="text-black whitespace-pre-wrap">
+          -----------------------------------------------------------------------------
+          --------------
+          귀하는 리부트커먼즈의 교육을 통해 교육 전과 교육 이후의 역량 비교 데이터를 확인할 수 있
+          는 설문에 참여하시게 됩니다. 해당 설문은 리커트 5점 척도로 구성되어 있으며 귀하의 기본 정
+          보와 라이프스타일 정보를 반영하여 구체적인 역량 분석 및 라이프 발란스 레포트를 제공합니
+          다.
+          -----------------------------------------------------------------------------
+          --------------
+        </p>
+        <div class="mt-4 text-right">
+          <button @click="closeModal" class="bg-blue-600 text-white px-4 py-2 rounded">
+            닫기
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -89,10 +114,17 @@ export default {
         password1: '',
         password2: ''
       },
-      errors: []
+      errors: [],
+      showTermsModal: false
     }
   },
   methods: {
+    openModal() {
+      this.showTermsModal = true
+    },
+    closeModal() {
+      this.showTermsModal = false
+    },
     submitForm() {
       this.errors = []
       if (this.form.email === '') {
@@ -120,6 +152,7 @@ export default {
                 '회원가입이 완료되었습니다. 이메일에 전송된 링크를 클릭하여 계정을 활성화해주세요.',
                 'bg-emerald-500'
               )
+              // 입력값 초기화
               this.form.email = ''
               this.form.name = ''
               this.form.company = ''
