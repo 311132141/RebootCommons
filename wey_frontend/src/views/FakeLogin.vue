@@ -116,20 +116,23 @@ export default {
 
       if (this.errors.length === 0) {
         try {
-          console.log("🟡 Fetching user info...");
+          console.log("🟡 Fetching user info...")
+          const userResponse = await axios.get("/api/me/")
+          console.log("🟢 User info received:", userResponse.data)
+          this.userStore.setUserInfo(userResponse.data)
+          localStorage.setItem("user_info", JSON.stringify(userResponse.data))
 
-          const userResponse = await axios.get("/api/me/");
-
-          console.log("🟢 User info received:", userResponse.data); // ✅ Ensure user info is retrieved
-
-          this.userStore.setUserInfo(userResponse.data);
-          localStorage.setItem("user_info", JSON.stringify(userResponse.data));
-
-          console.log("🔵 Redirecting to /figma...");
-          this.$router.push("/figma");
-
+          // Check if the user is a superuser/admin
+          if (userResponse.data.is_superuser) {
+            console.log("🔵 Admin detected, redirecting to /companies...")
+            this.$router.push("/companies")
+          } else {
+            console.log("🔵 Redirecting to /figma...")
+            this.$router.push("/figma")
+          }
         } catch (error) {
-          console.error("🔴 Failed to fetch user info:", error); // ❌ Log error details
+          console.error("🔴 Failed to fetch user info:", error)
+          this.errors.push("Failed to fetch user info.")
         }
       }
     }
