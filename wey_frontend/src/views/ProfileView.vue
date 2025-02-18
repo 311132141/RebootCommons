@@ -99,7 +99,7 @@
       <div class="print:flex flex-col items-end justify-end p-4 space-y-2 hidden">
 
         <a href="https://yourwebsite.com" target="_blank">
-          <img src="/Images/Logo.png" alt="Logo" class="w-[13rem] h-auto rounded-full ">
+          <img src="/Images/Logo.png" alt="Logo" class="w-[13rem] h-auto ">
         </a>
         <div class="text-black">https://rebootcommons.com</div>
       </div>

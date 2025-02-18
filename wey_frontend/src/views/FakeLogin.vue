@@ -10,20 +10,14 @@
         <div class="space-y-6">
           <div>
             <label class="text-white text-sm mb-2 block">이메일</label>
-            <input
-              v-model="form.email"
-              type="email"
-              placeholder="Email"
+            <input v-model="form.email" type="email" placeholder="Email"
               class="text-white bg-gray-700 border border-gray-600 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
               required
             />
           </div>
           <div>
             <label class="text-white text-sm mb-2 block">비밀번호</label>
-            <input
-              v-model="form.password"
-              type="password"
-              placeholder="Password"
+            <input v-model="form.password" type="password" placeholder="Password"
               class="text-white bg-gray-700 border border-gray-600 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
               minlength="8"
               required
@@ -37,7 +31,8 @@
               class="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <label for="remember-me" class="text-gray-100 ml-3 block text-sm">
-              I accept the <a href="javascript:void(0);" class="text-blue-600 font-semibold hover:underline ml-1">Terms and Conditions</a>
+              I accept the <a href="javascript:void(0);" class="text-blue-600 font-semibold hover:underline ml-1">Terms
+                and Conditions</a>
             </label>
           </div>
         </div>
@@ -50,16 +45,13 @@
 
         <div class="!mt-8">
           <button type="submit" class="w-full bg-purple-600 text-white p-3 rounded-md hover:bg-purple-700 transition">
-            Sign Up
+            로그인
           </button>
         </div>
-        <p class="text-gray-100 text-sm mt-6 text-center">
-          Forgot <a href="javascript:void(0);" class="text-blue-600 font-semibold hover:underline ml-1">Username / Password?</a>
-        </p>
-        <p class="text-gray-100 text-sm mb-6 text-center">
-          Don't have an account?
-          <a href="javascript:void(0);" class="text-blue-600 font-semibold hover:underline ml-1">Sign up</a>
-        </p>
+        <p class="text-gray-100 text-sm mt-6 text-center">Forgot <a href="javascript:void(0);"
+            class="text-blue-600 font-semibold hover:underline ml-1">Username / Password?</a></p>
+        <p class="text-gray-100 text-sm mb-6 text-center">Don't have an account? <a href="javascript:void(0);"
+            class="text-blue-600 font-semibold hover:underline ml-1">Sign up</a></p>
       </form>
     </div>
   </div>
@@ -78,60 +70,66 @@ export default {
     return {
       form: {
         email: '',
-        password: '',
+        password: ''
       },
       errors: []
     }
   },
   methods: {
     async submitForm() {
-      this.errors = []
-      console.log("🔵 Form submitted with:", this.form)
+      this.errors = [];
 
-      if (!this.form.email) {
-        this.errors.push("Your e-mail is missing")
-      }
-      if (!this.form.password) {
-        this.errors.push("Your password is missing")
-      }
-      if (this.errors.length > 0) {
-        return
+      console.log("🔵 Form submitted with:", this.form); // ✅ Check form values before submitting
+
+      if (this.form.email === "") {
+        this.errors.push("Your e-mail is missing");
       }
 
-      try {
-        console.log("🟡 Sending login request...")
-        const response = await axios.post("/api/login/", this.form)
-        console.log("🟢 Login successful, received token:", response.data)
-        this.userStore.setToken(response.data)
-        axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.access
-        console.log("🔵 Authorization header set:", axios.defaults.headers.common["Authorization"])
-        localStorage.setItem("access_token", response.data.access)
-        localStorage.setItem("refresh_token", response.data.refresh)
-      } catch (error) {
-        console.error("🔴 Login failed:", error)
-        this.errors.push("The email or password is incorrect! Or the user is not activated!")
-        return
+      if (this.form.password === "") {
+        this.errors.push("Your password is missing");
       }
 
       if (this.errors.length === 0) {
         try {
-          console.log("🟡 Fetching user info...")
-          const userResponse = await axios.get("/api/me/")
-          console.log("🟢 User info received:", userResponse.data)
-          this.userStore.setUserInfo(userResponse.data)
-          localStorage.setItem("user_info", JSON.stringify(userResponse.data))
+          console.log("🟡 Sending login request...");
 
-          // Check if the user is a superuser/admin
-          if (userResponse.data.is_superuser) {
-            console.log("🔵 Admin detected, redirecting to /companies...")
-            this.$router.push("/companies")
-          } else {
-            console.log("🔵 Redirecting to /figma...")
-            this.$router.push("/figma")
-          }
+          const response = await axios.post("/api/login/", this.form);
+
+          console.log("🟢 Login successful, received token:", response.data); // ✅ Check if token is received
+
+          this.userStore.setToken(response.data);
+
+          axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.access;
+
+          console.log("🔵 Authorization header set:", axios.defaults.headers.common["Authorization"]); // ✅ Check if token is set
+
+          localStorage.setItem("access_token", response.data.access);
+          localStorage.setItem("refresh_token", response.data.refresh);
         } catch (error) {
-          console.error("🔴 Failed to fetch user info:", error)
-          this.errors.push("Failed to fetch user info.")
+          console.error("🔴 Login failed:", error); // ❌ Log error details
+
+          this.errors.push(
+            "The email or password is incorrect! Or the user is not activated!"
+          );
+        }
+      }
+
+      if (this.errors.length === 0) {
+        try {
+          console.log("🟡 Fetching user info...");
+
+          const userResponse = await axios.get("/api/me/");
+
+          console.log("🟢 User info received:", userResponse.data); // ✅ Ensure user info is retrieved
+
+          this.userStore.setUserInfo(userResponse.data);
+          localStorage.setItem("user_info", JSON.stringify(userResponse.data));
+
+          console.log("🔵 Redirecting to /figma...");
+          this.$router.push("/figma");
+
+        } catch (error) {
+          console.error("🔴 Failed to fetch user info:", error); // ❌ Log error details
         }
       }
     }
