@@ -66,7 +66,7 @@ def get_companies_with_growth(request):
             "name": company.name,
             "email": company.email,
             "phone": company.phone_number,
-            "course_type": company.course_type.name if company.course_type else "선택택 안함",
+            "course_type": company.course_type.name if company.course_type else "선택 안함",
             "overall_growth": overall_growth,  # new field
         })
     return Response({"companies": data}, status=status.HTTP_200_OK)
