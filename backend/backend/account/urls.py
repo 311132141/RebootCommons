@@ -11,4 +11,6 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('companies/', api.get_companies, name='get_companies'),
     path('companies/<uuid:company_id>/', api.get_company_users, name='get_company_users'),
+    path('companies/<uuid:company_id>/explanation/', api.CompanyExplanationView.as_view(), name='company-explanation'),
+    path('users/<uuid:user_id>/explanation/', api.UserExplanationView.as_view(), name='user-explanation'),
 ]

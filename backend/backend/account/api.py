@@ -5,8 +5,13 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from .forms import SignupForm
 from .models import Company, User
 from collections import Counter
-from .serializer import UserSerializer
+from .serializer import UserSerializer, CompanySerializer, CompanyExplanationSerializer, UserExplanationSerializer
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
+from django.shortcuts import get_object_or_404
+from .models import CompanyExplanation, UserExplanation
+
 
 @api_view(['GET'])
 def me(request):
@@ -112,3 +117,37 @@ def get_company_dashboard(request, company_id):
 
     except Company.DoesNotExist:
         return JsonResponse({"error": "Company not found"}, status=404)
+    
+class CompanyExplanationView(generics.RetrieveUpdateAPIView):
+    """
+    GET: Retrieve the explanation for a company
+    PUT/PATCH: Update the explanation for a company
+    """
+    serializer_class = CompanyExplanationSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        # 1) Fetch the company (or 404)
+        company_id = self.kwargs.get('company_id')
+        company = get_object_or_404(Company, id=company_id)
+        
+        # 2) Get or create the explanation row
+        obj, created = CompanyExplanation.objects.get_or_create(company=company)
+        return obj
+    
+class UserExplanationView(generics.RetrieveUpdateAPIView):
+    """
+    GET: Retrieve the explanation for a user
+    PUT/PATCH: Update the explanation for a user
+    """
+    serializer_class = UserExplanationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # 1) Fetch the user (or 404)
+        user_id = self.kwargs.get('user_id')
+        user = get_object_or_404(User, id=user_id)
+        
+        # 2) Get or create the explanation row
+        obj, created = UserExplanation.objects.get_or_create(user=user)
+        return obj
