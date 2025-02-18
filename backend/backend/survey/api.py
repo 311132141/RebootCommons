@@ -540,41 +540,6 @@ def get_gender_counts(request, company_id):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def get_gender_vs_leadership2(request, company_id):
-    # # print(f"Fetching gender vs leadership data for company ID: {company_id}")
-    company, users, user_genders, error = get_company_gender_data(company_id)
-    if error:
-        # print(error)
-        return Response({"error": error}, status=status.HTTP_404_NOT_FOUND)
-    
-    # print(f"Company found: {company.name}, Total users: {users.count()}")
-    responses = UserSurveyResponse.objects.filter(user__in=users)
-    # print(f"Total survey responses found: {responses.count()}")
-
-    leadership_questions = Question.objects.filter(category__icontains="selflead")
-    # print(f"Total leadership-related questions found: {leadership_questions.count()}")
-
-    category_ratings = defaultdict(lambda: {"남성": [], "여성": []})
-    for question in leadership_questions:
-        answers = Answer.objects.filter(question=question, response__in=responses)
-        # print(f"Processing question ID: {question.id}, Category: {question.category}, Total answers: {answers.count()}")
-        for ans in answers:
-            user_id = ans.response.user.id
-            gender = user_genders.get(user_id, "Unknown")
-            if ans.answer_value is not None and gender in ["남성", "여성"]:
-                category_ratings[question.category][gender].append(ans.answer_value)
-
-    formatted_data = []
-    for category, ratings in category_ratings.items():
-        male_avg = sum(ratings["남성"]) / len(ratings["남성"]) if ratings["남성"] else 0
-        female_avg = sum(ratings["여성"]) / len(ratings["여성"]) if ratings["여성"] else 0
-        print(f"Category: {category}, Male Avg: {male_avg}, Female Avg: {female_avg}")
-        formatted_data.append({"category": category, "남성": male_avg, "여성": female_avg})
-    print("Final computed data:", formatted_data)
-    return Response({"data": formatted_data}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
 def get_gender_vs_leadership(request, company_id):
     """
     Fetches average scores by gender for all question categories 
@@ -797,6 +762,7 @@ def get_user_profile(request, user_id):
         user = User.objects.get(id=user_id)
         user_info = get_user_basic_info(user)
         demographics = get_demographic_data(user)
+        print({**user_info, "demographics": demographics})
         return Response({**user_info, "demographics": demographics}, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -820,15 +786,17 @@ def get_user_pre_post_comparison(request, user_id):
     # Ensure user has a CourseType
     user_course_type = UserSurveyResponse.objects.filter(user=user).values_list("course_type__name", flat=True).first()
     if not user_course_type:
+        print(f"❌ User: {user.name} has no assigned course type.")
         return Response({"error": "User has no assigned course type."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Get categories based on the user's CourseType
     categories = get_categories_by_course_type(user_course_type)
     if not categories:
+        print(f"❌ User: {user.name} has an unrecognized course type.")
         return Response({"error": "User's course type is unrecognized."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
-    # print(f"📊 Categories Used: {categories}\n")
+    print(f"📌 User: {user.name}, Course Type: {user_course_type}")
+    print(f"📊 Categories Used: {categories}\n")
 
     # Compute pre/post scores
     pre_scores = [calculate_average_score(user, "pre", category) for category in categories]
@@ -840,7 +808,7 @@ def get_user_pre_post_comparison(request, user_id):
         "post_scores": post_scores
     }
 
-    # print("✅ Final Computed Pre/Post Comparison Data:", response_data)
+    print("✅ Final Computed Pre/Post Comparison Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
 
 

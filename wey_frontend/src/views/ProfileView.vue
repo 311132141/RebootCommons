@@ -83,14 +83,13 @@
         <div class="grid grid-cols-12 gap-5 pb-5">
           <div class="col-span-12">
             <h2 class="text-xl font-semibold text-gray-100 print:text-black">리포트 설명</h2>
-            <textarea v-model="adminExplanation"
-              class="w-full h-48 p-4 border border-gray-600 rounded-md  text-white print:text-black print:border-black bg-transparent"
+            <textarea v-model="userExplanation"
+              class="w-full h-48 p-4 border border-gray-600 rounded-md text-white print:text-black print:border-black bg-transparent"
               placeholder="차트에 대한 설명을 입력하세요..."></textarea>
-            <button
-              class=" right-4 bottom-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 print:hidden">
+            <button @click="saveUserExplanation"
+              class="right-4 bottom-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 print:hidden">
               저장
             </button>
-
           </div>
         </div>
       </div>
@@ -137,6 +136,9 @@ const user = ref({
 const leadershipData = ref([]);
 const heatmapData = ref(null);
 const company_vs_all = ref(null);
+
+// The user’s explanation text
+const userExplanation = ref('')
 const demographicData = reactive({
   age: [],
   salary: [],
@@ -543,6 +545,37 @@ const revertBodyStyles = () => {
   isPrinting.value = false;
 };
 
+// A function to fetch the user’s existing explanation from the backend
+const fetchUserExplanation = async () => {
+  try {
+    // The user ID from the route
+    const userId = route.params.id
+    const response = await axios.get(`/api/users/${userId}/explanation/`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+    })
+    userExplanation.value = response.data.explanation_text || ''
+    console.log('Fetched user explanation:', userExplanation.value)
+  } catch (err) {
+    console.error('Error fetching user explanation:', err)
+    errorMessage.value = 'Error fetching user explanation.'
+  }
+}
+
+// A function to save (update) the user’s explanation
+const saveUserExplanation = async () => {
+  try {
+    const userId = route.params.id
+    const response = await axios.put(
+      `/api/users/${userId}/explanation/`,
+      { explanation_text: userExplanation.value },
+      { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }
+    )
+    console.log('User explanation saved successfully:', response.data)
+  } catch (err) {
+    console.error('Error saving user explanation:', err)
+    errorMessage.value = 'Error saving user explanation.'
+  }
+}
 const isPrinting = inject("isPrinting");
 const printDashboard = () => {
   console.log("🔄 Preparing charts for printing...");
@@ -565,6 +598,7 @@ onMounted(async () => {
   await fetchHeatmapData();
   // await fetchRadarData();
   await fetchQuestionRatings();
+  await fetchUserExplanation()
   window.addEventListener("chartAfterPrint", revertBodyStyles);
   nextTick(() => {
     loading.value = false;

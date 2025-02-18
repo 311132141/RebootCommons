@@ -78,36 +78,18 @@ export default {
 
       try {
         console.log("회사 등록 요청 중...")
-        const response = await axios.post("/api/register/", this.form)
-        console.log("등록 성공, 토큰 수신:", response.data)
-
-        this.userStore.setToken(response.data)
-        axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.access
-        console.log("인증 헤더 설정됨:", axios.defaults.headers.common["Authorization"])
-
-        localStorage.setItem("access_token", response.data.access)
-        localStorage.setItem("refresh_token", response.data.refresh)
+        const response = await axios.post("/api/company/register/", this.form)
+        console.log("등록 성공, 응답 수신:", response.data)
+        // Pop up a success prompt after registration
+        alert("등록에 성공했습니다!")
       } catch (error) {
         console.error("회사 등록 실패:", error)
         this.errors.push("회사 등록에 실패했습니다. 입력하신 정보를 확인해주세요.")
         return
       }
 
-      try {
-        console.log("사용자 정보 조회 중...")
-        const userResponse = await axios.get("/api/me/")
-        console.log("사용자 정보 수신:", userResponse.data)
-
-        this.userStore.setUserInfo(userResponse.data)
-        localStorage.setItem("user_info", JSON.stringify(userResponse.data))
-
-        console.log("페이지 이동 중: /figma")
-        this.$router.push("/figma")
-      } catch (error) {
-        console.error("사용자 정보 조회 실패:", error)
-        this.errors.push("사용자 정보를 가져오지 못했습니다.")
-      }
     }
   }
 }
 </script>
+

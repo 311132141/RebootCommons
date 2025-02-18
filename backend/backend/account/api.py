@@ -11,7 +11,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from .models import CompanyExplanation, UserExplanation
-
+from rest_framework.views import APIView
+from rest_framework import status
+from survey.models import CourseType
 
 @api_view(['GET'])
 def me(request):
@@ -151,3 +153,33 @@ class UserExplanationView(generics.RetrieveUpdateAPIView):
         # 2) Get or create the explanation row
         obj, created = UserExplanation.objects.get_or_create(user=user)
         return obj
+    
+class CompanyRegisterView(APIView):
+    permission_classes = []  # Allow any (adjust permissions as needed)
+
+    def post(self, request, *args, **kwargs):
+        company_name = request.data.get('name')
+        course_name = request.data.get('course')
+        if not company_name or not course_name:
+            return Response(
+                {"error": "회사 이름과 코스 선택은 필수입니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Look up the CourseType
+        try:
+            course_type = CourseType.objects.get(name=course_name, survey_type__name="기업용")
+        except CourseType.DoesNotExist:
+            return Response(
+                {"error": f"코스 '{course_name}'가 존재하지 않습니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Create or update the company
+        company, created = Company.objects.get_or_create(
+            name=company_name,
+            defaults={'course_type': course_type}
+        )
+        if not created and company.course_type != course_type:
+            company.course_type = course_type
+            company.save()
+        serializer = CompanySerializer(company)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

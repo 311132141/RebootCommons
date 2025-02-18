@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'company']
+        fields = ['id', 'name', 'email', 'company', 'is_superuser']
 
 class CompanyExplanationSerializer(serializers.ModelSerializer):
     class Meta:
