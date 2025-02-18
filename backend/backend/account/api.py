@@ -14,6 +14,9 @@ from .models import CompanyExplanation, UserExplanation
 from rest_framework.views import APIView
 from rest_framework import status
 from survey.models import CourseType
+from survey.api import get_company_average_growth, get_user_overall_growth
+
+
 
 @api_view(['GET'])
 def me(request):
@@ -52,34 +55,36 @@ def signup(request):
         return JsonResponse({'message': 'error', 'errors': form.errors}, status=400)
     
 @api_view(['GET'])
-def get_companies(request):
+def get_companies_with_growth(request):
     companies = Company.objects.all()
-    data = [
-        {
+    data = []
+    for company in companies:
+        # Use your helper function to calculate overall growth.
+        overall_growth = get_company_average_growth(company)
+        data.append({
             "id": company.id,
             "name": company.name,
             "email": company.email,
             "phone": company.phone_number,
-            "course_type": company.course_type.name if company.course_type else "No Course Type Assigned",
-            "growth": "20%"  # Placeholder, replace with actual logic
-        }
-        for company in companies
-    ]
-    return JsonResponse({"companies": data}, safe=False)
+            "course_type": company.course_type.name if company.course_type else "선택택 안함",
+            "overall_growth": overall_growth,  # new field
+        })
+    return Response({"companies": data}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_company_users(request, company_id):
     """Fetch all users for a given company."""
     try:
         company_instance = Company.objects.get(id=company_id)
-        users = User.objects.filter(company=company_instance)  # Assuming users store company name as a string
+        users = User.objects.filter(company=company_instance)
         
         data = [
             {
                 "id": user.id,
                 "name": user.name,
                 "email": user.email,
-                "avatar": user.avatar.url if user.avatar else None,
+                "course_type": user.company.course_type.name if user.company and user.company.course_type else "선택택 안함",
+                "overall_growth": get_user_overall_growth(user)
             }
             for user in users
         ]

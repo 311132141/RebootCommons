@@ -36,5 +36,7 @@ urlpatterns = [
     path("companies/<uuid:company_id>/statistics/", get_company_statistics, name="company-statistics"),
     path("users/no-company/", get_users_without_company, name="users_without_company"),
     path("companies/<uuid:company_id>/gender-counts/", get_gender_counts, name="gender-counts"),
+    path("companies/<uuid:company_id>/overall-growth/", CompanyOverallGrowthView.as_view(), name="company-overall-growth"),
+    path('users/<uuid:user_id>/overall-growth/', UserOverallGrowthView.as_view(), name='user-overall-growth'),
 ]
 

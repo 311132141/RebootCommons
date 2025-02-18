@@ -48,6 +48,35 @@ CATEGORIES = ["entrepreneur", "org", "selflead", "ppc"]
 # Helper Functions
 # =============================================================================
 
+def get_user_overall_growth(user):
+    """
+    Calculates the overall growth for a given user based on their course type.
+    Returns a float value (growth percentage) or 0 if not available.
+    """
+    # Determine course type and context based on company membership
+    if user.company and user.company.course_type:
+        course_type = user.company.course_type.name
+        context = "기업용"
+    else:
+        # For users without a company, try to obtain the course type from survey responses
+        course_type = UserSurveyResponse.objects.filter(user=user).values_list("course_type__name", flat=True).first()
+        if not course_type:
+            return 0
+        context = "개인용"
+    
+    # Get relevant categories for the user's course type and context
+    categories = get_categories_by_course_type(course_type, context)
+    if not categories:
+        return 0
+
+    # Calculate growth using your existing calculate_growth helper
+    growth_data = calculate_growth([user], "Individual User", categories)
+    if not growth_data:
+        return 0
+
+    overall_growth = sum(growth_data.values()) / len(growth_data)
+    return round(overall_growth, 2)
+
 def get_company_user_count(company):
     """
     Returns the number of users in a company.
@@ -341,7 +370,7 @@ def get_company_gender_data(company_id):
 # =============================================================================
 
 class SurveyTypeListView(APIView):
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
     """
     Returns all available SurveyTypes.
 
@@ -366,7 +395,7 @@ class SurveyTypeListView(APIView):
 
 
 class CourseTypeListView(APIView):
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
     """
     Returns all CourseTypes for a given SurveyType ID.
 
@@ -399,7 +428,7 @@ class CourseTypeListView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 class SurveyView(APIView):
-    permission_classes = [AllowAny]
+    # # permission_classes = [AllowAny]
     """
     Handles retrieval and submission of survey responses for a specific
     SurveyType and CourseType combination.
@@ -441,7 +470,7 @@ class SurveyView(APIView):
 
         serializer = QuestionSerializer(combined_questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
     def post(self, request, survey_type_id, course_type_id):
         """
         Handles submission of user responses for a specific SurveyType and CourseType combination.
@@ -523,7 +552,7 @@ class SurveyView(APIView):
         )
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# # @permission_classes([AllowAny])
 def get_gender_counts(request, company_id):
     """
     Returns the number of male and female responses for users in the given company.
@@ -539,7 +568,7 @@ def get_gender_counts(request, company_id):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_gender_vs_leadership(request, company_id):
     """
     Fetches average scores by gender for all question categories 
@@ -596,7 +625,7 @@ def get_gender_vs_leadership(request, company_id):
     return Response({"data": formatted_data}, status=200)
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_demographic_vs_survey_improvement(request, company_id, demographic_type):
     """
     Fetches average survey ratings split by a demographic type (age, salary, education, etc.),
@@ -655,7 +684,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
         return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_company_vs_industry_growth(request, company_id):
     """
     Computes the average percentage increase in survey scores for different categories.
@@ -703,7 +732,7 @@ def get_company_vs_industry_growth(request, company_id):
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_lifestyle_vs_performance_growth(request, company_id):
     """
     Computes overall performance growth based on lifestyle question ratings.
@@ -737,7 +766,7 @@ def get_lifestyle_vs_performance_growth(request, company_id):
     except Company.DoesNotExist:
         return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_user_profile(request, user_id):
     """
     Retrieves the user profile, combining basic information and demographic data.
@@ -769,7 +798,7 @@ def get_user_profile(request, user_id):
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_user_pre_post_comparison(request, user_id):
     """
     Fetches a user's pre/post average scores for different categories based on their CourseType.
@@ -814,7 +843,7 @@ def get_user_pre_post_comparison(request, user_id):
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_user_vs_all_growth(request, user_id):
     """
     Compares a single user's growth versus the average growth of all users based on their course type.
@@ -857,7 +886,7 @@ def get_user_vs_all_growth(request, user_id):
 
     
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_all_users_lifestyle_performance_growth(request):
     """
     Computes overall performance growth for lifestyle-related questions across ALL users.
@@ -871,7 +900,7 @@ def get_all_users_lifestyle_performance_growth(request):
     return Response({"data": formatted_data}, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_user_question_pre_post_comparison(request, user_id):
     """
     Fetches a user's pre/post scores for each question within their CourseType categories.
@@ -939,7 +968,7 @@ def get_user_question_pre_post_comparison(request, user_id):
     return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_company_statistics(request, company_id):
     """
     Returns company statistics, including:
@@ -961,17 +990,80 @@ def get_company_statistics(request, company_id):
 
     except Company.DoesNotExist:
         return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+class CompanyOverallGrowthView(APIView):
+    # permission_classes = [AllowAny]
+
+    def get(self, request, company_id):
+        try:
+            company = Company.objects.get(id=company_id)
+        except Company.DoesNotExist:
+            return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        overall_growth = get_company_average_growth(company)
+        data = {
+            "company": company.name,
+            "overall_growth": overall_growth
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 def get_users_without_company(request):
     """
-    Returns a list of all users who do not belong to any company (company=None)
-    using the UserSerializer.
+    Returns a list of all users who do not belong to any company, including
+    their course type (if available) and overall growth.
     """
     users = User.objects.filter(company__isnull=True)
-    serializer = UserSerializer(users, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    data = []
+    for user in users:
+        course_type = UserSurveyResponse.objects.filter(user=user)\
+                          .values_list("course_type__name", flat=True).first()
+        data.append({
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "avatar": user.avatar.url if user.avatar else None,
+            "course_type": course_type or "선택 안함",
+            "overall_growth": get_user_overall_growth(user)
+        })
+    return Response(data, status=status.HTTP_200_OK)
 
+class UserOverallGrowthView(APIView):
+    permission_classes = [AllowAny]  # Adjust permissions as needed
+
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        
+        # Determine course type and context based on company membership
+        if user.company:
+            if not user.company.course_type:
+                return Response({"error": "회사가 코스 유형을 지정하지 않았습니다."}, status=400)
+            user_course_type = user.company.course_type.name
+            context = "기업용"
+        else:
+            # For an individual user without a company, attempt to get the course type from survey responses
+            user_course_type = UserSurveyResponse.objects.filter(user=user)\
+                .values_list("course_type__name", flat=True).first()
+            if not user_course_type:
+                return Response({"error": "사용자에게 할당된 코스 유형이 없습니다."}, status=400)
+            context = "개인용"
+        
+        # Get the list of categories based on the course type and context.
+        categories = get_categories_by_course_type(user_course_type, context)
+        if not categories:
+            return Response({"error": "사용자의 코스 유형을 인식할 수 없습니다."}, status=400)
+        
+        # Calculate growth for this user.
+        user_growth = calculate_growth([user], "Individual User", categories)
+        overall_growth = (sum(user_growth.values()) / len(user_growth)) if user_growth else 0
+        overall_growth = round(overall_growth, 2)
+        
+        return Response({
+            "course_type": user_course_type,
+            "context": context,
+            "overall_growth": overall_growth,
+        }, status=200)
 
 # =============================================================================

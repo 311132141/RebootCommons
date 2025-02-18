@@ -49,12 +49,12 @@
 
                 <!-- 참여 프로그램 -->
                 <td class="block sm:table-cell p-3" data-label="참여 프로그램">
-                  {{ company.programs }}
+                  {{ company.course_type }}
                 </td>
 
                 <!-- 협업 성장률 -->
                 <td class="block sm:table-cell p-3" data-label="협업 성장률">
-                  {{ company.growth }}
+                  {{ company.overall_growth }}
                 </td>
 
                 <!-- Dashboard Button -->
