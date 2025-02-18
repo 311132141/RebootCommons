@@ -92,7 +92,7 @@
           <div class="col-span-12 sm:col-span-6 md:col-span-7  lg:col-span-7 print:col-span-7">
             <ChartCard canvasId="demographicChart-age" title="연봉과 성장률 간의 관계 분석"
               description="본 그래프는 참가자의 연봉 수준과 리더십 프로그램 이후 성장률 간의 관계를 나타냅니다. 연봉이 높은 집단과 낮은 집단의 성장 패턴을 비교할 수 있습니다."
-              :labels="demographicLabels.salary" :datasets="demographicDatasets.age" title_z="end this life"
+              :labels="demographicLabels.salary" :datasets="demographicDatasets.salary" title_z="end this life"
               title_y="end" :chartType="'bar'" />
 
           </div>
@@ -116,6 +116,34 @@
             <ChartCard canvasId="demographicChart-age" title="결혼 여부에 따른 성장률 비교"
               description="본 그래프는 미혼과 기혼 참가자의 리더십 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다."
               :labels="demographicLabels.marital" :datasets="demographicDatasets.marital" title_z="end this life"
+              title_y="end" :chartType="'bar'" />
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
+            <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
+              description=" 본 그래프는 참가자의 학력 수준(고졸, 대졸 등)에 따른 리더십 성장률 차이를 분석합니다." :labels="demographicLabels.job_field"
+              :datasets="demographicDatasets.job_field" title_z="end this life" title_y="end" :chartType="'bar'" />
+
+          </div>
+          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
+            <ChartCard canvasId="demographicChart-age" title="결혼 여부에 따른 성장률 비교"
+              description="본 그래프는 미혼과 기혼 참가자의 리더십 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다."
+              :labels="demographicLabels.employment_type" :datasets="demographicDatasets.employment_type"
+              title_z="end this life" title_y="end" :chartType="'bar'" />
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-5 ">
+          <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-6 ">
+            <ChartCard canvasId="demographicChart-age" title="학력과 리더십 성장률 비교"
+              description=" 본 그래프는 참가자의 학력 수준(고졸, 대졸 등)에 따른 리더십 성장률 차이를 분석합니다." :labels="demographicLabels.tenure"
+              :datasets="demographicDatasets.tenure" title_z="end this life" title_y="end" :chartType="'bar'" />
+
+          </div>
+          <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
+            <ChartCard canvasId="demographicChart-age" title="결혼 여부에 따른 성장률 비교"
+              description="본 그래프는 미혼과 기혼 참가자의 리더십 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다."
+              :labels="demographicLabels.position" :datasets="demographicDatasets.position" title_z="end this life"
               title_y="end" :chartType="'bar'" />
           </div>
         </div>
