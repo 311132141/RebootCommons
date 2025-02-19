@@ -28,10 +28,11 @@ SECRET_KEY = 'django-insecure-hda4#$@uuk9mv4cf$=e-6x^uod#-p3g6y+2n9pff-pf%3axd(h
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "139.150.68.129",  # Your server's public IP
-    "10.28.55.2",       # Your private network IP (if needed)
-    "127.0.0.1",        # Local development
-    "localhost",        
+    # "139.150.68.129",  # Your server's public IP
+    # "10.28.55.2",       # Your private network IP (if needed)
+    # "127.0.0.1",        # Local development
+    # "localhost",   
+    "*"     
 ]
 
 AUTH_USER_MODEL = 'account.User'
