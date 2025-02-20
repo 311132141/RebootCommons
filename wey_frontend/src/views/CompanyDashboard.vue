@@ -70,8 +70,9 @@
         <div class="grid grid-cols-12 gap-5 ">
           <div class="col-span-12 sm:col-span-6 md:col-span-5  lg:col-span-5 print:col-span-5">
             <ChartCard :title="'남성과 여성 ' + companyStats.course_type + ' 분포 비교'"
-              description="이 파이 그래프는 조직 내 남성과 여성 리더의 비율을 비교하여, 기업·공공기관·산업별 리더십 분포를 시각적으로 나타냅니다." :labels="genderLabels"
-              :datasets="genderDatasets" title_z="Leadership Category" title_y="Average Score" :chartType="'pie'" />
+              :description="'이 파이 그래프는 조직 내 남성과 여성의 ' + companyStats.course_type + ' 비율을 비교하여, 기업·공공기관·산업별 ' + companyStats.course_type + ' 분포를 시각적으로 나타냅니다.'"
+              :labels="genderLabels" :datasets="genderDatasets" title_z="Leadership Category" title_y="Average Score"
+              :chartType="'pie'" />
 
             <!--  -->
 
@@ -79,7 +80,7 @@
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-7 lg:col-span-7 print:col-span-7">
             <ChartCard canvasId="leadershipChart" :title="'남성과 여성의 ' + companyStats.course_type + ' 비교'"
-              description="본 그래프는 특정 회사의 선택한 교육과정에 따른 질문 범주별 남성과 여성의 평균 점수를 비교합니다." :labels="leadershipLabels"
+              description="본 그래프는 교육과정에 따른 질문 범주별 남성과 여성의 평균 점수를 비교합니다." :labels="leadershipLabels"
               :datasets="computedDatasets" title_z="Leadership Category" title_y="Average Score" :chartType="'bar'" />
           </div>
         </div>
@@ -110,7 +111,7 @@
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6">
             <ChartCard canvasId="demographicChart-age" :title="'결혼 여부에 따른 ' + companyStats.course_type + ' 비교'"
-              :description="'본 그래프는 미혼과 기혼 참가자의 ' + companyStats.course_type + ' 성장 차이를 분석하여 가정이 성장에 미치는 영향을 확인합니다.'"
+              :description="'본 그래프는 미혼과 기혼 참가자의 ' + companyStats.course_type + ' 성장 차이를 분석하여 결혼이 성장에 미치는 영향을 확인합니다.'"
               :labels="demographicLabels.marital" :datasets="demographicDatasets.marital" title_z="end this life"
               title_y="end" :chartType="'bar'" />
           </div>
@@ -149,7 +150,7 @@
           <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
 
             <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
-              description="수면, 운동, 식습관, 명상, 워크라이프 밸런스와 같은 요소가 리더십 성장률에 미치는 영향을 분석합니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
+              :description="'라이프스타일과 워크라이프 밸런스와 같은 요소가 ' + companyStats.course_type + ' 성장률에 미치는 영향을 분석합니다.'"
               :lifestyleLabels="['여유', '에너지', '스타일', '패션', '신제품', '취미', '거주', '근무', '노후', '변화', '심플', '전통', '자기개발', '건강', '운동']"
               :scores="[1, 2, 3, 4, 5]" :improvementData="transformedHeatmapData" />
           </div>
@@ -232,6 +233,12 @@ const companyStats = ref({
   company_name: '정보 없음'
 });
 const categoryNameMapping = {
+
+
+
+
+  "demographic": "인구통계학",
+  "lifestlyes": "라이프",
   "entrepreneur_risk": "위험감수성",
   "entrepreneur_proact": "진취성",
   "entrepreneur_innov": "혁신성",
@@ -242,9 +249,9 @@ const categoryNameMapping = {
   "ppc_hope": "희망",
   "ppc_optimism": "낙관성",
   "ppc_efficacy": "자기효능감",
-  "selflead_behavior": "행동지향전략",
-  "selflead_natural": "자연보상전략",
-  "selflead_constructive": "건설적사고전략",
+  "selflead_behavior": "행동중심전략",
+  "selflead_natural": "자연적보상",
+  "selflead_constructive": "건설적사고",
 };
 
 const route = useRoute()

@@ -7,7 +7,7 @@
           REBOOT TOOLBOX
         </span>
       </div>
-      <form v-on:submit.prevent="submitForm" class="space-y-6">
+      <form @submit.prevent="submitForm" class="space-y-6">
         <div class="space-y-6">
           <div>
             <label class="text-white text-sm mb-2 block">이름</label>
@@ -22,10 +22,10 @@
               required />
           </div>
           <div>
-            <label class="text-white text-sm mb-2 block">회사</label>
-            <input v-model="form.company" type="text" placeholder="회사명을 입력하세요"
-              class="text-white bg-gray-700 border border-gray-600 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-              required />
+            <label class="text-white text-sm mb-2 block">회사 (선택)</label>
+            <!-- Removed "required" attribute so company is optional -->
+            <input v-model="form.company" type="text" placeholder="회사명을 입력하세요 (선택)"
+              class="text-white bg-gray-700 border border-gray-600 w-full text-sm px-4 py-3 rounded-md outline-blue-500" />
           </div>
           <div>
             <label class="text-white text-sm mb-2 block">비밀번호</label>
@@ -43,9 +43,8 @@
             <input id="terms" name="terms" type="checkbox"
               class="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
             <label for="terms" class="text-gray-100 ml-3 block text-sm">
-              <!-- 클릭 시 팝업이 뜨도록 span에 이벤트 추가 -->
               <span @click="openModal" class="cursor-pointer underline">
-                설문 안내문을 확인합니다.
+                설문을 통한 개인정보 수집을 동의합니다.
               </span>
             </label>
           </div>
@@ -75,16 +74,14 @@
     <!-- 안내 문구 팝업 -->
     <div v-if="showTermsModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
       @click.self="closeModal">
-      <div class="bg-white p-6 rounded-lg max-w-lg w-full">
-        <p class="text-black whitespace-pre-wrap">
-          -----------------------------------------------------------------------------
-          --------------
-          귀하는 리부트커먼즈의 교육을 통해 교육 전과 교육 이후의 역량 비교 데이터를 확인할 수 있
-          는 설문에 참여하시게 됩니다. 해당 설문은 리커트 5점 척도로 구성되어 있으며 귀하의 기본 정
-          보와 라이프스타일 정보를 반영하여 구체적인 역량 분석 및 라이프 발란스 레포트를 제공합니
-          다.
-          -----------------------------------------------------------------------------
-          --------------
+      <div class="bg-gray-900 p-6 rounded-lg max-w-lg w-full">
+        <!-- <p class="text-white whitespace-pre-wrap"> -->
+        <p class="text-white text-center whitespace-pre-wrap" style="word-break: keep-all;">
+
+          귀하는 리부트커먼즈의 교육을 통해 교육 전과 교육 이후의 역량 비교 데이터를 확인할 수 있는 설문에 참여하시게 됩니다. 해당 설문은 리커트 5점 척도로 구성되어 있으며 귀하의 기본 정보와
+          라이프스타일
+          정보를 반영하여 레포트를 제공합니다.
+
         </p>
         <div class="mt-4 text-right">
           <button @click="closeModal" class="bg-blue-600 text-white px-4 py-2 rounded">
@@ -105,6 +102,7 @@ export default {
     const toastStore = useToastStore()
     return { toastStore }
   },
+
   data() {
     return {
       form: {
@@ -125,51 +123,52 @@ export default {
     closeModal() {
       this.showTermsModal = false
     },
-    submitForm() {
+    async submitForm() {
       this.errors = []
+      console.log("폼 제출됨:", this.form)
+
       if (this.form.email === '') {
         this.errors.push('이메일을 입력해주세요.')
       }
       if (this.form.name === '') {
         this.errors.push('이름을 입력해주세요.')
       }
-      if (this.form.company === '') {
-        this.errors.push('회사명을 입력해주세요.')
-      }
+      // 회사 필드는 더 이상 필수로 검사하지 않음.
       if (this.form.password1 === '') {
         this.errors.push('비밀번호를 입력해주세요.')
       }
       if (this.form.password1 !== this.form.password2) {
         this.errors.push('비밀번호가 일치하지 않습니다.')
       }
-      if (this.errors.length === 0) {
-        axios
-          .post('/api/signup/', this.form)
-          .then(response => {
-            if (response.data.message === 'success') {
-              this.toastStore.showToast(
-                5000,
-                '회원가입이 완료되었습니다. 이메일에 전송된 링크를 클릭하여 계정을 활성화해주세요.',
-                'bg-emerald-500'
-              )
-              // 입력값 초기화
-              this.form.email = ''
-              this.form.name = ''
-              this.form.company = ''
-              this.form.password1 = ''
-              this.form.password2 = ''
-            } else {
-              const data = JSON.parse(response.data.message)
-              for (const key in data) {
-                this.errors.push(data[key][0].message)
-              }
-              this.toastStore.showToast(5000, '문제가 발생했습니다. 다시 시도해주세요.', 'bg-red-300')
-            }
-          })
-          .catch(error => {
-            console.error('회원가입 실패:', error)
-            this.toastStore.showToast(5000, '서버 오류가 발생했습니다. 다시 시도해주세요.', 'bg-red-300')
-          })
+      if (this.errors.length > 0) {
+        return
+      }
+
+      // Prepare payload, setting company to null if empty.
+      const payload = { ...this.form }
+      if (!payload.company) {
+        payload.company = null
+      }
+
+      try {
+        console.log("회사 등록 요청 중...")
+        const response = await axios.post("/api/signup/", payload)
+        console.log("등록 성공, 응답 수신:", response.data)
+        this.toastStore.showToast(
+          5000,
+          '회원가입이 완료되었습니다. 로그인을 시도하세요.',
+          'bg-emerald-500'
+        )
+        // 초기화
+        this.form.email = ''
+        this.form.name = ''
+        this.form.company = ''
+        this.form.password1 = ''
+        this.form.password2 = ''
+      } catch (error) {
+        console.error("회원가입 실패:", error)
+        this.toastStore.showToast(5000, '서버 오류가 발생했습니다. 다시 시도해주세요.', 'bg-red-300')
+        this.errors.push("회원가입에 실패했습니다. 입력하신 정보를 확인해주세요.")
       }
     }
   }

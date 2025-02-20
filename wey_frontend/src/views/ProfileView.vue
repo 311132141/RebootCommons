@@ -14,7 +14,7 @@
           </button>
         </div>
       </div>
-      <h1 class="text-2xl text-bold pb-3 print:text-black mb-6 print:mb-6">{{ user.name }}의 데시보드</h1>
+      <h1 class="text-2xl text-bold pb-3 print:text-black mb-6 print:mb-6">{{ user.name }}의 대시보드</h1>
 
       <div class="space-y-6">
         <!-- <div class="grid grid-cols-12 gap-5 ">
@@ -54,26 +54,26 @@
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-6  lg:col-span-5 print:col-span-5">
             <ChartCard_radar :title="`${user.demographics.selected_program} - 성장률 (전/후) 비교`"
-              :description="`본 레이더 차트는 ${user.demographics.selected_program} 수강 전후의 성장률 변화를 항목별로 보여줍니다.`"
+              :description="`본 레이더 차트는 ${user.demographics.selected_program} 수강 전/후의 성장률 변화를 항목별로 보여줍니다.`"
               :labels="prepostChartLabel" :datasets="prepostChartData" />
 
           </div>
           <div class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-7 print:col-span-7">
             <ChartCard :title="`${user.demographics.selected_program} - 성장률 (전/후) 비교`"
-              :description="`본 막대 차트는 ${user.demographics.selected_program} 수강 전후의 성장률 변화를 항목별로 보여줍니다.`"
+              :description="`본 막대 차트는 ${user.demographics.selected_program} 수강 전/후의 성장률 변화를 항목별로 보여줍니다.`"
               :labels="prepostChartLabel" :datasets="prepostChartData" :chartType="'bar'" />
           </div>
           <div v-for="(radar, index) in radarDataPerCategory" :key="index"
             class="col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-4 print:col-span-4">
             <ChartCard_radar :title="`${radar.categoryName} - 성장률 (전/후) 비교`"
-              :description="`본 그래프는 ${radar.categoryName} 내 전후 성장률 변화를 비교한 결과를 나타냅니다.`" :labels="radar.labels"
+              :description="`본 그래프는 ${radar.categoryName} 내 전/후 성장률 변화를 비교한 결과를 나타냅니다.`" :labels="radar.labels"
               :datasets="radar.datasets" />
           </div>
         </div>
         <div class="grid grid-cols-12 gap-5 pb-5 ">
           <div class="col-span-12 sm:col-span-12 lg:col-span-12 ">
             <HeatmapChart title="라이프스타일 요인과 성장률의 관계"
-              description="수면, 운동, 식습관, 명상, 워크라이프 밸런스와 같은 요소가 리더십 성장률에 미치는 영향을 분석합니다. 건강한 생활 습관이 얼마나 성과에 기여하는지 확인할 수 있습니다."
+              :description="'라이프스타일과 워크라이프 밸런스와 같은 요소가 ' + user.demographics.selected_program + ' 성장률에 미치는 영향을 분석합니다. '"
               :lifestyleLabels="['여유', '에너지', '스타일', '패션', '신제품', '취미', '거주', '근무', '노후', '변화', '심플', '전통', '자기개발', '건강', '운동']"
               :scores="[1, 2, 3, 4, 5]" :improvementData="transformedHeatmapData" />
           </div>
@@ -154,122 +154,120 @@ const prePostRadarData = ref(null);
 const questionNameMapping = {
   // 기업가정신(위험감수성)
   entrepreneur_risk: [
-    "위험 감수하며 사업 추진",
-    "실패 후 재도전 의지",
-    "예상치 못한 문제 해결, 새로운 기회 발견",
-    "적극적으로 기회에 뛰어들어 위험 감수",
+    ["위험 감수하며", " 사업 추진"],
+    ["실패 후 재도전 의지"],
+    ["예상치 못한 문제 해결,", " 새로운 기회 발견"],
+    ["적극적으로 기회에", " 뛰어들어 위험 감수"],
     ["미래 이익 위해", "과감히 결정"],
   ],
 
   // 기업가정신(진취성)
   entrepreneur_proact: [
-    "새로운 기회 즉시 실행",
-    "창의적 아이디어 시도",
-    "능동적으로 방안 모색",
-    "기존 모델 개선점 탐색",
-    "주도적 행동, 성취감 추구",
+    ["새로운 기회", " 즉시 실행"],
+    ['창의적 아이디어', '시도'],
+    ["능동적으로 방안 모색"],
+    ["기존 모델 ", "개선점 탐색"],
+    ["주도적 행동,", " 성취감 추구"],
   ],
 
   // 기업가정신(혁신성)
   entrepreneur_innov: [
-    "혁신 아이디어 적극 도입",
-    "새로운 방식으로 문제 해결",
-    "혁신 문화 조성에 노력",
-    "위험 감수하고 혁신 투자",
-    "시장 기회를 창출하는 혁신 접근",
+    ["혁신 아이디어", " 적극 도입"],
+    ["새로운 방식으로", " 문제 해결"],
+    ["혁신 문화", "조성에 노력"],
+    ["위험 감수하고", " 혁신 투자"],
+    ["시장 기회를 창출하는", " 혁신 접근"],
   ],
 
   // 조직몰입(규범적몰입)
   org_normative: [
-    "조직 규범·가치 충실 준수",
-    "조직 기대에 부응하려 노력",
-    "조직 규범 위배 시 죄책감",
-    "조직에 받은 혜택 보답해야 한다고 느낌",
+    ["조직 규범·가치", " 충실 준수"],
+    ["조직 기대에 ", "부응하려 노력"],
+    ["조직 규범 위배", "시 죄책감"],
+    ["조직에 받은 혜택 보답해야 한다고 느낌"],
     "조직 명예·평판을 중요하게 여김",
   ],
 
   // 조직몰입(지속적몰입)
-  org_continuance: [
-    "조직 떠나면 손실 크다고 느낌",
-    "현 조직을 떠나는 건 큰 위험",
-    "경력·인맥 포기 어려움",
-    "조직 유지가 경제적으로 유리",
-    "다른 선택지보다 현재 조직이 낫다고 판단",
-  ],
+  org_continuance: [['조직 떠나면', '손실 크다고 느낌'],
+  ['현 조직을 떠나는', '건 큰 위험'],
+  ['경력·인맥', '포기 어려움'],
+  ['조직 유지가', '경제적으로 유리'],
+  ['다른 선택지보다 현재', '조직이 낫다고 판단']],
 
   // 조직몰입(정서적몰입)
-  org_affective: [
-    "조직에 대한 강한 소속감",
-    "조직이 나에게 의미 있다고 생각",
-    "조직 목표·가치를 내 것처럼 여김",
-    "조직 성공이 곧 나의 성공",
-    "조직 기여에 자부심을 느낌",
-  ],
+  org_affective:
+    [['조직에 대한', '강한 소속감'],
+    ['조직이 나에게', '의미 있다고 생각'],
+    ['조직 목표·가치를', '내 것처럼 여김'],
+    ['조직 성공이', '곧 나의 성공'],
+    ['조직 기여에', '자부심을 느낌']],
 
   // 긍정심리자본(회복탄력성)
-  ppc_resilience: [
-    "어려움 겪어도 금방 회복",
-    "실패 후 빠른 재정비",
-    "역경 속에서도 목표 향해 전진",
-    "난관에 대처할 대안을 찾음",
-    "시련을 성장 기회로 삼음",
-  ],
+  ppc_resilience:
+    [['어려움 겪어도', '금방 회복'],
+    ['실패 후', '빠른 재정비'],
+    ['역경 속에서도', '목표 향해 전진'],
+    ['난관에 대처할', '대안을 찾음'],
+    ['시련을 성장', '기회로 삼음']],
 
   // 긍정심리자본(희망)
-  ppc_hope: [
-    "미래에 대한 긍정적 기대",
-    "어려움 속에서도 희망 유지",
-    "목표 달성 위한 구체적 계획",
-    "장애 극복 가능하다고 믿음",
-    "문제 해결에 적극적으로 노력",
-  ],
+  ppc_hope: [['미래에 대한', '긍정적 기대'],
+  ['어려움 속에서도', '희망 유지'],
+  ['목표 달성', '위한 구체적 계획'],
+  ['장애 극복', '가능하다고 믿음'],
+  ['문제 해결에', '적극적으로 노력']],
 
   // 긍정심리자본(낙관성)
-  ppc_optimism: [
-    "내일이 더 나아질 거라 생각",
-    "상황의 긍정적 면을 우선 봄",
-    "실패에도 긍정적 교훈 발견",
-    "미래가 밝을 것이라 기대",
-    "일이 잘 풀릴 거라는 믿음",
-  ],
+  ppc_optimism: [['내일이 더', '나아질 거라 생각'],
+  ['상황의 긍정적', '면을 우선 봄'],
+  ['실패에도 긍정적', '교훈 발견'],
+  ['미래가 밝을', '것이라 기대'],
+  ['일이 잘', '풀릴 거라는 믿음']],
 
   // 긍정심리자본(자기효능감)
-  ppc_efficacy: [
-    "어려운 과업도 해낼 수 있다는 확신",
-    "새로운 도전에 자신감",
-    "목표 달성 역량을 갖췄다고 생각",
-    "문제 해결 능력이 충분하다고 느낌",
-    "스스로 능력에 대한 믿음이 강함",
-  ],
+  ppc_efficacy: [['어려운 과업도 해낼', '수 있다는 확신'],
+  ['새로운', '도전에 자신감'],
+  ['목표 달성', '역량을 갖췄다고 생각'],
+  ['문제 해결', '능력이 충분하다고 느낌'],
+  ['스스로 능력에', '대한 믿음이 강함']],
 
   // 자기리더십(행동지향전략)
-  selflead_behavior: [
-    "즉시 행동에 옮기는 편",
-    "목표 달성 위해 행동 계획 수립",
-    "스스로 실천력 점검",
-    "자기 격려로 행동 유지",
-    "직접 실행하며 학습",
-  ],
+  selflead_behavior: [['즉시 행동에', '옮기는 편'],
+  ['목표 달성 위해', '행동 계획 수립'],
+  ['스스로', '실천력 점검'],
+  ['자기 격려로', '행동 유지'],
+  ['직접', '실행하며 학습']],
 
   // 자기리더십(자연보상전략)
-  selflead_natural: [
-    "일에서 즐거움과 의미 찾음",
-    "작은 성취에도 스스로 보상",
-    "재미·보람으로 동기 부여",
-    "업무 자체를 긍정적으로 바라봄",
-    "환경을 즐길 수 있게 만들려 노력",
-  ],
+  selflead_natural: [['일에서 즐거움과', '의미 찾음'],
+  ['작은 성취에도', '스스로 보상'],
+  ['재미·보람으로', '동기 부여'],
+  ['업무 자체를', '긍정적으로 바라봄'],
+  ['환경을 즐길 수', '있게 만들려 노력']],
+
 
   // 자기리더십(건설적사고전략)
-  selflead_constructive: [
-    "긍정적 사고로 문제 접근",
-    "부정적 감정 재구성·동기화",
-    "목표 이미지를 구체적으로 상상",
-    "자기 대화로 스스로 격려",
-    "성공 시나리오에 집중",
-  ],
+  selflead_constructive: [['긍정적 사고로', '문제 접근'],
+  ['부정적', '감정 재구성·동기화'],
+  ['목표 이미지를', '구체적으로 상상'],
+  ['자기 대화로', '스스로 격려'],
+  ['성공', '시나리오에 집중']],
+
+
+
+
+
 };
 const categoryNameMapping = {
+
+
+
+
+
+
+  "demographic": "인구통계학",
+  "lifestlyes": "라이프",
   "entrepreneur_risk": "위험감수성",
   "entrepreneur_proact": "진취성",
   "entrepreneur_innov": "혁신성",
@@ -280,9 +278,9 @@ const categoryNameMapping = {
   "ppc_hope": "희망",
   "ppc_optimism": "낙관성",
   "ppc_efficacy": "자기효능감",
-  "selflead_behavior": "행동지향전략",
-  "selflead_natural": "자연보상전략",
-  "selflead_constructive": "건설적사고전략",
+  "selflead_behavior": "행동중심전략",
+  "selflead_natural": "자연적보상",
+  "selflead_constructive": "건설적사고",
 };
 const extractQuestionText = (questionStr) => {
   // This regex removes everything up to and including the first occurrence of a number followed by a dot and space.

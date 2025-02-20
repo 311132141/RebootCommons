@@ -236,7 +236,7 @@ export default {
     // This can be used in the header – you might choose a title based on the page type.
     currentPageTitle() {
       const NameMapping = {
-        "demographic": "인구통셰학",
+        "demographic": "인구통계학",
         "lifestlyes": "라이프",
         "entrepreneur_risk": "위험감수성",
         "entrepreneur_proact": "진취성",
@@ -248,9 +248,9 @@ export default {
         "ppc_hope": "희망",
         "ppc_optimism": "낙관성",
         "ppc_efficacy": "자기효능감",
-        "selflead_behavior": "행동지향전략",
-        "selflead_natural": "자연보상전략",
-        "selflead_constructive": "건설적사고전략",
+        "selflead_behavior": "행동중심전략",
+        "selflead_natural": "자연적보상",
+        "selflead_constructive": "건설적사고",
       };
       if (this.currentPage.pageTitle) {
         console.log(this.currentPage.pageTitle)

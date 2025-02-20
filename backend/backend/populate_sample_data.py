@@ -1,12 +1,4 @@
 # populate_sample_data.py
-
-import os
-import random
-import django
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')  # Adjust if needed
-django.setup()
-
 from django.db.utils import IntegrityError
 from account.models import User, Company
 from survey.models import (
@@ -14,6 +6,14 @@ from survey.models import (
     UserSurveyResponse, Answer,
     SurveyTypeQuestion, CourseTypeQuestion
 )
+import random
+import os
+import django
+
+# Set DJANGO_SETTINGS_MODULE and initialise Django before importing any Django modules
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+django.setup()
+
 
 def create_companies():
     """
@@ -22,7 +22,7 @@ def create_companies():
     if multiple match or None if none exist.
     """
     company_data = [
-        ("TechCorp", "리더십과 혁신"),
+        ("Ark", "리더십과 혁신"),
         ("Innovate Ltd", "기업가정신과 혁신"),
         ("FutureVision", "비전하우스"),
         ("AlphaEnterprises", "리더십과 혁신"),
@@ -34,10 +34,12 @@ def create_companies():
 
     for (c_name, course_substring) in company_data:
         # fetch all matches
-        ctype_candidates = CourseType.objects.filter(name__icontains=course_substring)
+        ctype_candidates = CourseType.objects.filter(
+            name__icontains=course_substring)
         if not ctype_candidates.exists():
             # No match
-            print(f"[Warning] No CourseType matched '{course_substring}'. Setting None.")
+            print(
+                f"[Warning] No CourseType matched '{course_substring}'. Setting None.")
             ctype = None
         else:
             # if multiple, pick randomly or the first
@@ -54,21 +56,25 @@ def create_companies():
         if c_created:
             print(f"[Company] Created {c_name} => course_type=({ctype})")
         else:
-            print(f"[Company] Found existing: {c_name} => course_type=({ctype})")
+            print(
+                f"[Company] Found existing: {c_name} => course_type=({ctype})")
 
         created_companies.append(company)
 
     return created_companies
+
 
 def gather_bridging_questions(survey_type, course_type, include_lifestyle=True):
     """
     Fetch bridging questions for (survey_type, course_type).
     ...
     """
-    st_qs = SurveyTypeQuestion.objects.filter(survey_type=survey_type).select_related('question')
+    st_qs = SurveyTypeQuestion.objects.filter(
+        survey_type=survey_type).select_related('question')
     ct_qs = []
     if course_type:
-        ct_qs = CourseTypeQuestion.objects.filter(course_type=course_type).select_related('question')
+        ct_qs = CourseTypeQuestion.objects.filter(
+            course_type=course_type).select_related('question')
 
     question_objs = set()
     for row in st_qs:
@@ -83,7 +89,8 @@ def gather_bridging_questions(survey_type, course_type, include_lifestyle=True):
 
     return list(question_objs)
 
-def create_users(companies, num_in_company=5, num_no_company=5):
+
+def create_users(companies, num_in_company=20, num_no_company=5):
     """
     Create some users. 
     - `num_in_company` users for EACH company → must use 기업용
@@ -107,7 +114,7 @@ def create_users(companies, num_in_company=5, num_no_company=5):
             fname = random.choice(FIRST_NAMES)
             lname = random.choice(LAST_NAMES)
             name = f"{fname} {lname}"
-            username = f"{fname.lower()}{lname.lower()}{random.randint(100,9999)}"
+            username = f"{fname.lower()}{lname.lower()}{random.randint(100, 9999)}"
             email = f"{username}@example.com"
 
             try:
@@ -127,7 +134,7 @@ def create_users(companies, num_in_company=5, num_no_company=5):
         fname = random.choice(FIRST_NAMES)
         lname = random.choice(LAST_NAMES)
         name = f"{fname} {lname}"
-        username = f"{fname.lower()}{lname.lower()}{random.randint(100,9999)}"
+        username = f"{fname.lower()}{lname.lower()}{random.randint(100, 9999)}"
         email = f"{username}@example.com"
 
         try:
@@ -153,10 +160,12 @@ def gather_bridging_questions(survey_type, course_type, include_lifestyle=True):
     Then combine them, optionally filtering out 'lifestyle' if needed.
     Return a unique set of Questions.
     """
-    st_qs = SurveyTypeQuestion.objects.filter(survey_type=survey_type).select_related('question')
+    st_qs = SurveyTypeQuestion.objects.filter(
+        survey_type=survey_type).select_related('question')
     ct_qs = []
     if course_type:
-        ct_qs = CourseTypeQuestion.objects.filter(course_type=course_type).select_related('question')
+        ct_qs = CourseTypeQuestion.objects.filter(
+            course_type=course_type).select_related('question')
 
     # combine
     question_objs = set()
@@ -206,7 +215,8 @@ def create_responses_and_answers(users_in_company, users_no_company):
                 phase=phase
             ).first()
             if existing:
-                print(f"[Response] {user.name} already has {phase} for {corporate_survey_type.name}/{c_type}. Skipping.")
+                print(
+                    f"[Response] {user.name} already has {phase} for {corporate_survey_type.name}/{c_type}. Skipping.")
                 continue
 
             response = UserSurveyResponse.objects.create(
@@ -215,11 +225,13 @@ def create_responses_and_answers(users_in_company, users_no_company):
                 course_type=c_type,
                 phase=phase
             )
-            print(f"[Response] Created for {user.name} => {corporate_survey_type.name}/{c_type} ({phase})")
+            print(
+                f"[Response] Created for {user.name} => {corporate_survey_type.name}/{c_type} ({phase})")
 
             # gather bridging
             include_lifestyle = (phase == "pre")  # only in pre
-            qset = gather_bridging_questions(corporate_survey_type, c_type, include_lifestyle=include_lifestyle)
+            qset = gather_bridging_questions(
+                corporate_survey_type, c_type, include_lifestyle=include_lifestyle)
 
             # generate random answers
             generate_random_answers(response, qset)
@@ -239,7 +251,8 @@ def create_responses_and_answers(users_in_company, users_no_company):
                 phase=phase
             ).first()
             if existing:
-                print(f"[Response] {user.name} already has {phase} for {personal_survey_type.name}/{c_type}. Skipping.")
+                print(
+                    f"[Response] {user.name} already has {phase} for {personal_survey_type.name}/{c_type}. Skipping.")
                 continue
 
             response = UserSurveyResponse.objects.create(
@@ -248,10 +261,12 @@ def create_responses_and_answers(users_in_company, users_no_company):
                 course_type=c_type,
                 phase=phase
             )
-            print(f"[Response] Created for {user.name} => {personal_survey_type.name}/{c_type} ({phase})")
+            print(
+                f"[Response] Created for {user.name} => {personal_survey_type.name}/{c_type} ({phase})")
 
             include_lifestyle = (phase == "pre")
-            qset = gather_bridging_questions(personal_survey_type, c_type, include_lifestyle)
+            qset = gather_bridging_questions(
+                personal_survey_type, c_type, include_lifestyle)
             generate_random_answers(response, qset)
 
 
@@ -280,7 +295,7 @@ def generate_random_answers(response, question_list):
                 )
 
         elif q.question_type == "rating":
-            val = random.randint(1,5)
+            val = random.randint(1, 5)
             Answer.objects.create(
                 response=response,
                 question=q,
@@ -297,7 +312,8 @@ def generate_random_answers(response, question_list):
                     answer_text=", ".join(chosen_opts)
                 )
             else:
-                Answer.objects.create(response=response, question=q, answer_text="")
+                Answer.objects.create(
+                    response=response, question=q, answer_text="")
 
         elif q.question_type == "text":
             Answer.objects.create(
@@ -327,10 +343,11 @@ def main():
         # create 5 new users in each company
         new_users = []
         for i in range(5):
-            fname = random.choice(["Alice","Bob","Carol","Dave","Eva","Frank","Gina","Henry","Iris","Jack"])
+            fname = random.choice(
+                ["Alice", "Bob", "Carol", "Dave", "Eva", "Frank", "Gina", "Henry", "Iris", "Jack"])
             lname = f"({c.name[:3]})"  # just a silly suffix
             name = f"{fname} {lname}"
-            email = f"{fname.lower()}{random.randint(100,999)}@example.com"
+            email = f"{fname.lower()}{random.randint(100, 999)}@example.com"
 
             try:
                 u = User.objects.create_user(
@@ -347,10 +364,12 @@ def main():
 
     # Also create 10 users with no company at all
     for i in range(10):
-        fname = random.choice(["Zara","Tom","Ursula","Victor","Wendy","Xander","Yvonne","Quinn","Piper"])
-        lname = random.choice(["Moon","Lee","Smith","Brown","Garcia","Kim"])
+        fname = random.choice(
+            ["Zara", "Tom", "Ursula", "Victor", "Wendy", "Xander", "Yvonne", "Quinn", "Piper"])
+        lname = random.choice(
+            ["Moon", "Lee", "Smith", "Brown", "Garcia", "Kim"])
         name = f"{fname} {lname}"
-        email = f"{fname.lower()}{random.randint(100,999)}@example.com"
+        email = f"{fname.lower()}{random.randint(100, 999)}@example.com"
 
         try:
             u = User.objects.create_user(

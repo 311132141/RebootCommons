@@ -6,12 +6,11 @@
         <div class="flex items-center space-x-2 text-gray-400">
           <span>Dashboard</span>
           <span>></span>
-          <span>Company</span>
-          <span>></span>
+
           <span>Users</span>
         </div>
       </div>
-      <h1 class="text-2xl font-medium mb-6">개인용 대시보드</h1>
+      <h1 class="text-2xl font-medium mb-6">개인 대시보드</h1>
 
       <div class="flex items-center justify-center bg-gray-900 text-white ">
         <div class="w-full h-full">
@@ -45,12 +44,12 @@
 
                 <!-- 참여 프로그램 -->
                 <td class="block sm:table-cell p-3" data-label="참여 프로그램">
-                  {{ user.course_type }}
+                  {{ user.programs }}
                 </td>
 
                 <!-- 협업 성장률 -->
                 <td class="block sm:table-cell p-3" data-label="협업 성장률">
-                  {{ user.overall_growth }}
+                  {{ user.growth }}
                 </td>
 
                 <!-- Dashboard Button -->
