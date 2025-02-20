@@ -144,23 +144,23 @@ def main():
     # A) 기업용 (demographic_corp)
     # ------------------------------------------------------------
     q_corp_demo_gender = get_or_create_question(
-        "귀하의 성별은?", "radio", ["남성","여성"], "demographic_corp"
+        "귀하의 성별은?", "radio", ["남성","여성"], "demographic"
     )
     q_corp_demo_age = get_or_create_question(
-        "귀하의 연령은?", "radio", ["20대","30대","40대","50대","60대"], "demographic_corp"
+        "귀하의 연령은?", "radio", ["20대","30대","40대","50대","60대"], "demographic"
     )
     q_corp_demo_marital = get_or_create_question(
-        "귀하의 결혼 유무는?", "radio", ["미혼","기혼"], "demographic_corp"
+        "귀하의 결혼 유무는?", "radio", ["미혼","기혼"], "demographic"
     )
     q_corp_demo_education = get_or_create_question(
         "귀하의 최종 학력은?", "radio",
         ["고등학교 졸업","전문대 졸업","대학교 졸업","석사 졸업","박사 졸업"],
-        "demographic_corp"
+        "demographic"
     )
     q_corp_demo_tenure = get_or_create_question(
         "귀하가 재직중인 회사 근속 기간은?", "radio",
         ["1년 미만","1년 이상~3년 미만","3년 이상~5년 미만","5년 이상~7년 이하"],
-        "demographic_corp"
+        "demographic"
     )
     q_corp_demo_jobfield = get_or_create_question(
         "귀하의 직군은?", "radio",
@@ -169,41 +169,41 @@ def main():
             "영업/서비스","연구/개발/설계","생산/제조/기술","교육","건설",
             "의료/보건/복지","미디어","전문/특수직"
         ],
-        "demographic_corp"
+        "demographic"
     )
     q_corp_demo_position = get_or_create_question(
         "귀하의 직급은?", "radio",
         ["사원","주임","대리","과장","차장","부장 이상"],
-        "demographic_corp"
+        "demographic"
     )
     q_corp_demo_employment_type = get_or_create_question(
         "귀하의 근무 형태는?", "radio",
         ["정규직","비정규직"],
-        "demographic_corp"
+        "demographic"
     )
     q_corp_demo_income = get_or_create_question(
         "귀하의 소득(월소득 세전기준)은?", "radio",
         ["200만원 미만","200만원 이상~300만원 미만","300만원 이상~400만원 미만","400만원 이상~500만원 미만","600만원이상"],
-        "demographic_corp"
+        "demographic"
     )
 
     # ------------------------------------------------------------
-    # B) 개인용 (demographic_personal)
+    # B) 개인용 (demographic)
     # ------------------------------------------------------------
     q_personal_demo_gender = get_or_create_question(
-        "귀하의 성별은? (개인용)", "radio", ["남성","여성"], "demographic_personal"
+        "귀하의 성별은? (개인용)", "radio", ["남성","여성"], "demographic"
     )
     q_personal_demo_age = get_or_create_question(
         "귀하의 연령은? (개인용)", "radio", ["20대","30대","40대","50대","60대"],
-        "demographic_personal"
+        "demographic"
     )
     q_personal_demo_marital = get_or_create_question(
-        "귀하의 결혼 유무는? (개인용)", "radio", ["미혼","기혼"], "demographic_personal"
+        "귀하의 결혼 유무는? (개인용)", "radio", ["미혼","기혼"], "demographic"
     )
     q_personal_demo_education = get_or_create_question(
         "귀하의 최종 학력은? (개인용)", "radio",
         ["고등학교 졸업","전문대 졸업","대학교 졸업","석사 졸업","박사 졸업"],
-        "demographic_personal"
+        "demographic"
     )
     q_personal_demo_jobfield = get_or_create_question(
         "귀하의 직군은? (개인용)", "radio",
@@ -212,12 +212,12 @@ def main():
             "영업/서비스","연구/개발/설계","생산/제조/기술","교육","건설",
             "의료/보건/복지","미디어","전문/특수직"
         ],
-        "demographic_personal"
+        "demographic"
     )
     q_personal_demo_income = get_or_create_question(
         "귀하의 소득(월소득 세전기준)은? (개인용)", "radio",
         ["200만원 미만","200만원 이상~300만원 미만","300만원 이상~400만원 미만","400만원 이상~500만원 미만","600만원이상"],
-        "demographic_personal"
+        "demographic"
     )
 
     # ------------------------------------------------------------
@@ -317,7 +317,7 @@ def main():
         "나는 업무의 진행 상황에 관심을 쓴다.",
         "나는 내가 업무를 얼마나 잘하는지에 대해 주의를 기울인다.",
         "나는 마음속에 나의 목표들을 인식하고 있다.",
-        "나는 내일의 진행 정도를 기록한다."
+        "나는 내 일의 진행 정도를 기록한다."
     ]
     selflead_behavior_qs = create_scale_questions(
         "셀프 리더십(행동중심전략)", behavior_texts, "selflead_behavior"
@@ -377,7 +377,7 @@ def main():
     innov_texts = [
         "나는 항상 새로운 제품이나 기술 등에 관심이 많다.",
         "나는 혁신적인 변화를 통해 우리 조직의 성과를 항상 시키려고 노력한다.",
-        "나는 다른 사람의 세부도 독창적인 아이디어를 적극적으로 수용하는 편이다.",
+        "나는 다른 사람의 새롭고 독창적인 아이디어를 적극적으로 수용하는 편이다.",
         "나는 조직의 위계질서와 관행보다 독창적인 아이디어와 변화를 더 중요시한다.",
         "나는 새로운 도전에 대한 실패를 질책하지 않는다."
     ]
@@ -472,11 +472,8 @@ def main():
         ctq_create(ct_vision_corp, qobj, sub_order)
         sub_order += 1
 
-    # B) 리더십과 혁신(개인) => resilience + selflead
+    # B) 리더십과 혁신(개인) => selflead
     sub_order = 1
-    for qobj in resilience_qs:
-        ctq_create(ct_leadership_personal, qobj, sub_order)
-        sub_order += 1
     for qobj in (selflead_behavior_qs + selflead_natural_qs + selflead_constructive_qs):
         ctq_create(ct_leadership_personal, qobj, sub_order)
         sub_order += 1

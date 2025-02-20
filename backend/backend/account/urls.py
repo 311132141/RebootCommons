@@ -14,4 +14,6 @@ urlpatterns = [
     path('companies/<uuid:company_id>/explanation/', api.CompanyExplanationView.as_view(), name='company-explanation'),
     path('users/<uuid:user_id>/explanation/', api.UserExplanationView.as_view(), name='user-explanation'),
     path('company/register/', api.CompanyRegisterView.as_view(), name='company-register'),
+    path('companies/<uuid:company_id>/delete/', api.delete_company, name='delete_company'),
+    path('users/<uuid:user_id>/delete/', api.delete_user, name='delete_user'),
 ]

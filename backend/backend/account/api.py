@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from survey.models import CourseType
 from survey.api import get_company_average_growth, get_user_overall_growth
+from survey.models import UserSurveyResponse, Answer
 
 
 
@@ -83,7 +84,7 @@ def get_company_users(request, company_id):
                 "id": user.id,
                 "name": user.name,
                 "email": user.email,
-                "course_type": user.company.course_type.name if user.company and user.company.course_type else "선택택 안함",
+                "course_type": user.company.course_type.name if user.company and user.company.course_type else "선택 안함",
                 "overall_growth": get_user_overall_growth(user)
             }
             for user in users
@@ -188,3 +189,81 @@ class CompanyRegisterView(APIView):
             company.save()
         serializer = CompanySerializer(company)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+# Add this helper function (you can place it among your other helper functions)
+def delete_user_related_data(user):
+    """
+    Deletes all survey responses, their answers, and the user's explanation.
+    """
+    survey_responses = UserSurveyResponse.objects.filter(user=user)
+    for response in survey_responses:
+        Answer.objects.filter(response=response).delete()
+        response.delete()
+    UserExplanation.objects.filter(user=user).delete()
+
+
+# Modified delete_user view:
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user(request, user_id):
+    try:
+        user = get_object_or_404(User, id=user_id)
+
+        if request.user != user and not request.user.is_superuser:
+            return Response(
+                {"error": "관리자 권한이 필요합니다."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        delete_user_related_data(user)  # <-- Use helper function here
+        user.delete()
+
+        return Response(
+            {"message": f"사용자 {user.email} 가 성공적으로 삭제되었습니다."},
+            status=status.HTTP_200_OK
+        )
+
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response(
+            {"error": f"An error occurred: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+# Modified delete_company view:
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_company(request, company_id):
+    try:
+        company = get_object_or_404(Company, id=company_id)
+
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "관리자 권한이 필요합니다."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        users = User.objects.filter(company=company)
+        for user in users:
+            delete_user_related_data(user)  # <-- Reuse helper for each user
+            user.delete()
+
+        CompanyExplanation.objects.filter(company=company).delete()
+
+        company_name = company.name  # store name before deletion
+        company.delete()
+
+        return Response(
+            {"message": f"{company_name} 와 관련된 모든 데이터가 성공적으로 삭제되었습니다."},
+            status=status.HTTP_200_OK
+        )
+
+    except Company.DoesNotExist:
+        return Response({"error": "회사를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response(
+            {"error": f"An error occurred: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
