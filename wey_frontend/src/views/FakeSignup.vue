@@ -167,8 +167,26 @@ export default {
         this.form.password2 = ''
       } catch (error) {
         console.error("회원가입 실패:", error)
+        // ADDED CODE: Parse and display backend error messages in Korean.
+        if (error.response && error.response.data && error.response.data.errors) {
+          const errorData = error.response.data.errors;
+          for (const field in errorData) {
+            if (errorData.hasOwnProperty(field)) {
+              // Translate the field name if needed (for example, 'email' -> '이메일')
+              let fieldName = field;
+              if (field === 'email') fieldName = '이메일';
+              else if (field === 'password2') fieldName = '비밀번호 확인';
+              // Join multiple error messages for that field.
+              this.errors.push(`${fieldName}: ${errorData[field].join(' ')}`);
+            }
+          }
+        } else if (error.response && error.response.data && error.response.data.message) {
+          this.errors.push(error.response.data.message);
+        } else {
+          this.errors.push("회원가입에 실패했습니다. 입력하신 정보를 확인해주세요.");
+        }
+        // END ADDED CODE
         this.toastStore.showToast(5000, '서버 오류가 발생했습니다. 다시 시도해주세요.', 'bg-red-300')
-        this.errors.push("회원가입에 실패했습니다. 입력하신 정보를 확인해주세요.")
       }
     }
   }

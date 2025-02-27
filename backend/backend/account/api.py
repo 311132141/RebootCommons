@@ -24,6 +24,23 @@ def me(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data)  # ✅ DRF handles JSON conversion
 
+def translate_error_messages(errors):
+    """
+    Translate default Django form error messages to Korean.
+    `errors` is a dict in the form: {'field_name': ['error message 1', 'error message 2', ...], ...}
+    """
+    translations = {
+        "Enter a valid email address.": "유효한 이메일 주소를 입력해주세요.",
+        "This password is too common.": "이 비밀번호는 너무 흔합니다.",
+        "This password is entirely numeric.": "비밀번호는 숫자만으로 이루어질 수 없습니다.",
+        "This password is too short. It must contain at least 8 characters.": "비밀번호가 너무 짧습니다. 8자 이상이어야 합니다.",
+        # Add more translations as needed...
+    }
+    translated = {}
+    for field, messages in errors.items():
+        translated[field] = [translations.get(msg, msg) for msg in messages]
+    return translated
+
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -53,7 +70,9 @@ def signup(request):
         user.save()
         return JsonResponse({'message': 'success'}, status=201)
     else:
-        return JsonResponse({'message': 'error', 'errors': form.errors}, status=400)
+        print(form.errors)
+        translated_errors = translate_error_messages(form.errors)
+        return JsonResponse({'message': 'error', 'errors': translated_errors}, status=400)
     
 @api_view(['GET'])
 def get_companies_with_growth(request):
