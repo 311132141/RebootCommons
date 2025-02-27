@@ -49,8 +49,10 @@
     <div class="flex-grow sm:mt-auto md:mt-0 overflow-hidden ">
       <!-- Render a single question page -->
       <template v-if="currentPage.type === 'single'">
+
         <Question :question="currentPage.questions[0]" v-model="responses[currentPage.questions[0].id]"
           :isLastPage="isLastPage" @next-question="nextPage" @submit-survey="submitSurvey" class="mx-auto" />
+
       </template>
 
       <!-- Render a group page (list of questions, e.g. likert style) -->
@@ -60,9 +62,15 @@
           <!-- <div v-for="question in currentPage.questions" :key="question.id">
             <Rating :question="question" v-model="responses[question.id]" />
           </div> -->
-          <div v-for="(question, index) in currentPage.questions" :key="question.id" ref="ratingRefs"
+          <!-- <div v-for="(question, index) in currentPage.questions" :key="question.id" ref="ratingRefs"
             :class="index === activeRatingIndex ? 'opacity-100' : 'opacity-50'">
             <Rating :question="question" v-model="responses[question.id]" @answered="handleAnswered(index)" />
+          </div> -->
+          <div :key="currentPageIndex">
+            <div v-for="(question, index) in currentPage.questions" :key="question.id" ref="ratingRefs"
+              :class="index === activeRatingIndex ? 'opacity-100' : 'opacity-50'">
+              <Rating :question="question" v-model="responses[question.id]" @answered="handleAnswered(index)" />
+            </div>
           </div>
 
           <div class="w-full max-w-4xl mx-auto  py-6 transition-all duration-300">
@@ -290,6 +298,7 @@ export default {
         const ratingElements = Array.isArray(this.$refs.ratingRefs)
           ? this.$refs.ratingRefs
           : [this.$refs.ratingRefs];
+        console.log(index)
         // Loop from the next question to find the first unanswered question.
         for (let i = index + 1; i < this.currentPage.questions.length; i++) {
           const questionId = this.currentPage.questions[i].id;
@@ -297,13 +306,32 @@ export default {
             // Scroll the corresponding element into view
             const element = ratingElements[i];
             if (element) {
-              element.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+              console.log("this", ratingElements);
             }
+
             break;
           }
         }
       });
     },
+    // handleAnswered(index) {
+    //   this.$nextTick(() => {
+    //     // Loop from the next question to find the first unanswered question.
+    //     for (let i = index + 1; i < this.currentPage.questions.length; i++) {
+    //       const questionId = this.currentPage.questions[i].id;
+    //       if (!this.responses[questionId]) {
+    //         // Find the DOM element by its unique ID
+    //         const element = document.getElementById(`question-${questionId}`);
+    //         if (element) {
+    //           element.scrollIntoView({ behavior: "smooth", block: "start" });
+    //         }
+    //         break;
+    //       }
+    //     }
+    //   });
+    // },
+
     getCourseOptions() {
       console.log("📢 SurveyType ID when getting courses:", this.responses.surveyType);
       if (this.responses.surveyType === 1) {

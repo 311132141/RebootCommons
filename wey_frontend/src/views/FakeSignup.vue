@@ -62,7 +62,7 @@
           </button>
         </div>
 
-        <router-link to="/fakelogin">
+        <router-link to="/login">
           <p class="text-gray-100 text-sm mt-6 mb-6 text-center">
             이미 계정이 있으신가요?
             <span class="text-blue-500 font-semibold hover:underline ml-1"> 로그인하기</span>

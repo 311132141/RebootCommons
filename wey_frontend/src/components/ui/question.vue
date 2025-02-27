@@ -21,8 +21,10 @@
         </div>
 
         <!-- Sticky Options & Button Container -->
-        <div class="sticky bottom-0 left-0 right-0 bg-gray-900 shadow-lg  py-5">
+        <div class="sticky bottom-0 left-0 right-0 bg-gray-900 shadow-lg py-5 ">
           <div class="w-full flex flex-col items-center gap-2">
+
+
             <!-- Question Options -->
             <button v-for="option in question.options" :key="option.id || option"
               @click="$emit('update:modelValue', option.id || option)" :class="[
@@ -33,41 +35,34 @@
               ]">
               <b2>{{ option.name || option }}</b2>
             </button>
-
-            <!-- Next Button -->
-            <button @click="$emit('next-question')"
-              class="mt-4 w-full py-[1.1rem] rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
+            <button @click="handleNext"
+              class="mt-8 w-full py-[1.1rem] rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
               <b2>다음</b2>
             </button>
+
+
+            <!-- Next Button -->
+
+
           </div>
+
         </div>
       </div>
-      <div class=" hidden md:flex items-center justify-center min-h-[calc(100vh_-_13vh)] ">
+      <div class=" hidden md:flex items-center justify-center h-[calc(100vh_-_20vh)] ">
         <div data-layer="Frame 660"
           class=" w-[30rem] lg:w-[36rem] flex-col justify-start items-center gap-14 inline-flex">
           <div data-layer="Group 26" class="flex-col items-center justify-center gap-4 inline-flex">
             <!-- <b2>{{ question.category }} hello</b2> -->
-            <h4 class="font-bold">{{ question.text }}</h4>
-
+            <h4 class="font-bold break-keep">{{ question.text }}</h4>
           </div>
 
-          <!-- <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 mb-24 ">
-            <button v-for="option in question.options" :key="option.id || option"
-              @click="$emit('update:modelValue', option.id || option)" :class="[
-                'w-full py-[1.25rem] rounded-2xl transition-colors',
-                modelValue === (option.id || option)
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              ]">
-              <b2>{{ option.name || option }}</b2>
-            </button>
 
-          </div> -->
-
-          <div class="w-full relative" :style="{ maxHeight: containerMaxHeight }">
+          <!-- <div class="w-full relative min-h-8" :style="{ maxHeight: containerMaxHeight }"> -->
+          <div class="w-full relative " :style="{ maxHeight: containerMaxHeight, minHeight: '200px' }">
             <!-- Scrollable content container -->
-            <div ref="scrollContainer" class="overflow-y-auto" :style="{ maxHeight: containerMaxHeight }">
-              <div class="flex flex-col gap-2">
+            <div ref="scrollContainer" class="overflow-y-auto "
+              :style="{ maxHeight: containerMaxHeight, minHeight: '200px' }">
+              <div class="flex flex-col gap-2 min-h-8">
                 <button v-for="option in question.options" :key="option.id || option"
                   @click="$emit('update:modelValue', option.id || option)" :class="[
                     'w-full py-[1.25rem] rounded-2xl transition-colors',
@@ -88,72 +83,23 @@
 
         </div>
       </div>
-      <div class="w-full py-4  text-center  fixed bottom-10 left-0 right-0">
+      <div class="w-full py-4  text-center  fixed bottom-0 left-0 right-0">
         <div class="w-[30rem] lg:w-[36rem] flex-col justify-start items-center gap-14  hidden md:inline-flex">
           <div class=" w-full flex justify-center pb-9 flex-col items-center gap-2 ">
-            <button v-if="!isLastPage" @click="$emit('next-question')"
+            <button @click="handleNext"
               class="mt-8 w-full py-5 rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
               <b2>
                 다음
               </b2>
             </button>
-            <button v-else @click="$emit('submit-survey')"
-              class="mt-8 w-full py-5 rounded-2xl transition-colors bg-purple-700 text-gray-300 hover:bg-purple-600">
-              <b2>
-                제출하기
-              </b2>
-            </button>
+
           </div>
         </div>
       </div>
 
     </template>
 
-    <!-- Multiple Choice -->
-    <template v-else-if="question.type === checkbox">
-      <div class="space-y-3">
-        <button v-for="option in question.options" :key="option" @click="toggleOption(option)" :class="[
-          'w-full text-left px-4 py-3 rounded-lg font-medium transition-colors',
-          modelValue.includes(option)
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-        ]">
-          {{ option }}
-        </button>
-      </div>
-    </template>
-    <!-- Likert Scale -->
-    <template v-else-if="question.type === rating">
-      <div class="w-full max-w-2xl mx-auto p-6">
-        <div class="mb-6 text-center text-white text-lg">
-          {{ question.text }}
-        </div>
 
-        <div class="flex flex-col space-y-2">
-          <div class="flex justify-between items-center">
-            <div class="grid grid-cols-5 gap-4 w-full mx-8">
-              <template v-for="n in (question.points || 5)" :key="n">
-                <div class="flex flex-col items-center">
-                  <button @click="$emit('update:modelValue', n)"
-                    class="w-12 h-12 rounded-full border-2 transition-all duration-200 focus:outline-none" :class="[
-                      modelValue === n
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-400 bg-transparent hover:border-blue-300'
-                    ]">
-                    <span class="sr-only">Option {{ n }}</span>
-                  </button>
-                </div>
-              </template>
-            </div>
-          </div>
-
-          <div class="flex justify-between text-gray-400 px-4">
-            <span>{{ question.labels?.left || '전혀 그렇지 않다' }}</span>
-            <span>{{ question.labels?.right || '매우 그렇다' }}</span>
-          </div>
-        </div>
-      </div>
-    </template>
   </div>
 </template>
 
@@ -208,6 +154,10 @@ export default {
       }
       this.$emit("update:modelValue", newValue);
     },
+    handleNext() {
+      console.log("다음 버튼 클릭됨");
+      this.$emit('next-question');
+    }
   },
   watch: {
     'question.options'(newVal) {

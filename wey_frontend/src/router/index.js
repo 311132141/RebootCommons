@@ -40,13 +40,13 @@ const router = createRouter({
       component: FeedView
     },
     {
-      path: '/signup',
-      name: 'signup',
+      path: '/signupview',
+      name: 'signupview',
       component: SignupView
     },
     {
-      path: '/login',
-      name: 'login',
+      path: '/loginview',
+      name: 'loginview',
       component: LoginView
     },
     {
@@ -88,13 +88,13 @@ const router = createRouter({
       component: NotificationsView
     },
     {
-      path: '/fakeSignup',
-      name: 'fakeSignup',
+      path: '/Signup',
+      name: 'Signup',
       component: FakeSignup
     },
     {
-      path: '/fakeLogin',
-      name: 'fakeLogin',
+      path: '/Login',
+      name: 'Login',
       component: FakeLogin
     },
     {
@@ -143,7 +143,7 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue')
     },
     {
-      path: '/figma',
+      path: '/survey',
       name: 'figma',
       component: TrialOfConvertingFigma
     },
@@ -155,7 +155,7 @@ const router = createRouter({
     },
     {
       path: '/OuterContainer',
-      
+
       component: OuterContainer,
       children: [
         {
@@ -168,10 +168,11 @@ const router = createRouter({
           name: 'companies',
           component: Company_Page
         },
-        { path: '/companies/:id', 
-          name: 'company-details', 
-          component: CompanyDetails, 
-          props: true 
+        {
+          path: '/companies/:id',
+          name: 'company-details',
+          component: CompanyDetails,
+          props: true
         },
         {
           path: "/dashboard/:id",
@@ -195,9 +196,9 @@ const router = createRouter({
           path: "/register",
           name: "register",
           component: CompanyRegister,
-         
+
         },
-        
+
 
 
       ]
@@ -206,8 +207,8 @@ const router = createRouter({
     // { path: '/', name: 'home', component: HomeView },
     // { path: '/companies', name: 'companies', component: Company_Page },
     // { path: '/companies/:id', name: 'company-details', component: CompanyDetails, props: true }, 
-    
-    
+
+
   ]
 
 })

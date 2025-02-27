@@ -34,7 +34,7 @@
             로그인
           </button>
         </div>
-        <router-link to="/fakesignup">
+        <router-link to="/signup">
           <p class="text-gray-100 text-sm mt-6 mb-6 text-center">
             계정이 없으신가요?
             <span class="text-blue-500 font-semibold hover:underline ml-1"> 회원가입</span>
@@ -101,15 +101,15 @@ export default {
 
         this.userStore.setUserInfo(userResponse.data)
         localStorage.setItem("user_info", JSON.stringify(userResponse.data))
-        console.log("페이지 이동 중: /figma")
+        console.log("페이지 이동 중: /survey")
 
         // Check if the user is a superuser/admin
         if (userResponse.data.is_superuser) {
           console.log("🔵 Admin detected, redirecting to /companies...")
           this.$router.push("/companies")
         } else {
-          console.log("🔵 Redirecting to /figma...")
-          this.$router.push("/figma")
+          console.log("🔵 Redirecting to /survey...")
+          this.$router.push("/survey")
         }
       } catch (error) {
         console.error("사용자 정보 조회 실패:", error)
