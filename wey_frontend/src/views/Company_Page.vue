@@ -126,7 +126,7 @@ export default {
   methods: {
     async fetchCompanies() {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/companies/');
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/companies/`);
         this.companies = response.data.companies;
       } catch (error) {
         console.error("Failed to fetch companies:", error);
@@ -160,7 +160,7 @@ export default {
 
         // Make DELETE request to backend
         const response = await axios.delete(
-          `http://127.0.0.1:8000/api/companies/${companyId}/delete/`,
+          `${import.meta.env.VITE_API_URL}/api/companies/${companyId}/delete/`,
           {
             headers: {
               Authorization: `Bearer ${token}`, // JWT token for authentication

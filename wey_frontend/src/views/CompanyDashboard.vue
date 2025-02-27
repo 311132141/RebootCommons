@@ -280,7 +280,7 @@ const fetchLeadershipData = async () => {
       errorMessage.value = "Authentication token missing.";
       return;
     }
-    const response = await fetch(`http://127.0.0.1:8000/api/companies/${companyId}/gender-leadership/`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/companies/${companyId}/gender-leadership/`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     if (!response.ok) throw new Error('Failed to fetch leadership data.');
@@ -302,7 +302,7 @@ const fetchGenderDistribution = async () => {
       return;
     }
 
-    const response = await fetch(`http://127.0.0.1:8000/api/companies/${companyId}/gender-counts/`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/companies/${companyId}/gender-counts/`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
 
@@ -332,7 +332,7 @@ const fetchCompanyStatistics = async () => {
       loading.value = false;
       return;
     }
-    const response = await fetch(`http://127.0.0.1:8000/api/companies/${companyId}/statistics/`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/companies/${companyId}/statistics/`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!response.ok) {
@@ -360,7 +360,7 @@ const fetchDemographicData = async () => {
     await Promise.all(
       demographicCategories.map(async (category) => {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/dashboard/${companyId}/demographic-improvement/${category}/`,
+          `${import.meta.env.VITE_API_URL}/api/dashboard/${companyId}/demographic-improvement/${category}/`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         if (!response.ok) throw new Error(`Failed to fetch ${category} data.`);
@@ -380,7 +380,7 @@ const fetchDemographicData = async () => {
 const fetchExplanation = async () => {
   const companyId = window.location.pathname.split('/').pop();
   try {
-    const response = await axios.get(`/api/companies/${companyId}/explanation/`, {
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/companies/${companyId}/explanation/`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     });
 
@@ -396,7 +396,7 @@ const saveExplanation = async () => {
   const companyId = window.location.pathname.split('/').pop();
   try {
     const response = await axios.put(
-      `/api/companies/${companyId}/explanation/`,
+      `${import.meta.env.VITE_API_URL}/api/companies/${companyId}/explanation/`,
       { explanation_text: adminExplanation.value },
       { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }
     );
@@ -501,7 +501,7 @@ const fetchHeatmapData = async () => {
       return;
     }
     const response = await axios.get(
-      `http://127.0.0.1:8000/api/dashboard/${companyId}/lifestyle-performance-growth/`,
+      `${import.meta.env.VITE_API_URL}/api/dashboard/${companyId}/lifestyle-performance-growth/`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     heatmapData.value = response.data;
@@ -520,7 +520,7 @@ const fetchRadarData = async () => {
       return;
     }
     const response = await axios.get(
-      `http://127.0.0.1:8000/api/dashboard/${companyId}/growth-comparison/`,
+      `${import.meta.env.VITE_API_URL}/api/dashboard/${companyId}/growth-comparison/`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     company_vs_all.value = response.data;

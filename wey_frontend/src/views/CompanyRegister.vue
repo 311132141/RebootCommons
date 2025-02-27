@@ -78,7 +78,7 @@ export default {
 
       try {
         console.log("회사 등록 요청 중...")
-        const response = await axios.post("/api/company/register/", this.form)
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/company/register/`, this.form)
         console.log("등록 성공, 응답 수신:", response.data)
         // Pop up a success prompt after registration
         alert("등록에 성공했습니다!")

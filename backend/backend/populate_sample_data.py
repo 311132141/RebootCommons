@@ -1,3 +1,11 @@
+import random
+import os
+import django
+
+# Set DJANGO_SETTINGS_MODULE and initialise Django before importing any Django modules
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+django.setup()
+
 # populate_sample_data.py
 from django.db.utils import IntegrityError
 from account.models import User, Company
@@ -6,13 +14,9 @@ from survey.models import (
     UserSurveyResponse, Answer,
     SurveyTypeQuestion, CourseTypeQuestion
 )
-import random
-import os
-import django
 
-# Set DJANGO_SETTINGS_MODULE and initialise Django before importing any Django modules
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
-django.setup()
+
+
 
 
 def create_companies():

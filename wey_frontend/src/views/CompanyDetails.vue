@@ -130,7 +130,7 @@ export default {
     async fetchCompanyUsers() {
       const companyId = this.$route.params.id;  // Get company ID from URL
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/companies/${companyId}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/companies/${companyId}`);
         this.companyName = response.data.company;
         this.users = response.data.users;
       } catch (error) {
@@ -164,7 +164,7 @@ export default {
 
         // Make DELETE request to backend
         const response = await axios.delete(
-          `http://127.0.0.1:8000/api/users/${userId}/delete/`,
+          `${import.meta.env.VITE_API_URL}/api/users/${userId}/delete/`,
           {
             headers: {
               Authorization: `Bearer ${token}`, // JWT token for authentication

@@ -27,13 +27,16 @@ SECRET_KEY = 'django-insecure-hda4#$@uuk9mv4cf$=e-6x^uod#-p3g6y+2n9pff-pf%3axd(h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = [
-    "139.150.68.129",  # Your server's public IP
-    "10.28.55.2",       # Your private network IP (if needed)
-    "127.0.0.1",        # Local development
-    "localhost",   
-    "192.168.45.249"  
-]
+# ALLOWED_HOSTS = [
+#     "139.150.68.129",  # Your server's public IP
+#     "10.28.55.2",       # Your private network IP (if needed)
+#     "127.0.0.1",        # Local development
+#     "localhost",   
+#     "192.168.45.249",
+#     "192.168.20.22"  
+# ]
+ALLOWED_HOSTS = ["*"]
+
 
 AUTH_USER_MODEL = 'account.User'
 
@@ -162,18 +165,20 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5173",  # Local development
-    "http://localhost:5173",  
-    "http://139.150.68.129:5173",  # Public Vue frontend
-    "http://192.168.45.249:5173"
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://127.0.0.1:5173",  # Local development
+#     "http://localhost:5173",  
+#     "http://139.150.68.129:5173",  # Public Vue frontend
+#     "http://192.168.45.249:5173",
+#     "http://192.168.20.22:5173",
+# ]
 CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173",  # Local development
     "http://localhost:5173",
     "http://139.150.68.129:5173",  # Public Vue frontend
-    "http://192.168.45.249:5173"
+    "http://192.168.45.249:5173",
+    "http://192.168.20.22:5173",
 ]
 

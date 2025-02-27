@@ -79,7 +79,7 @@ export default {
 
       try {
         console.log("로그인 요청 중...")
-        const response = await axios.post("/api/login/", this.form)
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/login/`, this.form)
         console.log("로그인 성공, 토큰 수신:", response.data)
 
         this.userStore.setToken(response.data)
@@ -96,7 +96,7 @@ export default {
 
       try {
         console.log("사용자 정보 조회 중...")
-        const userResponse = await axios.get("/api/me/")
+        const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/me/`)
         console.log("사용자 정보 수신:", userResponse.data)
 
         this.userStore.setUserInfo(userResponse.data)

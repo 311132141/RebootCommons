@@ -129,7 +129,7 @@ export default {
   methods: {
     async fetchCompanyUsers() {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/users/no-company/");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/no-company/`);
         this.users = response.data;
       } catch (error) {
         console.error("Failed to fetch users without company:", error);
@@ -162,7 +162,7 @@ export default {
 
         // Make DELETE request to backend
         const response = await axios.delete(
-          `http://127.0.0.1:8000/api/users/${userId}/delete`,
+          `${import.meta.env.VITE_API_URL}/api/users/${userId}/delete`,
           {
             headers: {
               Authorization: `Bearer ${token}`, // JWT token for authentication

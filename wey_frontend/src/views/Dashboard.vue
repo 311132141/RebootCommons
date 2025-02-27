@@ -66,7 +66,7 @@ export default {
         // Fetch gender-leadership data
         console.log("Fetching gender vs leadership data...");
         const leadershipResponse = await fetch(
-          `http://127.0.0.1:8000/api/companies/${companyId}/gender-leadership/`,
+          `${import.meta.env.VITE_API_URL}/api/companies/${companyId}/gender-leadership/`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         if (!leadershipResponse.ok) throw new Error("API request failed.");
@@ -76,7 +76,7 @@ export default {
         // Fetch company vs industry growth data
         console.log("Fetching company vs industry growth data...");
         const growthResponse = await fetch(
-          `http://127.0.0.1:8000/api/dashboard/${companyId}/growth-comparison/`,
+          `${import.meta.env.VITE_API_URL}/api/dashboard/${companyId}/growth-comparison/`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         if (!growthResponse.ok) throw new Error("Failed to fetch growth data.");
@@ -109,7 +109,7 @@ export default {
         const responses = await Promise.all(
           demographicCategories.map(async (category) => {
             const response = await fetch(
-              `http://127.0.0.1:8000/api/dashboard/${companyId}/demographic-improvement/${category}/`,
+              `${import.meta.env.VITE_API_URL}/api/dashboard/${companyId}/demographic-improvement/${category}/`,
               { headers: { Authorization: `Bearer ${accessToken}` } }
             );
             if (!response.ok) throw new Error(`Failed to fetch ${category} data.`);
@@ -238,7 +238,7 @@ export default {
       try {
         const companyId = window.location.pathname.split("/").pop();
         const response = await fetch(
-          `http://127.0.0.1:8000/api/dashboard/${companyId}/lifestyle-performance-growth/`,
+          `${import.meta.env.VITE_API_URL}/api/dashboard/${companyId}/lifestyle-performance-growth/`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
 

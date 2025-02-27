@@ -66,7 +66,7 @@ export default {
     methods: {
         getPost() {
             axios
-                .get(`/api/posts/${this.$route.params.id}/`)
+                .get(`${import.meta.env.VITE_API_URL}/api/posts/${this.$route.params.id}/`)
                 .then(response => {
                     console.log('data', response.data)
 
@@ -81,7 +81,7 @@ export default {
             console.log('submitForm', this.body)
 
             axios
-                .post(`/api/posts/${this.$route.params.id}/comment/`, {
+                .post(`${import.meta.env.VITE_API_URL}/api/posts/${this.$route.params.id}/comment/`, {
                     'body': this.body
                 })
                 .then(response => {

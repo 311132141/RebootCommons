@@ -151,8 +151,13 @@ export default {
       }
 
       try {
-        console.log("회사 등록 요청 중...")
-        const response = await axios.post("/api/signup/", payload)
+        console.log("Fucking Niggers");
+        console.log("API URL:", import.meta.env.VITE_API_URL);
+        console.log("회사 등록 요청 중...");
+        console.log("API URL:", import.meta.env.VITE_API_URL);
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup/`, payload);
+        
+
         console.log("등록 성공, 응답 수신:", response.data)
         this.toastStore.showToast(
           5000,

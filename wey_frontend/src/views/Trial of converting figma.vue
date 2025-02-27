@@ -375,7 +375,7 @@ export default {
           return;
         }
 
-        const url = `http://127.0.0.1:8000/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
+        const url = `${import.meta.env.VITE_API_URL}/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
         const response = await fetch(url, {
           method: "GET",
           headers: {
@@ -462,7 +462,7 @@ export default {
 
         console.log("🟢 Submitting survey with data:", bodyData);
 
-        const url = `http://127.0.0.1:8000/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
+        const url = `${import.meta.env.VITE_API_URL}/api/survey/${this.surveyTypeId}/${this.courseTypeId}/`;
         const response = await fetch(url, {
           method: "POST",
           headers: {
