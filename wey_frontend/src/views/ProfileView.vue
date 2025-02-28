@@ -305,7 +305,7 @@ const getDisplayCategory = (cat) => {
 const fetchUserProfile = async () => {
   const userId = route.params.id;
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/users/${userId}/profile/`);
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}/profile/`);
     user.value = response.data;
     console.log(user.value)
   } catch (error) {
@@ -317,7 +317,7 @@ const fetchUserProfile = async () => {
 const fetchPrePostData = async () => {
   const userId = route.params.id;
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/users/${userId}/pre-post-comparison/`);
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}/pre-post-comparison/`);
     if (!response.data.categories || response.data.categories.length === 0) {
       console.warn("No pre/post data returned");
       return;
@@ -333,7 +333,7 @@ const fetchPrePostData = async () => {
 const fetchUserVsAllGrowth = async () => {
   const userId = route.params.id;
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/users/${userId}/user-growth-comparison/`);
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}/user-growth-comparison/`);
     if (!response.data.categories || response.data.categories.length === 0) {
       console.warn("No user vs all growth data returned");
       return;
@@ -355,7 +355,7 @@ const fetchHeatmapData = async () => {
       return;
     }
     const response = await axios.get(
-      `http://127.0.0.1:8000/api/dashboard/lifestyle-performance-growth/all/`,
+      `${import.meta.env.VITE_API_URL}/api/dashboard/lifestyle-performance-growth/all/`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     heatmapData.value = response.data;
@@ -369,7 +369,7 @@ const fetchHeatmapData = async () => {
 const fetchQuestionRatings = async () => {
   const userId = route.params.id;
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/users/${userId}/question-pre-post-comparison/`);
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}/question-pre-post-comparison/`);
     questionGrowthData.value = response.data;
     questionRatings.value = response.data.categories.flatMap(cat =>
       cat.questions.map(q => ({
@@ -548,7 +548,7 @@ const fetchUserExplanation = async () => {
   try {
     // The user ID from the route
     const userId = route.params.id
-    const response = await axios.get(`/api/users/${userId}/explanation/`, {
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}/explanation/`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     })
     userExplanation.value = response.data.explanation_text || ''
@@ -564,7 +564,7 @@ const saveUserExplanation = async () => {
   try {
     const userId = route.params.id
     const response = await axios.put(
-      `/api/users/${userId}/explanation/`,
+      `${import.meta.env.VITE_API_URL}/api/users/${userId}/explanation/`,
       { explanation_text: userExplanation.value },
       { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }
     )

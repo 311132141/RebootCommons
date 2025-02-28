@@ -251,7 +251,7 @@ def calculate_growth(users, user_type="Generic", categories=None):
         else:
             growth_data[category] = 0  # Default to 0% growth if no valid data
 
-        # # print(f"{user_type} Growth for {category}: {growth_data[category]:.2f}% (Pre: {pre_avg}, Post: {post_avg})")
+        # # # print(f"{user_type} Growth for {category}: {growth_data[category]:.2f}% (Pre: {pre_avg}, Post: {post_avg})")
 
     return growth_data
 
@@ -563,7 +563,7 @@ def get_gender_counts(request, company_id):
     gender_counts = Counter(user_genders.values())
     male_count = gender_counts.get("남성", 0)
     female_count = gender_counts.get("여성", 0)
-    print({"data": {"남성": male_count, "여성": female_count}})
+    # print({"data": {"남성": male_count, "여성": female_count}})
     return Response({"data": {"남성": male_count, "여성": female_count}}, status=status.HTTP_200_OK)
 
 
@@ -621,7 +621,7 @@ def get_gender_vs_leadership(request, company_id):
         })
 
     # Debug output (optional)
-    print("Final computed data:", formatted_data)
+    # print("Final computed data:", formatted_data)
     return Response({"data": formatted_data}, status=200)
 
 @api_view(["GET"])
@@ -634,7 +634,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
     Example URL: /api/companies/{company_id}/demographic-improvement/age/
     """
     try:
-        print(f"Fetching {demographic_type} vs survey improvement data for company ID: {company_id}")
+        # print(f"Fetching {demographic_type} vs survey improvement data for company ID: {company_id}")
 
         korean_question_text = get_korean_question(demographic_type)
         if not korean_question_text:
@@ -642,7 +642,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
 
         company = Company.objects.get(id=company_id)
         users = User.objects.filter(company=company)
-        print(f"Company found: {company.name}, Total users: {users.count()}")
+        # print(f"Company found: {company.name}, Total users: {users.count()}")
 
         question = Question.objects.filter(text__icontains=korean_question_text).first()
         if not question:
@@ -650,14 +650,14 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
                 {"error": f"Question not found for {demographic_type}."},
                 status=status.HTTP_404_NOT_FOUND
             )
-        print(f"Demographic question ID: {question.id}, Text: {question.text}")
+        # print(f"Demographic question ID: {question.id}, Text: {question.text}")
 
         answers = Answer.objects.filter(question=question, response__user__in=users)
-        print(f"Total {demographic_type} responses found: {answers.count()}")
+        # print(f"Total {demographic_type} responses found: {answers.count()}")
 
         user_categories = {ans.response.user.id: ans.answer_text for ans in answers}
         survey_answers = Answer.objects.filter(response__user__in=users)
-        print(f"Processing {survey_answers.count()} total answers.")
+        # print(f"Processing {survey_answers.count()} total answers.")
 
         category_ratings = defaultdict(lambda: {"pre": [], "post": []})
         for ans in survey_answers:
@@ -671,7 +671,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
         for category, phases in category_ratings.items():
             pre_avg = sum(phases["pre"]) / len(phases["pre"]) if phases["pre"] else 0
             post_avg = sum(phases["post"]) / len(phases["post"]) if phases["post"] else 0
-            print(f"{demographic_type.capitalize()} Group: {category}, Pre Avg: {pre_avg}, Post Avg: {post_avg}")
+            # print(f"{demographic_type.capitalize()} Group: {category}, Pre Avg: {pre_avg}, Post Avg: {post_avg}")
             formatted_data.append({
                 f"{demographic_type}_group": category,
                 "pre": pre_avg,
@@ -691,24 +691,24 @@ def get_company_vs_industry_growth(request, company_id):
     Returns growth for the company and the overall industry, based on its selected CourseType.
     """
     try:
-        # print(f"🔹 Fetching growth data for Company ID: {company_id}")
+        # # print(f"🔹 Fetching growth data for Company ID: {company_id}")
 
         # Get company and users
         company = Company.objects.get(id=company_id)
         company_users = User.objects.filter(company=company)
         all_users = User.objects.all()
 
-        # # print debug info
-        # print(f"✅ Company: {company.name}")
-        # print(f"📌 Course Type: {company.course_type}")  # Debug course type
-        # print(f"👥 Company Users: {company_users.count()}, All Users: {all_users.count()}")
+        # # # print debug info
+        # # print(f"✅ Company: {company.name}")
+        # # print(f"📌 Course Type: {company.course_type}")  # Debug course type
+        # # print(f"👥 Company Users: {company_users.count()}, All Users: {all_users.count()}")
 
         # Get categories based on company's CourseType
         categories = get_company_categories(company)
-        # print(f"📊 Categories Used: {categories}")
+        # # print(f"📊 Categories Used: {categories}")
 
         if not categories:
-            # print("❌ Error: Company has no valid course type.")
+            # # print("❌ Error: Company has no valid course type.")
             return Response({"error": "Company has no valid course type."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Compute growth
@@ -721,11 +721,11 @@ def get_company_vs_industry_growth(request, company_id):
             "industry_scores": [industry_growth.get(cat, 0) for cat in categories]
         }
 
-        # print("\n✅ Final Computed Growth Data:", response_data)
+        # # print("\n✅ Final Computed Growth Data:", response_data)
         return Response(response_data, status=status.HTTP_200_OK)
 
     except Company.DoesNotExist:
-        # print("❌ Error: Company not found.")
+        # # print("❌ Error: Company not found.")
         return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -791,7 +791,7 @@ def get_user_profile(request, user_id):
         user = User.objects.get(id=user_id)
         user_info = get_user_basic_info(user)
         demographics = get_demographic_data(user)
-        print({**user_info, "demographics": demographics})
+        # print({**user_info, "demographics": demographics})
         return Response({**user_info, "demographics": demographics}, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -815,17 +815,17 @@ def get_user_pre_post_comparison(request, user_id):
     # Ensure user has a CourseType
     user_course_type = UserSurveyResponse.objects.filter(user=user).values_list("course_type__name", flat=True).first()
     if not user_course_type:
-        print(f"❌ User: {user.name} has no assigned course type.")
+        # print(f"❌ User: {user.name} has no assigned course type.")
         return Response({"error": "User has no assigned course type."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Get categories based on the user's CourseType
     categories = get_categories_by_course_type(user_course_type)
     if not categories:
-        print(f"❌ User: {user.name} has an unrecognized course type.")
+        # print(f"❌ User: {user.name} has an unrecognized course type.")
         return Response({"error": "User's course type is unrecognized."}, status=status.HTTP_400_BAD_REQUEST)
 
-    print(f"📌 User: {user.name}, Course Type: {user_course_type}")
-    print(f"📊 Categories Used: {categories}\n")
+    # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
+    # print(f"📊 Categories Used: {categories}\n")
 
     # Compute pre/post scores
     pre_scores = [calculate_average_score(user, "pre", category) for category in categories]
@@ -837,7 +837,7 @@ def get_user_pre_post_comparison(request, user_id):
         "post_scores": post_scores
     }
 
-    print("✅ Final Computed Pre/Post Comparison Data:", response_data)
+    # print("✅ Final Computed Pre/Post Comparison Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -867,8 +867,8 @@ def get_user_vs_all_growth(request, user_id):
     if not categories:
         return Response({"error": "User's course type is unrecognized."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
-    # print(f"📊 Categories Used: {categories}")
+    # # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
+    # # print(f"📊 Categories Used: {categories}")
 
     # Compute growth for the individual user and all users based on relevant categories
     user_growth = calculate_growth([user], "Individual User", categories)
@@ -881,7 +881,7 @@ def get_user_vs_all_growth(request, user_id):
         "all_users_scores": [all_users_growth.get(cat, 0) for cat in categories]
     }
 
-    # # print("✅ Final Computed User vs All Growth Data:", response_data)
+    # # # print("✅ Final Computed User vs All Growth Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
 
     
@@ -931,8 +931,8 @@ def get_user_question_pre_post_comparison(request, user_id):
     if not categories:
         return Response({"error": "User's course type is unrecognized."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
-    # print(f"📊 Categories Used: {categories}")
+    # # print(f"📌 User: {user.name}, Course Type: {user_course_type}")
+    # # print(f"📊 Categories Used: {categories}")
 
     # Fetch pre/post scores for each question within each category
     category_data = []
@@ -964,7 +964,7 @@ def get_user_question_pre_post_comparison(request, user_id):
         "categories": category_data
     }
 
-    # print("✅ Final Computed Question-Level Pre/Post Data:", response_data)
+    # # print("✅ Final Computed Question-Level Pre/Post Data:", response_data)
     return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
