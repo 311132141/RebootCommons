@@ -32,7 +32,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: FakeSignup
     },
     {
       path: '/feed',
@@ -158,11 +158,11 @@ const router = createRouter({
 
       component: OuterContainer,
       children: [
-        {
-          path: '/',
-          name: 'home',
-          component: HomeView
-        },
+        // {
+        //   path: '/',
+        //   name: 'home',
+        //   component: HomeView
+        // },
         {
           path: '/companies',
           name: 'companies',
