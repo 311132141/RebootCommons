@@ -609,10 +609,51 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@media print {
+/* @media print {
   body {
     width: 1100px;
     height: auto;
   }
+} */
+@media print {
+
+  /* Ensure the body takes the full available width, with no margin/padding */
+  body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Force your main container (or grid) to use a fixed width that fits on a printed page */
+  .container,
+  .flex-1 {
+    width: 100%;
+    max-width: 100%;
+    /* or a value like 800px if you prefer a fixed width */
+  }
+
+  /* Prevent charts and other blocks from splitting between pages */
+  .chart-container,
+  .print-section,
+  .rounded-lg {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Optionally, force a page break after major sections if needed */
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  /* Adjust grid layout to use 100% width on print */
+  .grid-cols-12 {
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  /* You may also need to adjust fixed heights */
+  /* .min-h-screen, .min-h-[calc(100vh_-_16vh)] {
+    min-height: auto;
+  } */
 }
 </style>
