@@ -7,7 +7,7 @@ from .models import Company, User
 from collections import Counter
 from .serializer import UserSerializer, CompanySerializer, CompanyExplanationSerializer, UserExplanationSerializer
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from .models import CompanyExplanation, UserExplanation
@@ -75,6 +75,7 @@ def signup(request):
         return JsonResponse({'message': 'error', 'errors': translated_errors}, status=400)
     
 @api_view(['GET'])
+@permission_classes([IsAdminUser])
 def get_companies_with_growth(request):
     companies = Company.objects.all()
     data = []
@@ -92,6 +93,7 @@ def get_companies_with_growth(request):
     return Response({"companies": data}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+@permission_classes([IsAdminUser])
 def get_company_users(request, company_id):
     """Fetch all users for a given company."""
     try:
@@ -113,6 +115,7 @@ def get_company_users(request, company_id):
         return JsonResponse({"error": "Company not found"}, status=404)
 
 @api_view(['GET'])
+@permission_classes([IsAdminUser])
 def get_company_dashboard(request, company_id):
     """
     Fetch aggregated data (e.g., gender distribution, leadership roles)
@@ -151,7 +154,7 @@ class CompanyExplanationView(generics.RetrieveUpdateAPIView):
     PUT/PATCH: Update the explanation for a company
     """
     serializer_class = CompanyExplanationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
     
     def get_object(self):
         # 1) Fetch the company (or 404)
@@ -168,7 +171,7 @@ class UserExplanationView(generics.RetrieveUpdateAPIView):
     PUT/PATCH: Update the explanation for a user
     """
     serializer_class = UserExplanationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get_object(self):
         # 1) Fetch the user (or 404)
@@ -180,7 +183,7 @@ class UserExplanationView(generics.RetrieveUpdateAPIView):
         return obj
     
 class CompanyRegisterView(APIView):
-    permission_classes = []  # Allow any (adjust permissions as needed)
+    permission_classes = [IsAdminUser]  # Allow any (adjust permissions as needed)
 
     def post(self, request, *args, **kwargs):
         company_name = request.data.get('name')
@@ -223,7 +226,7 @@ def delete_user_related_data(user):
 
 # Modified delete_user view:
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def delete_user(request, user_id):
     try:
         user = get_object_or_404(User, id=user_id)
@@ -253,7 +256,7 @@ def delete_user(request, user_id):
 
 # Modified delete_company view:
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def delete_company(request, company_id):
     try:
         company = get_object_or_404(Company, id=company_id)

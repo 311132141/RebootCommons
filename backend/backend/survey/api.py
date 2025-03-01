@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -370,7 +370,6 @@ def get_company_gender_data(company_id):
 # =============================================================================
 
 class SurveyTypeListView(APIView):
-    # permission_classes = [AllowAny]
     """
     Returns all available SurveyTypes.
 
@@ -395,7 +394,6 @@ class SurveyTypeListView(APIView):
 
 
 class CourseTypeListView(APIView):
-    # permission_classes = [AllowAny]
     """
     Returns all CourseTypes for a given SurveyType ID.
 
@@ -428,7 +426,6 @@ class CourseTypeListView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 class SurveyView(APIView):
-    # # permission_classes = [AllowAny]
     """
     Handles retrieval and submission of survey responses for a specific
     SurveyType and CourseType combination.
@@ -470,7 +467,7 @@ class SurveyView(APIView):
 
         serializer = QuestionSerializer(combined_questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    # permission_classes = [AllowAny]
+    
     def post(self, request, survey_type_id, course_type_id):
         """
         Handles submission of user responses for a specific SurveyType and CourseType combination.
@@ -552,7 +549,7 @@ class SurveyView(APIView):
         )
 
 @api_view(["GET"])
-# # @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_gender_counts(request, company_id):
     """
     Returns the number of male and female responses for users in the given company.
@@ -568,7 +565,7 @@ def get_gender_counts(request, company_id):
 
 
 @api_view(['GET'])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_gender_vs_leadership(request, company_id):
     """
     Fetches average scores by gender for all question categories 
@@ -625,7 +622,7 @@ def get_gender_vs_leadership(request, company_id):
     return Response({"data": formatted_data}, status=200)
 
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_demographic_vs_survey_improvement(request, company_id, demographic_type):
     """
     Fetches average survey ratings split by a demographic type (age, salary, education, etc.),
@@ -684,7 +681,7 @@ def get_demographic_vs_survey_improvement(request, company_id, demographic_type)
         return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_company_vs_industry_growth(request, company_id):
     """
     Computes the average percentage increase in survey scores for different categories.
@@ -732,7 +729,7 @@ def get_company_vs_industry_growth(request, company_id):
 
 
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_lifestyle_vs_performance_growth(request, company_id):
     """
     Computes overall performance growth based on lifestyle question ratings.
@@ -766,7 +763,7 @@ def get_lifestyle_vs_performance_growth(request, company_id):
     except Company.DoesNotExist:
         return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_user_profile(request, user_id):
     """
     Retrieves the user profile, combining basic information and demographic data.
@@ -798,7 +795,7 @@ def get_user_profile(request, user_id):
 
 
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_user_pre_post_comparison(request, user_id):
     """
     Fetches a user's pre/post average scores for different categories based on their CourseType.
@@ -843,7 +840,7 @@ def get_user_pre_post_comparison(request, user_id):
 
 
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_user_vs_all_growth(request, user_id):
     """
     Compares a single user's growth versus the average growth of all users based on their course type.
@@ -886,7 +883,7 @@ def get_user_vs_all_growth(request, user_id):
 
     
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_all_users_lifestyle_performance_growth(request):
     """
     Computes overall performance growth for lifestyle-related questions across ALL users.
@@ -900,7 +897,7 @@ def get_all_users_lifestyle_performance_growth(request):
     return Response({"data": formatted_data}, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_user_question_pre_post_comparison(request, user_id):
     """
     Fetches a user's pre/post scores for each question within their CourseType categories.
@@ -968,7 +965,7 @@ def get_user_question_pre_post_comparison(request, user_id):
     return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_company_statistics(request, company_id):
     """
     Returns company statistics, including:
@@ -992,7 +989,7 @@ def get_company_statistics(request, company_id):
         return Response({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
     
 class CompanyOverallGrowthView(APIView):
-    # permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
 
     def get(self, request, company_id):
         try:
@@ -1009,7 +1006,7 @@ class CompanyOverallGrowthView(APIView):
 
 
 @api_view(["GET"])
-# @permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_users_without_company(request):
     """
     Returns a list of all users who do not belong to any company, including
