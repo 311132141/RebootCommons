@@ -1,5 +1,7 @@
 # RebootCommons
 
+운영 서버의 HTTPS, 로그인 복구 및 다음 배포 안내는 [리부트툴박스 운영 설정](deploy/reboottoolbox/README.md)을 참고하세요.
+
 A comprehensive web-based survey and analytics platform designed to measure and analyze learning perception and competency changes before and after educational sessions. This application enables learners to evaluate their skills and confidence levels, helping educators assess the effectiveness of their content and improve future educational strategies.
 
 ## 🎯 Overview
